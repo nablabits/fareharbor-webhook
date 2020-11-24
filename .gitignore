@@ -3,6 +3,7 @@
 
 # Local environment
 .python-version
+.env
 
 *.pyc
 __pycache__/
