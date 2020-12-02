@@ -10,6 +10,7 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = config("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = config("DB_URL")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class ProductionConfig(Config):
