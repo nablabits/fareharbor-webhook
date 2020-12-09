@@ -15,7 +15,7 @@ instance/
 htmlcov/
 
 # Exclude response objects
-fh_webhook/responses
+flask_app/fh_webhook/responses
 
 dist/
 build/

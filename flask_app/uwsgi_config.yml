@@ -1,0 +1,13 @@
+uwsgi:
+  wsgi-file: run.py
+  callable: app
+  # http-socket: :3031 # in case of running without proxy
+  socket: :3031  # When running a proxy
+  processes: 4
+  threads: 2
+  uid: 1000
+  master: true
+  chmod-socket: 660
+  vacuum: true
+  die-on-term: true
+  stats: :5050
