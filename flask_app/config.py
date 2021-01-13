@@ -18,12 +18,6 @@ class ProductionConfig(Config):
     DEBUG = False
 
 
-class StagingConfig(Config):
-    """Override base class for staging."""
-    DEVELOPMENT = True
-    DEBUG = True
-
-
 class DevelopmentConfig(Config):
     """Override base class for development."""
     DEVELOPMENT = True

@@ -11,15 +11,14 @@ from decouple import config
 
 
 def create_app(test_config=False):
-    # create and configure the app
+    """Serve the entry points for the webhook."""
     app = Flask(__name__, instance_relative_config=True)
     if test_config:
         app.config.from_object(TestingConfig)
     else:
         app.config.from_object(config("APP_SETTINGS"))
     db.init_app(app)
-    migrate = Migrate(app, db)
-
+    Migrate(app, db)
 
     # ensure the instance folder exists
     try:
@@ -62,12 +61,12 @@ def create_app(test_config=False):
 
     @app.route('/webhook', methods=["POST"])
     def respond():
-        """The future official entry point."""
+        """Future official entry point."""
         return Response(status=200)
 
     @app.route('/', methods=["GET"])
     def index():
-        """A quick check that the server is running."""
+        """Quick check that the server is running."""
         app_name = os.getenv("APP_NAME")
         if app_name:
             return "Hello from flask on a Docker environment"
