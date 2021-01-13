@@ -42,8 +42,18 @@ def create_app(test_config=False):
         except OSError:
             pass
         now = datetime.now()
-        name = str(now.timestamp()) + ".json"
         if request.json:
+            # first off, check the security token
+            try:
+                token = request.json["token"]
+            except KeyError:
+                return Response("No token was sent.", status=403)
+            if token != app.config["SECURITY_TOKEN"]:
+                return Response("Invalid token.", status=403)
+            del request.json["token"]
+
+            # Dump the content onto a file
+            name = str(now.timestamp()) + ".json"
             filename = os.path.join(path, name)
             with open(filename, "w") as fp:
                 json.dump(request.json, fp)
@@ -57,7 +67,7 @@ def create_app(test_config=False):
         else:
             with open(os.path.join(path, "errors.log"), "a") as f:
                 f.write("{} - the request was empty\n".format(now))
-            return Response(status=202)  # Accepted
+            return Response("The request was empty", status=400)
 
     @app.route('/webhook', methods=["POST"])
     def respond():
