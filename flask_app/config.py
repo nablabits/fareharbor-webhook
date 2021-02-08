@@ -11,8 +11,7 @@ class Config(object):
     SECRET_KEY = config("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = config("DB_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECURITY_TOKEN = config("SECURITY_TOKEN")
-
+    FH_PASSWORD = config("FH_PASSWORD") 
 
 class ProductionConfig(Config):
     """Override base class for production."""
@@ -28,4 +27,4 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Override base class for testing."""
     TESTING = True
-    SECURITY_TOKEN = "test"
+    TEST_PASSWORD = "test"

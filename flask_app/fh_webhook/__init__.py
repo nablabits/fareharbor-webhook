@@ -4,6 +4,8 @@ from datetime import datetime
 
 from flask import Flask, request, Response
 from flask_migrate import Migrate
+from flask_httpauth import HTTPBasicAuth
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import TestingConfig
 from fh_webhook.models import db
 
@@ -26,7 +28,23 @@ def create_app(test_config=False):
     except OSError:
         pass
 
-    @app.route('/test_webhook', methods=["POST"])
+    # load auth
+    auth = HTTPBasicAuth()
+    fh_pass = app.config["FH_PASSWORD"]
+    users = {"fareharbor": generate_password_hash(fh_pass), }
+    test_pass = app.config.get("TEST_PASSWORD")
+    if test_pass:
+        users["test"] = generate_password_hash(test_pass)
+
+    @auth.verify_password
+    def verify_password(username, password):
+        user_exists = username in users
+        # has_valid_pass = check_password_hash(users.get(username), password)
+        if user_exists and check_password_hash(users.get(username), password):
+            return username
+
+    @app.route("/test_webhook", methods=["POST"])
+    @auth.login_required
     def save_content():
         """Save the content of the POST method in a JSON file.
 
@@ -43,14 +61,6 @@ def create_app(test_config=False):
             pass
         now = datetime.now()
         if request.json:
-            # first off, check the security token
-            try:
-                token = request.json["token"]
-            except KeyError:
-                return Response("No token was sent.", status=403)
-            if token != app.config["SECURITY_TOKEN"]:
-                return Response("Invalid token.", status=403)
-            del request.json["token"]
 
             # Dump the content onto a file
             name = str(now.timestamp()) + ".json"
@@ -69,12 +79,12 @@ def create_app(test_config=False):
                 f.write("{} - the request was empty\n".format(now))
             return Response("The request was empty", status=400)
 
-    @app.route('/webhook', methods=["POST"])
+    @app.route("/webhook", methods=["POST"])
     def respond():
         """Future official entry point."""
         return Response(status=200)
 
-    @app.route('/', methods=["GET"])
+    @app.route("/", methods=["GET"])
     def index():
         """Quick check that the server is running."""
         app_name = os.getenv("APP_NAME")
