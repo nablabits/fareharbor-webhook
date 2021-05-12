@@ -1,6 +1,9 @@
 # vim swap files
 *.swp
 
+# pycharm stuff
+.idea
+
 # Local environment
 .python-version
 .env
