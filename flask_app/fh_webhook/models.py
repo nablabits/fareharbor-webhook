@@ -72,6 +72,7 @@ class Item(db.Model):
     __table_name__ = "item"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=False, nullable=True)
+    name = db.Column(db.String(200), unique=False)
 
 
 class Customer(db.Model):
@@ -157,9 +158,9 @@ class CustomFieldInstances(db.Model):
     __table_name__ = "custom_field_instance"
     id = db.Column(db.Integer, primary_key=True)
     custom_field_id = db.Column(
-        db.Integer, db.ForeignKey("custom_field.id"), nullable=True)
+        db.Integer, db.ForeignKey("custom_field.id"))
     availability_id = db.Column(
-        db.Integer, db.ForeignKey("availability.id"), nullable=True)
+        db.Integer, db.ForeignKey("availability.id"))
 
 
 class CustomFieldValues(db.Model):
@@ -175,7 +176,7 @@ class CustomFieldValues(db.Model):
 
     # Foreign key fields
     custom_field_id = db.Column(
-        db.Integer, db.ForeignKey("custom_field.id"), nullable=True
+        db.Integer, db.ForeignKey("custom_field.id")
     )
     # M2M to booking and customer
     booking_id = db.Column(
