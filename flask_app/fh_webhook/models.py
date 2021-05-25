@@ -1,13 +1,17 @@
 """Define the models in the database."""
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 
-db = SQLAlchemy()
+metadata = MetaData()
+db = SQLAlchemy(metadata=metadata)
 
 
 class Booking(db.Model):
     """Store the information about the booking."""
 
     __table_name__ = "booking"
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     id = db.Column(db.Integer, primary_key=True)
     voucher_number = db.Column(db.String(64))
     display_id = db.Column(db.String(64), nullable=False)
@@ -56,6 +60,8 @@ class Availability(db.Model):
     """
     __table_name__ = "availability"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     capacity = db.Column(db.SmallInteger, nullable=False)
     minimum_party_size = db.Column(db.SmallInteger, nullable=False)
     maximum_party_size = db.Column(db.SmallInteger, nullable=False)
@@ -71,8 +77,9 @@ class Item(db.Model):
     """Items are the products we sell in the business."""
     __table_name__ = "item"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), unique=False, nullable=True)
-    name = db.Column(db.String(200), unique=False)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
+    name = db.Column(db.String(200))
 
 
 class Customer(db.Model):
@@ -85,6 +92,8 @@ class Customer(db.Model):
     """
     __table_name__ = "customer"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     checkin_url = db.Column(db.String(264))
     checking_status = db.Column(db.String(64))
 
@@ -107,6 +116,8 @@ class CustomerTypeRate(db.Model):
     """
     __table_name__ = "customer_type_rate"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     capacity = db.Column(db.SmallInteger, nullable=False)
     minimum_party_size = db.Column(db.SmallInteger, nullable=False)
     maximum_party_size = db.Column(db.SmallInteger, nullable=False)
@@ -130,6 +141,8 @@ class CustomerPrototype(db.Model):
     """
     __table_name__ = "customer_prototype"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     total = db.Column(db.Integer)
     total_including_tax = db.Column(db.Integer)
     display_name = db.Column(db.String(64), nullable=False)
@@ -144,6 +157,8 @@ class CustomerType(db.Model):
     """
     __table_name__ = "customer_type"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     note = db.Column(db.Text)
     singular = db.Column(db.String(64), nullable=False)
     plural = db.Column(db.String(64), nullable=False)
@@ -157,6 +172,8 @@ class CustomFieldInstances(db.Model):
     """
     __table_name__ = "custom_field_instance"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     custom_field_id = db.Column(
         db.Integer, db.ForeignKey("custom_field.id"))
     availability_id = db.Column(
@@ -170,6 +187,8 @@ class CustomFieldValues(db.Model):
     """
     __table_name__ = "custom_field_values"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(64), nullable=False)
     value = db.Column(db.String(2048))
     display_value = db.Column(db.String(2048))
@@ -191,6 +210,8 @@ class CustomField(db.Model):
     """Store the types of custom fields available."""
     __table_name__ = "custom_field"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     title = db.Column(db.String(64), nullable=False)
     name = db.Column(db.String(64), nullable=False)
     modifier_kind = db.Column(db.String(64), nullable=False)
@@ -221,6 +242,8 @@ class Contact(db.Model):
     """
     __table_name__ = "contact"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
     email = db.Column(db.String(256))
     phone_country = db.Column(db.String(10))
@@ -237,6 +260,8 @@ class Company(db.Model):
     """
     __table_name__ = "company"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
     short_name = db.Column(db.String(30), nullable=False)
     currency = db.Column(db.String(10), nullable=False)
@@ -250,6 +275,8 @@ class EffectiveCancellationPolicy(db.Model):
     """
     __table_name__ = "effective_cancellation_policy"
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
     cutoff = db.Column(db.DateTime(timezone=True), nullable=False)
     cancellation_type = db.Column(db.String(64), nullable=False)
     booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
