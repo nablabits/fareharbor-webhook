@@ -28,3 +28,5 @@ class TestingConfig(Config):
     """Override base class for testing."""
     TESTING = True
     TEST_PASSWORD = "test"
+    SQLALCHEMY_DATABASE_URI = "postgresql:///webhook-test"
+
