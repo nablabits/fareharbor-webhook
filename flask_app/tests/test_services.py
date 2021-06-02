@@ -22,6 +22,96 @@ def test_delete_item(database):
     assert item is None
 
 
+def test_create_custom_field(database):
+    service = model_services.CreateCustomField(
+        title="foo",
+        name="bar",
+        modifier_kind="baz",
+        modifier_type="kar",
+        field_type="kaz",
+        offset=1,
+        percentage=2,
+        description="lorem ipsum",
+        booking_notes="doloret sit amesquet",
+        description_safe_html="totus oprobium",
+        booking_notes_safe_html="parabellum qui est",
+        is_required=True,
+        is_taxable=False,
+        is_always_per_customer=False,
+    )
+    cf = service.run()
+
+    cf = models.CustomField.query.get(cf.id)
+    assert cf.title == "foo"
+    assert cf.extended_options is None
+
+
+def test_update_custom_field(database):
+    old_cf = model_services.CreateCustomField(
+        title="foo",
+        name="bar",
+        modifier_kind="baz",
+        modifier_type="kar",
+        field_type="kaz",
+        offset=1,
+        percentage=2,
+        description="lorem ipsum",
+        booking_notes="doloret sit amesquet",
+        description_safe_html="totus oprobium",
+        booking_notes_safe_html="parabellum qui est",
+        is_required=True,
+        is_taxable=False,
+        is_always_per_customer=False,
+    ).run()
+
+    model_services.UpdateCustomField(
+        custom_field_id=old_cf.id,
+        title="goo",
+        name="kar",
+        modifier_kind="kaz",
+        modifier_type="kar",
+        field_type="kaz",
+        offset=1,
+        percentage=2,
+        description="lorem ipsum",
+        booking_notes="doloret sit amesquet",
+        description_safe_html="totus oprobium",
+        booking_notes_safe_html="parabellum qui est",
+        is_required=True,
+        is_taxable=False,
+        is_always_per_customer=False,
+    ).run()
+
+    cf = models.CustomField.query.get(old_cf.id)
+    assert cf.title == "goo"
+    assert cf.name == "kar"
+    assert cf.modifier_kind == "kaz"
+
+
+def test_delete_custom_field(database):
+    cf = model_services.CreateCustomField(
+        title="foo",
+        name="bar",
+        modifier_kind="baz",
+        modifier_type="kar",
+        field_type="kaz",
+        offset=1,
+        percentage=2,
+        description="lorem ipsum",
+        booking_notes="doloret sit amesquet",
+        description_safe_html="totus oprobium",
+        booking_notes_safe_html="parabellum qui est",
+        is_required=True,
+        is_taxable=False,
+        is_always_per_customer=False,
+    ).run()
+
+    model_services.DeleteCustomField(cf.id).run()
+
+    cf = models.CustomField.query.get(cf.id)
+    assert cf is None
+
+
 def test_create_customer_prototype(database):
     service = model_services.CreateCustomerPrototype(
         total=10,

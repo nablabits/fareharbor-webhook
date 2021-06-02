@@ -232,7 +232,7 @@ class CustomField(db.Model):
     is_always_per_customer = db.Column(db.Boolean, nullable=False)
 
     extended_options = db.Column(
-        db.Integer, db.ForeignKey("custom_field.id"), nullable=False)
+        db.Integer, db.ForeignKey("custom_field.id"), nullable=True)
 
 
 class Contact(db.Model):
