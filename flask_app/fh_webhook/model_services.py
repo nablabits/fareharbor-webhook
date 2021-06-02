@@ -99,3 +99,50 @@ class DeleteCustomerPrototype:
         db.session.delete(customer_prototype)
         db.session.commit()
 
+
+@attr.s
+class CreateCustomerType:
+    note = attr.ib(type=str)
+    singular = attr.ib(type=str)
+    plural = attr.ib(type=str)
+
+    def run(self):
+        new_customer_type = models.CustomerType(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            note=self.note,
+            singular=self.singular,
+            plural=self.plural
+        )
+        db.session.add(new_customer_type)
+        db.session.commit()
+        return new_customer_type
+
+
+@attr.s
+class UpdateCustomerType:
+    customer_type_id = attr.ib(type=int)
+    note = attr.ib(type=str)
+    singular = attr.ib(type=str)
+    plural = attr.ib(type=str)
+
+    def run(self):
+        customer_type = models.CustomerType.query.get(self.customer_type_id)
+        customer_type.updated_at = datetime.utcnow()
+        customer_type.note = self.note
+        customer_type.singular = self.singular
+        customer_type.plural = self.plural
+
+        db.session.commit()
+        return customer_type
+
+
+@attr.s
+class DeleteCustomerType:
+    customer_type_id = attr.ib(type=int)
+
+    def run(self):
+        customer_type = models.CustomerType.query.get(self.customer_type_id)
+        db.session.delete(customer_type)
+        db.session.commit()
+

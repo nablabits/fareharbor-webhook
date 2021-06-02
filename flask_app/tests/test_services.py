@@ -67,3 +67,39 @@ def test_delete_customer_prototype(database):
     cp = models.CustomerPrototype.query.get(cp.id)
     assert cp is None
 
+
+def test_create_customer_type(database):
+    ct = model_services.CreateCustomerType(
+        note="foo",
+        singular="bar",
+        plural="baz",
+    ).run()
+    assert models.CustomerType.query.get(ct.id)
+
+
+def test_update_customer_type(database):
+    ct = model_services.CreateCustomerType(
+        note="foo",
+        singular="bar",
+        plural="baz",
+    ).run()
+    model_services.UpdateCustomerType(
+        customer_type_id=ct.id,
+        note="goo",
+        singular="kar",
+        plural="kaz"
+    ).run()
+
+    updated_ct = models.CustomerType.query.get(ct.id)
+    assert updated_ct.note == "goo"
+
+
+def test_delete_customer_type(database):
+    ct = model_services.CreateCustomerType(
+        note="foo",
+        singular="bar",
+        plural="baz",
+    ).run()
+    assert models.CustomerType.query.get(ct.id)
+    model_services.DeleteCustomerType(ct.id).run()
+    assert models.CustomerType.query.get(ct.id) is None
