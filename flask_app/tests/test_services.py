@@ -22,4 +22,48 @@ def test_delete_item(database):
     assert item is None
 
 
+def test_create_customer_prototype(database):
+    service = model_services.CreateCustomerPrototype(
+        total=10,
+        total_including_tax=10,
+        display_name="foo",
+        note="bar"
+    )
+    new_customer_prototype = service.run()
+    assert models.CustomerPrototype.query.get(new_customer_prototype.id)
+
+
+def test_update_customer_prototype(database):
+    old_cp = model_services.CreateCustomerPrototype(
+        total=10,
+        total_including_tax=10,
+        display_name="foo",
+        note="bar"
+    ).run()
+
+    model_services.UpdateCustomerPrototype(
+        customer_prototype_id=old_cp.id,
+        total=20,
+        total_including_tax=20,
+        display_name="bar",
+        note="baz"
+    ).run()
+
+    cp = models.CustomerPrototype.query.get(old_cp.id)
+    assert cp.total == 20
+    assert cp.total_including_tax == 20
+    assert cp.display_name == "bar"
+    assert cp.note == "baz"
+
+
+def test_delete_customer_prototype(database):
+    cp = model_services.CreateCustomerPrototype(
+        total=10,
+        total_including_tax=10,
+        display_name="foo",
+        note="bar"
+    ).run()
+    model_services.DeleteCustomerPrototype(cp.id).run()
+    cp = models.CustomerPrototype.query.get(cp.id)
+    assert cp is None
 
