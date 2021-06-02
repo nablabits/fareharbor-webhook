@@ -6,8 +6,7 @@ from flask import Flask, request, Response
 from flask_migrate import Migrate
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
-from config import TestingConfig
-from fh_webhook.models import db
+from .models import db
 
 from decouple import config
 
@@ -16,7 +15,7 @@ def create_app(test_config=False):
     """Serve the entry points for the webhook."""
     app = Flask(__name__, instance_relative_config=True)
     if test_config:
-        app.config.from_object(TestingConfig)
+        app.config.from_object("config.TestingConfig")
     else:
         app.config.from_object(config("APP_SETTINGS"))
     db.init_app(app)
@@ -39,7 +38,6 @@ def create_app(test_config=False):
     @auth.verify_password
     def verify_password(username, password):
         user_exists = username in users
-        # has_valid_pass = check_password_hash(users.get(username), password)
         if user_exists and check_password_hash(users.get(username), password):
             return username
 

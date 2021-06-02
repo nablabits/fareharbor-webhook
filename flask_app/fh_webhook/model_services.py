@@ -1,0 +1,258 @@
+from datetime import datetime
+
+import attr
+
+from . import models
+from .models import db
+
+
+@attr.s
+class CreateItem:
+    name = attr.ib()
+
+    def run(self):
+        new_item = models.Item(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            name=self.name
+        )
+        db.session.add(new_item)
+        db.session.commit()
+        return new_item
+
+
+@attr.s
+class UpdateItem:
+    item_id = attr.ib(type=int)
+    name = attr.ib()
+
+    def run(self):
+        item = models.Item.query.get(self.item_id)
+        item.name = self.name
+        item.updated_at = datetime.utcnow()
+        db.session.commit()
+        return item
+
+
+@attr.s
+class DeleteItem:
+    item_id = attr.ib(type=int)
+
+    def run(self):
+        item = models.Item.query.get(self.item_id)
+        db.session.delete(item)
+        db.session.commit()
+
+
+# Custom Field services
+
+@attr.s
+class CreateCustomField:
+    title = attr.ib(type=str)
+    name = attr.ib(type=str)
+    modifier_kind = attr.ib(type=str)
+    modifier_type = attr.ib(type=str)
+    field_type = attr.ib(type=str)
+    offset = attr.ib(type=int)
+    percentage = attr.ib(type=int)
+
+    # text fields
+    description = attr.ib(type=str)
+    booking_notes = attr.ib(type=str)
+    description_safe_html = attr.ib(type=str)
+    booking_notes_safe_html = attr.ib(type=str)
+
+    # bool fields
+    is_required = attr.ib(type=bool)
+    is_taxable = attr.ib(type=bool)
+    is_always_per_customer = attr.ib(type=bool)
+
+    extended_options = attr.ib(type=int, default=None)
+
+    def run(self):
+        new_custom_field = models.CustomField(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            title=self.title,
+            name=self.name,
+            modifier_kind=self.modifier_kind,
+            modifier_type=self.modifier_type,
+            field_type=self.field_type,
+            offset=self.offset,
+            percentage=self.percentage,
+            description=self.description,
+            booking_notes=self.booking_notes,
+            description_safe_html=self.description_safe_html,
+            booking_notes_safe_html=self.booking_notes_safe_html,
+            is_required=self.is_required,
+            is_taxable=self.is_taxable,
+            is_always_per_customer=self.is_always_per_customer,
+            extended_options=self.extended_options
+        )
+        db.session.add(new_custom_field)
+        db.session.commit()
+        return new_custom_field
+
+
+@attr.s
+class UpdateCustomField:
+    custom_field_id = attr.ib(type=int)
+    title = attr.ib(type=str)
+    name = attr.ib(type=str)
+    modifier_kind = attr.ib(type=str)
+    modifier_type = attr.ib(type=str)
+    field_type = attr.ib(type=str)
+    offset = attr.ib(type=int)
+    percentage = attr.ib(type=int)
+
+    # text fields
+    description = attr.ib(type=str)
+    booking_notes = attr.ib(type=str)
+    description_safe_html = attr.ib(type=str)
+    booking_notes_safe_html = attr.ib(type=str)
+
+    # bool fields
+    is_required = attr.ib(type=bool)
+    is_taxable = attr.ib(type=bool)
+    is_always_per_customer = attr.ib(type=bool)
+
+    extended_options = attr.ib(type=int, default=None)
+
+    def run(self):
+        cf = models.CustomField.query.get(self.custom_field_id)
+        cf.created_at = datetime.utcnow()
+        cf.updated_at = datetime.utcnow()
+        cf.title = self.title
+        cf.name = self.name
+        cf.modifier_kind = self.modifier_kind
+        cf.modifier_type = self.modifier_type
+        cf.field_type = self.field_type
+        cf.offset = self.offset
+        cf.percentage = self.percentage
+        cf.description = self.description
+        cf.booking_notes = self.booking_notes
+        cf.description_safe_html = self.description_safe_html
+        cf.booking_notes_safe_html = self.booking_notes_safe_html
+        cf.is_required = self.is_required
+        cf.is_taxable = self.is_taxable
+        cf.is_always_per_customer = self.is_always_per_customer
+        cf.extended_options = self.extended_options
+
+        db.session.add(cf)
+        db.session.commit()
+        return cf
+
+
+@attr.s
+class DeleteCustomField:
+    custom_field_id = attr.ib(type=int)
+
+    def run(self):
+        cf = models.CustomField.query.get(self.custom_field_id)
+        db.session.delete(cf)
+        db.session.commit()
+
+
+# Customers' services
+
+
+@attr.s
+class CreateCustomerPrototype:
+    total = attr.ib(type=int)
+    total_including_tax = attr.ib(type=int)
+    display_name = attr.ib(type=str)
+    note = attr.ib(type=str)
+
+    def run(self):
+        new_customer_prototype = models.CustomerPrototype(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            total=self.total,
+            total_including_tax=self.total_including_tax,
+            display_name=self.display_name,
+            note=self.note
+        )
+        db.session.add(new_customer_prototype)
+        db.session.commit()
+        return new_customer_prototype
+
+
+@attr.s
+class UpdateCustomerPrototype:
+    customer_prototype_id = attr.ib(type=int)
+    total = attr.ib(type=int)
+    total_including_tax = attr.ib(type=int)
+    display_name = attr.ib(type=str)
+    note = attr.ib(type=str)
+
+    def run(self):
+        customer_prototype = models.CustomerPrototype.query.get(
+            self.customer_prototype_id)
+        customer_prototype.updated_at = datetime.utcnow()
+        customer_prototype.total = self.total
+        customer_prototype.total_including_tax = self.total_including_tax
+        customer_prototype.display_name = self.display_name
+        customer_prototype.note = self.note
+
+        db.session.commit()
+        return customer_prototype
+
+
+@attr.s
+class DeleteCustomerPrototype:
+    customer_prototype_id = attr.ib(type=int)
+
+    def run(self):
+        customer_prototype = models.CustomerPrototype.query.get(
+            self.customer_prototype_id
+        )
+        db.session.delete(customer_prototype)
+        db.session.commit()
+
+
+@attr.s
+class CreateCustomerType:
+    note = attr.ib(type=str)
+    singular = attr.ib(type=str)
+    plural = attr.ib(type=str)
+
+    def run(self):
+        new_customer_type = models.CustomerType(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            note=self.note,
+            singular=self.singular,
+            plural=self.plural
+        )
+        db.session.add(new_customer_type)
+        db.session.commit()
+        return new_customer_type
+
+
+@attr.s
+class UpdateCustomerType:
+    customer_type_id = attr.ib(type=int)
+    note = attr.ib(type=str)
+    singular = attr.ib(type=str)
+    plural = attr.ib(type=str)
+
+    def run(self):
+        customer_type = models.CustomerType.query.get(self.customer_type_id)
+        customer_type.updated_at = datetime.utcnow()
+        customer_type.note = self.note
+        customer_type.singular = self.singular
+        customer_type.plural = self.plural
+
+        db.session.commit()
+        return customer_type
+
+
+@attr.s
+class DeleteCustomerType:
+    customer_type_id = attr.ib(type=int)
+
+    def run(self):
+        customer_type = models.CustomerType.query.get(self.customer_type_id)
+        db.session.delete(customer_type)
+        db.session.commit()
+
