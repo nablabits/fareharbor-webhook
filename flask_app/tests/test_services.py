@@ -10,7 +10,7 @@ def test_create_item(database):
 def test_update_item(database):
     old_item = model_services.CreateItem(name="foo").run()
     s = model_services.UpdateItem(item_id=old_item.id, name="bar")
-    new_item = s.run()
+    s.run()
     item = models.Item.query.get(old_item.id)
     assert item.name == "bar"
 

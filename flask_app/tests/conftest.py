@@ -30,9 +30,13 @@ def database(request):
     """
     Create a Postgres database for the tests, and drop it when the tests are done.
     """
+    app = create_app(test_config=True)
+    ctx = app.app_context()
+    ctx.push()
     db.create_all()
 
     yield db
 
     db.session.connection().close()
     db.drop_all()
+    ctx.pop()
