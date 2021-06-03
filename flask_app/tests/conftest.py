@@ -63,3 +63,43 @@ def availability_factory(item_factory):
         end_at=datetime.now(),
         item_id=item.id
     ).run()
+
+
+@pytest.fixture
+def custom_field_factory():
+
+    return model_services.CreateCustomField(
+        title="foo",
+        name="bar",
+        modifier_kind="baz",
+        modifier_type="kar",
+        field_type="kaz",
+        offset=1,
+        percentage=2,
+        description="lorem ipsum",
+        booking_notes="doloret sit amesquet",
+        description_safe_html="totus oprobium",
+        booking_notes_safe_html="parabellum qui est",
+        is_required=True,
+        is_taxable=False,
+        is_always_per_customer=False,
+    ).run()
+
+
+@pytest.fixture
+def customer_prototype_factory():
+    return model_services.CreateCustomerPrototype(
+        total=10,
+        total_including_tax=10,
+        display_name="foo",
+        note="bar"
+    ).run()
+
+
+@pytest.fixture
+def customer_type_factory():
+    return model_services.CreateCustomerType(
+        note="foo",
+        singular="bar",
+        plural="baz",
+    ).run()

@@ -86,23 +86,8 @@ def test_create_custom_field(database):
     assert cf.extended_options is None
 
 
-def test_update_custom_field(database):
-    old_cf = model_services.CreateCustomField(
-        title="foo",
-        name="bar",
-        modifier_kind="baz",
-        modifier_type="kar",
-        field_type="kaz",
-        offset=1,
-        percentage=2,
-        description="lorem ipsum",
-        booking_notes="doloret sit amesquet",
-        description_safe_html="totus oprobium",
-        booking_notes_safe_html="parabellum qui est",
-        is_required=True,
-        is_taxable=False,
-        is_always_per_customer=False,
-    ).run()
+def test_update_custom_field(database, custom_field_factory):
+    old_cf = custom_field_factory
 
     model_services.UpdateCustomField(
         custom_field_id=old_cf.id,
@@ -128,23 +113,8 @@ def test_update_custom_field(database):
     assert cf.modifier_kind == "kaz"
 
 
-def test_delete_custom_field(database):
-    cf = model_services.CreateCustomField(
-        title="foo",
-        name="bar",
-        modifier_kind="baz",
-        modifier_type="kar",
-        field_type="kaz",
-        offset=1,
-        percentage=2,
-        description="lorem ipsum",
-        booking_notes="doloret sit amesquet",
-        description_safe_html="totus oprobium",
-        booking_notes_safe_html="parabellum qui est",
-        is_required=True,
-        is_taxable=False,
-        is_always_per_customer=False,
-    ).run()
+def test_delete_custom_field(database, custom_field_factory):
+    cf = custom_field_factory
 
     model_services.DeleteCustomField(cf.id).run()
 
@@ -163,13 +133,8 @@ def test_create_customer_prototype(database):
     assert models.CustomerPrototype.query.get(new_customer_prototype.id)
 
 
-def test_update_customer_prototype(database):
-    old_cp = model_services.CreateCustomerPrototype(
-        total=10,
-        total_including_tax=10,
-        display_name="foo",
-        note="bar"
-    ).run()
+def test_update_customer_prototype(database, customer_prototype_factory):
+    old_cp = customer_prototype_factory
 
     model_services.UpdateCustomerPrototype(
         customer_prototype_id=old_cp.id,
@@ -186,13 +151,8 @@ def test_update_customer_prototype(database):
     assert cp.note == "baz"
 
 
-def test_delete_customer_prototype(database):
-    cp = model_services.CreateCustomerPrototype(
-        total=10,
-        total_including_tax=10,
-        display_name="foo",
-        note="bar"
-    ).run()
+def test_delete_customer_prototype(database, customer_prototype_factory):
+    cp = customer_prototype_factory
     model_services.DeleteCustomerPrototype(cp.id).run()
     cp = models.CustomerPrototype.query.get(cp.id)
     assert cp is None
@@ -207,12 +167,8 @@ def test_create_customer_type(database):
     assert models.CustomerType.query.get(ct.id)
 
 
-def test_update_customer_type(database):
-    ct = model_services.CreateCustomerType(
-        note="foo",
-        singular="bar",
-        plural="baz",
-    ).run()
+def test_update_customer_type(database, customer_type_factory):
+    ct = customer_type_factory
     model_services.UpdateCustomerType(
         customer_type_id=ct.id,
         note="goo",
@@ -224,12 +180,9 @@ def test_update_customer_type(database):
     assert updated_ct.note == "goo"
 
 
-def test_delete_customer_type(database):
-    ct = model_services.CreateCustomerType(
-        note="foo",
-        singular="bar",
-        plural="baz",
-    ).run()
+def test_delete_customer_type(database, customer_type_factory):
+    ct = customer_type_factory
+
     assert models.CustomerType.query.get(ct.id)
     model_services.DeleteCustomerType(ct.id).run()
     assert models.CustomerType.query.get(ct.id) is None

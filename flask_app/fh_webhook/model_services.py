@@ -109,6 +109,7 @@ class DeleteAvailability:
 
 # Custom Field services
 
+
 @attr.s
 class CreateCustomField:
     title = attr.ib(type=str)
@@ -183,7 +184,6 @@ class UpdateCustomField:
 
     def run(self):
         cf = models.CustomField.query.get(self.custom_field_id)
-        cf.created_at = datetime.utcnow()
         cf.updated_at = datetime.utcnow()
         cf.title = self.title
         cf.name = self.name
