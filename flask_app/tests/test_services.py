@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from fh_webhook import models, model_services
+
 
 def test_create_item(database):
     service = model_services.CreateItem(name="foo")
@@ -7,16 +9,16 @@ def test_create_item(database):
     assert models.Item.query.get(new_item.id)
 
 
-def test_update_item(database):
-    old_item = model_services.CreateItem(name="foo").run()
+def test_update_item(database, item_factory):
+    old_item = item_factory
     s = model_services.UpdateItem(item_id=old_item.id, name="bar")
     s.run()
     item = models.Item.query.get(old_item.id)
     assert item.name == "bar"
 
 
-def test_delete_item(database):
-    item = model_services.CreateItem(name="foo").run()
+def test_delete_item(database, item_factory):
+    item = item_factory
     model_services.DeleteItem(item.id).run()
     item = models.Item.query.get(item.id)
     assert item is None
