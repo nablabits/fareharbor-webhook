@@ -1,5 +1,6 @@
+from datetime import datetime
 import pytest
-from fh_webhook import create_app
+from fh_webhook import models, model_services, create_app
 from fh_webhook.models import db
 
 
@@ -40,3 +41,25 @@ def database(request):
     db.session.connection().close()
     db.drop_all()
     ctx.pop()
+
+
+# Model Factories
+
+
+@pytest.fixture
+def item_factory():
+    return model_services.CreateItem(name="foo").run()
+
+
+@pytest.fixture
+def availability_factory(item_factory):
+    item = item_factory
+
+    return model_services.CreateAvailability(
+        capacity=10,
+        minimum_party_size=11,
+        maximum_party_size=12,
+        start_at=datetime.now(),
+        end_at=datetime.now(),
+        item_id=item.id
+    ).run()

@@ -44,6 +44,69 @@ class DeleteItem:
         db.session.commit()
 
 
+# Availability services
+
+
+@attr.s
+class CreateAvailability:
+    capacity = attr.ib(type=int)
+    minimum_party_size = attr.ib(type=int)
+    maximum_party_size = attr.ib(type=int)
+    start_at = attr.ib(type=datetime)
+    end_at = attr.ib(type=datetime)
+    item_id = attr.ib(type=int)
+
+    def run(self):
+        new_availability = models.Availability(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            capacity=self.capacity,
+            minimum_party_size=self.minimum_party_size,
+            maximum_party_size=self.maximum_party_size,
+            start_at=self.start_at,
+            end_at=self.end_at,
+            item_id=self.item_id
+        )
+        db.session.add(new_availability)
+        db.session.commit()
+        return new_availability
+
+
+@attr.s
+class UpdateAvailability:
+    availability_id = attr.ib(type=int)
+    capacity = attr.ib(type=int)
+    minimum_party_size = attr.ib(type=int)
+    maximum_party_size = attr.ib(type=int)
+    start_at = attr.ib(type=datetime)
+    end_at = attr.ib(type=datetime)
+    item_id = attr.ib(type=int)
+
+    def run(self):
+        availability = models.Availability.query.get(self.availability_id)
+        availability.updated_at = datetime.utcnow()
+        availability.capacity = self.capacity
+        availability.minimum_party_size = self.minimum_party_size
+        availability.maximum_party_size = self.maximum_party_size
+        availability.start_at = self.start_at
+        availability.end_at = self.end_at
+        availability.item_id = self.item_id
+
+        db.session.add(availability)
+        db.session.commit()
+        return availability
+
+
+@attr.s
+class DeleteAvailability:
+    availability_id = attr.ib(type=int)
+
+    def run(self):
+        availability = models.Availability.query.get(self.availability_id)
+        db.session.delete(availability)
+        db.session.commit()
+
+
 # Custom Field services
 
 @attr.s

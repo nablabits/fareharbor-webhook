@@ -1,4 +1,4 @@
-from fh_webhook import models, model_services, create_app
+from datetime import datetime
 
 
 def test_create_item(database):
@@ -20,6 +20,44 @@ def test_delete_item(database):
     model_services.DeleteItem(item.id).run()
     item = models.Item.query.get(item.id)
     assert item is None
+
+
+def test_create_availabilty(database, item_factory):
+    item = item_factory
+    availability = model_services.CreateAvailability(
+        capacity=10,
+        minimum_party_size=11,
+        maximum_party_size=12,
+        start_at=datetime.now(),
+        end_at=datetime.now(),
+        item_id=item.id
+    ).run()
+    assert models.Availability.query.get(availability.id)
+
+
+def test_update_availability(database, item_factory, availability_factory):
+    item = item_factory
+    av = availability_factory
+    model_services.UpdateAvailability(
+        availability_id=av.id,
+        capacity=20,
+        minimum_party_size=21,
+        maximum_party_size=22,
+        start_at=datetime.now(),
+        end_at=datetime.now(),
+        item_id=item.id
+    ).run()
+    av = models.Availability.query.get(av.id)
+    assert av.capacity == 20
+    assert av.minimum_party_size == 21
+    assert av.maximum_party_size == 22
+
+
+def test_delete_availabilty(database, availability_factory):
+    av = availability_factory
+    model_services.DeleteAvailability(av.id).run()
+    av = models.Availability.query.get(av.id)
+    assert av is None
 
 
 def test_create_custom_field(database):
