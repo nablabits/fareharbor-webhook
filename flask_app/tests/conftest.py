@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 import pytest
 from fh_webhook import models, model_services, create_app
 from fh_webhook.models import db
@@ -62,6 +63,43 @@ def availability_factory(item_factory):
         start_at=datetime.now(),
         end_at=datetime.now(),
         item_id=item.id
+    ).run()
+
+
+@pytest.fixture
+def booking_factory(availability_factory):
+    av = availability_factory
+    return model_services.CreateBooking(
+        voucher_number="foo",
+        display_id="bar",
+        note_safe_html="baz",
+        agent="goo",
+        confirmation_url="kar",
+        customer_count=5,
+        affiliate_company="roo",
+        uuid=uuid4().hex,
+        dashboard_url="taz",
+        note="moo",
+        pickup="mar",
+        status="maz",
+        availability_id=av.id,
+        receipt_subtotals=10,
+        receipt_taxes=11,
+        receipt_total=12,
+        amount_paid=13,
+        invoice_price=14,
+        receipt_subtotal_display="10",
+        receipt_taxes_display="11",
+        receipt_total_display="12",
+        amount_paid_display="13",
+        invoice_price_display="14",
+        desk="soo",
+        is_eligible_for_cancellation=True,
+        arrival="sar",
+        rebooked_to="saz",
+        rebooked_from="woo",
+        external_id="war",
+        order="waz"
     ).run()
 
 

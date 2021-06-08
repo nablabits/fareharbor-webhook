@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 
 from fh_webhook import models, model_services
 
@@ -61,6 +62,91 @@ def test_delete_availabilty(database, availability_factory):
     av = models.Availability.query.get(av.id)
     assert av is None
 
+
+def test_create_booking(database, availability_factory):
+    av = availability_factory
+    b = model_services.CreateBooking(
+        voucher_number="foo",
+        display_id="bar",
+        note_safe_html="baz",
+        agent="goo",
+        confirmation_url="kar",
+        customer_count=5,
+        affiliate_company="roo",
+        uuid=uuid4().hex,
+        dashboard_url="taz",
+        note="moo",
+        pickup="mar",
+        status="maz",
+        availability_id=av.id,
+        receipt_subtotals=10,
+        receipt_taxes=11,
+        receipt_total=12,
+        amount_paid=13,
+        invoice_price=14,
+        receipt_subtotal_display="10",
+        receipt_taxes_display="11",
+        receipt_total_display="12",
+        amount_paid_display="13",
+        invoice_price_display="14",
+        desk="soo",
+        is_eligible_for_cancellation=True,
+        arrival="sar",
+        rebooked_to="saz",
+        rebooked_from="woo",
+        external_id="war",
+        order="waz",
+    ).run()
+    b = models.Booking.query.get(b.id)
+    assert b.voucher_number == "foo"
+    assert b.availability_id == av.id
+
+
+def test_update_booking(database, booking_factory, availability_factory):
+    old_booking = booking_factory
+    av = availability_factory
+    b = model_services.UpdateBooking(
+        booking_id=old_booking.id,
+        voucher_number="roo",
+        display_id="bar",
+        note_safe_html="baz",
+        agent="goo",
+        confirmation_url="kar",
+        customer_count=5,
+        affiliate_company="roo",
+        uuid=uuid4().hex,
+        dashboard_url="taz",
+        note="moo",
+        pickup="mar",
+        status="maz",
+        availability_id=av.id,
+        receipt_subtotals=10,
+        receipt_taxes=11,
+        receipt_total=12,
+        amount_paid=13,
+        invoice_price=14,
+        receipt_subtotal_display="10",
+        receipt_taxes_display="11",
+        receipt_total_display="12",
+        amount_paid_display="13",
+        invoice_price_display="14",
+        desk="soo",
+        is_eligible_for_cancellation=True,
+        arrival="sar",
+        rebooked_to="saz",
+        rebooked_from="woo",
+        external_id="war",
+        order="waz",
+    ).run()
+    b = models.Booking.query.get(old_booking.id)
+    assert b.voucher_number == "roo"
+    assert b.availability_id == av.id
+
+
+def test_delete_booking(database, booking_factory):
+    booking = booking_factory
+    model_services.DeleteBooking(booking.id).run()
+    assert models.Booking.query.get(booking.id) is None
 
 def test_create_custom_field(database):
     service = model_services.CreateCustomField(

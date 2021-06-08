@@ -107,6 +107,175 @@ class DeleteAvailability:
         db.session.commit()
 
 
+# Booking services
+
+
+@attr.s
+class CreateBooking:
+    voucher_number = attr.ib(type=str)
+    display_id = attr.ib(type=str)
+    note_safe_html = attr.ib(type=str)
+    agent = attr.ib(type=str)
+    confirmation_url = attr.ib(type=str)
+    customer_count = attr.ib(type=int)
+    affiliate_company = attr.ib(type=str)
+    uuid = attr.ib(type=str)
+    dashboard_url = attr.ib(type=str)
+    note = attr.ib(type=str)
+    pickup = attr.ib(type=str)
+    status = attr.ib(type=str)
+
+    # Foreign key fields
+    availability_id = attr.ib(type=int)
+
+    # price fields
+    receipt_subtotals = attr.ib(type=int)
+    receipt_taxes = attr.ib(type=int)
+    receipt_total = attr.ib(type=int)
+    amount_paid = attr.ib(type=int)
+    invoice_price = attr.ib(type=int)
+
+    # Price displays
+    receipt_subtotal_display = attr.ib(type=str)
+    receipt_taxes_display = attr.ib(type=str)
+    receipt_total_display = attr.ib(type=str)
+    amount_paid_display = attr.ib(type=str)
+    invoice_price_display = attr.ib(type=str)
+
+    desk = attr.ib(type=str)
+    is_eligible_for_cancellation = attr.ib(type=bool)
+    arrival = attr.ib(type=str)
+    rebooked_to = attr.ib(type=str)
+    rebooked_from = attr.ib(type=str)
+    external_id = attr.ib(type=str)
+    order = attr.ib(type=str)
+
+    def run(self):
+        new_booking = models.Booking(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            voucher_number=self.voucher_number,
+            display_id=self.display_id,
+            note_safe_html=self.note_safe_html,
+            agent=self.agent,
+            confirmation_url=self.confirmation_url,
+            customer_count=self.customer_count,
+            affiliate_company=self.affiliate_company,
+            uuid=self.uuid,
+            dashboard_url=self.dashboard_url,
+            note=self.note,
+            pickup=self.pickup,
+            status=self.status,
+            availability_id=self.availability_id,
+            receipt_subtotals=self.receipt_subtotals,
+            receipt_taxes=self.receipt_taxes,
+            receipt_total=self.receipt_total,
+            amount_paid=self.amount_paid,
+            invoice_price=self.invoice_price,
+            receipt_subtotal_display=self.receipt_subtotal_display,
+            receipt_taxes_display=self.receipt_taxes_display,
+            receipt_total_display=self.receipt_total_display,
+            amount_paid_display=self.amount_paid_display,
+            invoice_price_display=self.invoice_price_display,
+            desk=self.desk,
+            is_eligible_for_cancellation=self.is_eligible_for_cancellation,
+            arrival=self.arrival,
+            rebooked_to=self.rebooked_to,
+            rebooked_from=self.rebooked_from,
+            external_id=self.external_id,
+            order=self.order
+        )
+        db.session.add(new_booking)
+        db.session.commit()
+        return new_booking
+
+
+@attr.s
+class UpdateBooking:
+    booking_id = attr.ib(type=int)
+    voucher_number = attr.ib(type=str)
+    display_id = attr.ib(type=str)
+    note_safe_html = attr.ib(type=str)
+    agent = attr.ib(type=str)
+    confirmation_url = attr.ib(type=str)
+    customer_count = attr.ib(type=int)
+    affiliate_company = attr.ib(type=str)
+    uuid = attr.ib(type=str)
+    dashboard_url = attr.ib(type=str)
+    note = attr.ib(type=str)
+    pickup = attr.ib(type=str)
+    status = attr.ib(type=str)
+    availability_id = attr.ib(type=int)
+    receipt_subtotals = attr.ib(type=int)
+    receipt_taxes = attr.ib(type=int)
+    receipt_total = attr.ib(type=int)
+    amount_paid = attr.ib(type=int)
+    invoice_price = attr.ib(type=int)
+    receipt_subtotal_display = attr.ib(type=str)
+    receipt_taxes_display = attr.ib(type=str)
+    receipt_total_display = attr.ib(type=str)
+    amount_paid_display = attr.ib(type=str)
+    invoice_price_display = attr.ib(type=str)
+    desk = attr.ib(type=str)
+    is_eligible_for_cancellation = attr.ib(type=bool)
+    arrival = attr.ib(type=str)
+    rebooked_to = attr.ib(type=str)
+    rebooked_from = attr.ib(type=str)
+    external_id = attr.ib(type=str)
+    order = attr.ib(type=str)
+
+    def run(self):
+        booking = models.Booking.query.get(self.booking_id)
+        booking.updated_at = datetime.utcnow()
+        booking.voucher_number = self.voucher_number
+        booking.display_id = self.display_id
+        booking.note_safe_html = self.note_safe_html
+        booking.agent = self.agent
+        booking.confirmation_url = self.confirmation_url
+        booking.customer_count = self.customer_count
+        booking.affiliate_company = self.affiliate_company
+        booking.uuid = self.uuid
+        booking.dashboard_url = self.dashboard_url
+        booking.note = self.note
+        booking.pickup = self.pickup
+        booking.status = self.status
+        booking.availability_id = self.availability_id
+        booking.receipt_subtotals = self.receipt_subtotals
+        booking.receipt_taxes = self.receipt_taxes
+        booking.receipt_total = self.receipt_total
+        booking.amount_paid = self.amount_paid
+        booking.invoice_price = self.invoice_price
+        booking.receipt_subtotal_display = self.receipt_subtotal_display
+        booking.receipt_taxes_display = self.receipt_taxes_display
+        booking.receipt_total_display = self.receipt_total_display
+        booking.amount_paid_display = self.amount_paid_display
+        booking.invoice_price_display = self.invoice_price_display
+        booking.desk = self.desk
+        booking.is_eligible_for_cancellation = self.is_eligible_for_cancellation
+        booking.arrival = self.arrival
+        booking.rebooked_to = self.rebooked_to
+        booking.rebooked_from = self.rebooked_from
+        booking.external_id = self.external_id
+        booking.order = self.order
+        db.session.add(booking)
+        db.session.commit()
+        return booking
+
+
+@attr.s
+class DeleteBooking:
+    booking_id = attr.ib(type=int)
+
+    def run(self):
+        """
+        we need to implement a kind of get_object_or_none for the exceptions.
+        need something like:
+        if not some_model.query.get(id):
+            raise DoesNotExist
+        """
+        booking = models.Booking.query.get(self.booking_id)
+        db.session.delete(booking)
+        db.session.commit()
 # Custom Field services
 
 
