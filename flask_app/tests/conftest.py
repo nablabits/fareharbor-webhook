@@ -104,6 +104,19 @@ def booking_factory(availability_factory):
 
 
 @pytest.fixture
+def contact_factory(booking_factory):
+    return model_services.CreateContact(
+        name="foo",
+        email="foo@bar.baz",
+        phone_country="49",
+        phone="00000",
+        normalized_phone="00000",
+        is_subscribed_for_email_updates=True,
+        booking_id=booking_factory.id
+    ).run()
+
+
+@pytest.fixture
 def custom_field_factory():
 
     return model_services.CreateCustomField(

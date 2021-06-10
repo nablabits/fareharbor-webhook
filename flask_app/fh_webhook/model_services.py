@@ -269,14 +269,75 @@ class DeleteBooking:
 
     def run(self):
         booking = models.Booking.get(self.booking_id)
-        we need to implement a kind of get_object_or_none for the exceptions.
-        need something like:
-        if not some_model.query.get(id):
-            raise DoesNotExist
-        """
-        booking = models.Booking.query.get(self.booking_id)
         db.session.delete(booking)
         db.session.commit()
+
+# Contact services
+
+
+@attr.s
+class CreateContact:
+    name = attr.ib(type=str)
+    email = attr.ib(type=str)
+    phone_country = attr.ib(type=str)
+    phone = attr.ib(type=str)
+    normalized_phone = attr.ib(type=str)
+    is_subscribed_for_email_updates = attr.ib(type=bool)
+    booking_id = attr.ib(type=int)
+
+    def run(self):
+        opt_in = self.is_subscribed_for_email_updates
+        new_contact = models.Contact(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            name=self.name,
+            email=self.email,
+            phone_country=self.phone_country,
+            phone=self.phone,
+            normalized_phone=self.normalized_phone,
+            is_subscribed_for_email_updates=opt_in,
+            booking_id=self.booking_id
+        )
+        db.session.add(new_contact)
+        db.session.commit()
+        return new_contact
+
+
+@attr.s
+class UpdateContact:
+    contact_id = attr.ib(type=int)
+    name = attr.ib(type=str)
+    email = attr.ib(type=str)
+    phone_country = attr.ib(type=str)
+    phone = attr.ib(type=str)
+    normalized_phone = attr.ib(type=str)
+    is_subscribed_for_email_updates = attr.ib(type=bool)
+
+    def run(self):
+        opt_in = self.is_subscribed_for_email_updates
+        contact = models.Contact.get(self.contact_id)
+        contact.updated_at = datetime.utcnow(),
+        contact.name = self.name,
+        contact.email = self.email,
+        contact.phone_country = self.phone_country,
+        contact.phone = self.phone,
+        contact.normalized_phone = self.normalized_phone,
+        contact.is_subscribed_for_email_updates = opt_in
+        db.session.add(contact)
+        db.session.commit()
+        return contact
+
+
+@attr.s
+class DeleteContact:
+    contact_id = attr.ib(type=int)
+
+    def run(self):
+        contact = models.Contact.get(self.contact_id)
+        db.session.delete(contact)
+        db.session.commit()
+
+
 # Custom Field services
 
 

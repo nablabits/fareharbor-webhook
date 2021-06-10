@@ -249,7 +249,7 @@ class CustomField(db.Model):
         db.Integer, db.ForeignKey("custom_field.id"), nullable=True)
 
 
-class Contact(db.Model):
+class Contact(db.Model, BaseMixin):
     """Store the contact details for the booking.
 
     Is a 1:1 on bookings.

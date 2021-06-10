@@ -195,6 +195,44 @@ def test_delete_booking_raises_error(database):
         model_services.DeleteBooking(100000).run()
 
 
+def test_create_contact(database, booking_factory):
+    b = booking_factory
+    c = model_services.CreateContact(
+        name="foo",
+        email="foo@bar.baz",
+        phone_country="49",
+        phone="00000",
+        normalized_phone="00000",
+        is_subscribed_for_email_updates=True,
+        booking_id=b.id
+    ).run()
+    c = models.Contact.get(c.id)
+    assert c.name == "foo"
+    assert c.booking_id == b.id
+
+
+def test_update_contact(database, contact_factory):
+    old_contact = contact_factory
+    new_contact = model_services.UpdateContact(
+        contact_id=old_contact.id,
+        name="bar",
+        email="foo@bar.baz",
+        phone_country="49",
+        phone="00000",
+        normalized_phone="00000",
+        is_subscribed_for_email_updates=True
+    ).run()
+    new_contact = models.Contact.get(new_contact.id)
+    assert new_contact.name == "bar"
+
+
+def test_delete_contact(database, contact_factory):
+    c = contact_factory
+    model_services.DeleteContact(c.id).run()
+    with pytest.raises(DoesNotExist):
+        models.Contact.get(c.id)
+
+
 def test_create_custom_field(database):
     service = model_services.CreateCustomField(
         title="foo",
