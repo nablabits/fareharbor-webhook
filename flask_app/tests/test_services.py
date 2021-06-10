@@ -1,7 +1,10 @@
 from datetime import datetime
 from uuid import uuid4
 
+import pytest
+
 from fh_webhook import models, model_services
+from fh_webhook.exceptions import DoesNotExist
 
 
 def test_create_item(database):
@@ -143,10 +146,54 @@ def test_update_booking(database, booking_factory, availability_factory):
     assert b.availability_id == av.id
 
 
+def test_update_booking_raises_error(database, availability_factory):
+    av = availability_factory
+    with pytest.raises(DoesNotExist):
+        model_services.UpdateBooking(
+            booking_id=1000000,
+            voucher_number="roo",
+            display_id="bar",
+            note_safe_html="baz",
+            agent="goo",
+            confirmation_url="kar",
+            customer_count=5,
+            affiliate_company="roo",
+            uuid=uuid4().hex,
+            dashboard_url="taz",
+            note="moo",
+            pickup="mar",
+            status="maz",
+            availability_id=av.id,
+            receipt_subtotals=10,
+            receipt_taxes=11,
+            receipt_total=12,
+            amount_paid=13,
+            invoice_price=14,
+            receipt_subtotal_display="10",
+            receipt_taxes_display="11",
+            receipt_total_display="12",
+            amount_paid_display="13",
+            invoice_price_display="14",
+            desk="soo",
+            is_eligible_for_cancellation=True,
+            arrival="sar",
+            rebooked_to="saz",
+            rebooked_from="woo",
+            external_id="war",
+            order="waz",
+        ).run()
+
+
 def test_delete_booking(database, booking_factory):
     booking = booking_factory
     model_services.DeleteBooking(booking.id).run()
     assert models.Booking.query.get(booking.id) is None
+
+
+def test_delete_booking_raises_error(database):
+    with pytest.raises(DoesNotExist):
+        model_services.DeleteBooking(100000).run()
+
 
 def test_create_custom_field(database):
     service = model_services.CreateCustomField(

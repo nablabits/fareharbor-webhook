@@ -1,12 +1,26 @@
 """Define the models in the database."""
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from .exceptions import DoesNotExist
 
 metadata = MetaData()
 db = SQLAlchemy(metadata=metadata)
 
 
-class Booking(db.Model):
+class BaseMixin:
+    """Provide common methods for models."""
+
+    @classmethod
+    def get(cls, id):
+        """Try to get an instace or raise an error."""
+        instance = cls.query.get(id)
+        if instance:
+            return instance
+        else:
+            raise DoesNotExist(cls.__table_name__)
+
+
+class Booking(db.Model, BaseMixin):
     """Store the information about the booking."""
 
     __table_name__ = "booking"

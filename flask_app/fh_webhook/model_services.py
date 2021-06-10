@@ -4,6 +4,7 @@ import attr
 
 from . import models
 from .models import db
+from .exceptions import DoesNotExist
 
 
 @attr.s
@@ -225,7 +226,7 @@ class UpdateBooking:
     order = attr.ib(type=str)
 
     def run(self):
-        booking = models.Booking.query.get(self.booking_id)
+        booking = models.Booking.get(self.booking_id)
         booking.updated_at = datetime.utcnow()
         booking.voucher_number = self.voucher_number
         booking.display_id = self.display_id
@@ -267,7 +268,7 @@ class DeleteBooking:
     booking_id = attr.ib(type=int)
 
     def run(self):
-        """
+        booking = models.Booking.get(self.booking_id)
         we need to implement a kind of get_object_or_none for the exceptions.
         need something like:
         if not some_model.query.get(id):
