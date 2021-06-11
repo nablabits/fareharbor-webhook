@@ -266,6 +266,41 @@ def test_delete_company(database, company_factory):
         models.Company.get(company.id)
 
 
+def test_create_cancellation_policy(database, booking_factory):
+    b = booking_factory
+    new_cp = model_services.CreateCancellationPolicy(
+        cutoff=datetime.utcnow(),
+        cancellation_type="foo",
+        booking_id=b.id
+    ).run()
+    cp = models.EffectiveCancellationPolicy.get(new_cp.id)
+    assert cp.cancellation_type == "foo"
+    assert cp.booking_id == b.id
+
+
+def test_update_cancellation_policy(database, cancellation_factory):
+    old_cp = cancellation_factory
+    new_date = datetime(2021, 5, 5)
+    new_cp = model_services.UpdateCancellationPolicy(
+        cp_id=old_cp.id,
+        cutoff=new_date,
+        cancellation_type="bar"
+    ).run()
+
+    # reload from db
+    new_cp = models.EffectiveCancellationPolicy.get(new_cp.id)
+    assert new_cp.cutoff.date() == new_date.date()
+    assert new_cp.cutoff.time() == new_date.time()
+    assert new_cp.cancellation_type == "bar"
+
+
+def test_delete_cancellation_policy(database, cancellation_factory):
+    cp = cancellation_factory
+    model_services.DeleteCancellationPolicy(cp.id).run()
+    with pytest.raises(DoesNotExist):
+        models.EffectiveCancellationPolicy.get(cp.id)
+
+
 def test_create_custom_field(database):
     service = model_services.CreateCustomField(
         title="foo",

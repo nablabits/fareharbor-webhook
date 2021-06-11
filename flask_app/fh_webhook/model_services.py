@@ -393,6 +393,57 @@ class DeleteCompany:
         db.session.delete(company)
         db.session.commit()
 
+
+# Cancellation policy services
+
+@attr.s
+class CreateCancellationPolicy:
+    cutoff = attr.ib(type=datetime)
+    cancellation_type = attr.ib(type=str)
+    booking_id = attr.ib(type=int)
+
+    def run(self):
+        new_cp = models.EffectiveCancellationPolicy(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            cutoff=self.cutoff,
+            cancellation_type=self.cancellation_type,
+            booking_id=self.booking_id
+        )
+        db.session.add(new_cp)
+        db.session.commit()
+        return new_cp
+
+
+@attr.s
+class UpdateCancellationPolicy:
+    cp_id = attr.ib(type=int)
+    cutoff = attr.ib(type=datetime)
+    cancellation_type = attr.ib(type=str)
+    # booking_id = attr.ib(type=int)
+    # as cancellations are a 1:1 to bookings we can't update right away the booking_id. We
+    # leave aside this action and we will implement it if neccessary
+
+    def run(self):
+        cp = models.EffectiveCancellationPolicy.get(self.cp_id)
+        cp.cutoff = self.cutoff
+        cp.cancellation_type = self.cancellation_type
+
+        db.session.add(cp)
+        db.session.commit()
+        return cp
+
+
+@attr.s
+class DeleteCancellationPolicy:
+    cp_id = attr.ib(type=int)
+
+    def run(self):
+        cp = models.EffectiveCancellationPolicy.get(self.cp_id)
+        db.session.delete(cp)
+        db.session.commit()
+
+
 # Custom Field services
 
 

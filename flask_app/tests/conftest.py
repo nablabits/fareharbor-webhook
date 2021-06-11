@@ -127,6 +127,16 @@ def company_factory(booking_factory):
 
 
 @pytest.fixture
+def cancellation_factory(booking_factory):
+    """Create a cancellation policy for tests."""
+    return model_services.CreateCancellationPolicy(
+        cutoff=datetime.utcnow(),
+        cancellation_type="foo",
+        booking_id=booking_factory.id
+    ).run()
+
+
+@pytest.fixture
 def custom_field_factory():
 
     return model_services.CreateCustomField(

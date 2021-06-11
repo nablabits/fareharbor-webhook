@@ -282,7 +282,7 @@ class Company(db.Model, BaseMixin):
     booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
 
 
-class EffectiveCancellationPolicy(db.Model):
+class EffectiveCancellationPolicy(db.Model, BaseMixin):
     """Store the cancellation policy for the booking.
 
     Is a 1:1 on bookings.
