@@ -10,22 +10,22 @@ from fh_webhook.exceptions import DoesNotExist
 def test_create_item(database):
     service = model_services.CreateItem(name="foo")
     new_item = service.run()
-    assert models.Item.query.get(new_item.id)
+    assert models.Item.get(new_item.id)
 
 
 def test_update_item(database, item_factory):
     old_item = item_factory
     s = model_services.UpdateItem(item_id=old_item.id, name="bar")
     s.run()
-    item = models.Item.query.get(old_item.id)
+    item = models.Item.get(old_item.id)
     assert item.name == "bar"
 
 
 def test_delete_item(database, item_factory):
     item = item_factory
     model_services.DeleteItem(item.id).run()
-    item = models.Item.query.get(item.id)
-    assert item is None
+    with pytest.raises(DoesNotExist):
+        models.Item.get(item.id)
 
 
 def test_create_availabilty(database, item_factory):
@@ -38,7 +38,7 @@ def test_create_availabilty(database, item_factory):
         end_at=datetime.now(),
         item_id=item.id
     ).run()
-    assert models.Availability.query.get(availability.id)
+    assert models.Availability.get(availability.id)
 
 
 def test_update_availability(database, item_factory, availability_factory):
@@ -53,7 +53,7 @@ def test_update_availability(database, item_factory, availability_factory):
         end_at=datetime.now(),
         item_id=item.id
     ).run()
-    av = models.Availability.query.get(av.id)
+    av = models.Availability.get(av.id)
     assert av.capacity == 20
     assert av.minimum_party_size == 21
     assert av.maximum_party_size == 22
@@ -62,8 +62,8 @@ def test_update_availability(database, item_factory, availability_factory):
 def test_delete_availabilty(database, availability_factory):
     av = availability_factory
     model_services.DeleteAvailability(av.id).run()
-    av = models.Availability.query.get(av.id)
-    assert av is None
+    with pytest.raises(DoesNotExist):
+        models.Availability.get(av.id)
 
 
 def test_create_booking(database, availability_factory):
@@ -100,7 +100,7 @@ def test_create_booking(database, availability_factory):
         external_id="war",
         order="waz",
     ).run()
-    b = models.Booking.query.get(b.id)
+    b = models.Booking.get(b.id)
     assert b.voucher_number == "foo"
     assert b.availability_id == av.id
 
@@ -141,7 +141,7 @@ def test_update_booking(database, booking_factory, availability_factory):
         external_id="war",
         order="waz",
     ).run()
-    b = models.Booking.query.get(old_booking.id)
+    b = models.Booking.get(old_booking.id)
     assert b.voucher_number == "roo"
     assert b.availability_id == av.id
 
@@ -187,7 +187,8 @@ def test_update_booking_raises_error(database, availability_factory):
 def test_delete_booking(database, booking_factory):
     booking = booking_factory
     model_services.DeleteBooking(booking.id).run()
-    assert models.Booking.query.get(booking.id) is None
+    with pytest.raises(DoesNotExist):
+        models.Booking.get(booking.id)
 
 
 def test_delete_booking_raises_error(database):
@@ -320,7 +321,7 @@ def test_create_custom_field(database):
     )
     cf = service.run()
 
-    cf = models.CustomField.query.get(cf.id)
+    cf = models.CustomField.get(cf.id)
     assert cf.title == "foo"
     assert cf.extended_options is None
 
@@ -346,7 +347,7 @@ def test_update_custom_field(database, custom_field_factory):
         is_always_per_customer=False,
     ).run()
 
-    cf = models.CustomField.query.get(old_cf.id)
+    cf = models.CustomField.get(old_cf.id)
     assert cf.title == "goo"
     assert cf.name == "kar"
     assert cf.modifier_kind == "kaz"
@@ -357,8 +358,8 @@ def test_delete_custom_field(database, custom_field_factory):
 
     model_services.DeleteCustomField(cf.id).run()
 
-    cf = models.CustomField.query.get(cf.id)
-    assert cf is None
+    with pytest.raises(DoesNotExist):
+        models.CustomField.get(cf.id)
 
 
 def test_create_customer_prototype(database):
@@ -369,7 +370,7 @@ def test_create_customer_prototype(database):
         note="bar"
     )
     new_customer_prototype = service.run()
-    assert models.CustomerPrototype.query.get(new_customer_prototype.id)
+    assert models.CustomerPrototype.get(new_customer_prototype.id)
 
 
 def test_update_customer_prototype(database, customer_prototype_factory):
@@ -383,7 +384,7 @@ def test_update_customer_prototype(database, customer_prototype_factory):
         note="baz"
     ).run()
 
-    cp = models.CustomerPrototype.query.get(old_cp.id)
+    cp = models.CustomerPrototype.get(old_cp.id)
     assert cp.total == 20
     assert cp.total_including_tax == 20
     assert cp.display_name == "bar"
@@ -393,8 +394,8 @@ def test_update_customer_prototype(database, customer_prototype_factory):
 def test_delete_customer_prototype(database, customer_prototype_factory):
     cp = customer_prototype_factory
     model_services.DeleteCustomerPrototype(cp.id).run()
-    cp = models.CustomerPrototype.query.get(cp.id)
-    assert cp is None
+    with pytest.raises(DoesNotExist):
+        models.CustomerPrototype.get(cp.id)
 
 
 def test_create_customer_type(database):
@@ -403,7 +404,7 @@ def test_create_customer_type(database):
         singular="bar",
         plural="baz",
     ).run()
-    assert models.CustomerType.query.get(ct.id)
+    assert models.CustomerType.get(ct.id)
 
 
 def test_update_customer_type(database, customer_type_factory):
@@ -415,13 +416,14 @@ def test_update_customer_type(database, customer_type_factory):
         plural="kaz"
     ).run()
 
-    updated_ct = models.CustomerType.query.get(ct.id)
+    updated_ct = models.CustomerType.get(ct.id)
     assert updated_ct.note == "goo"
 
 
 def test_delete_customer_type(database, customer_type_factory):
     ct = customer_type_factory
 
-    assert models.CustomerType.query.get(ct.id)
+    assert models.CustomerType.get(ct.id)
     model_services.DeleteCustomerType(ct.id).run()
-    assert models.CustomerType.query.get(ct.id) is None
+    with pytest.raises(DoesNotExist):
+        models.CustomerType.get(ct.id)

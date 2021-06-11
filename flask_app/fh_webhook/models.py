@@ -67,7 +67,7 @@ class Booking(db.Model, BaseMixin):
     order = db.Column(db.String(64))
 
 
-class Availability(db.Model):
+class Availability(db.Model, BaseMixin):
     """Store availabilities.
 
     Each booking belongs to one and only availability
@@ -87,7 +87,7 @@ class Availability(db.Model):
         db.Integer, db.ForeignKey("item.id"), nullable=False)
 
 
-class Item(db.Model):
+class Item(db.Model, BaseMixin):
     """Items are the products we sell in the business."""
     __table_name__ = "item"
     id = db.Column(db.Integer, primary_key=True)
@@ -96,7 +96,7 @@ class Item(db.Model):
     name = db.Column(db.String(200))
 
 
-class Customer(db.Model):
+class Customer(db.Model, BaseMixin):
     """Store the customer chosen by the booking.
 
     Acts as a M2M between customer type rate and bookings as a booking can have
@@ -121,7 +121,7 @@ class Customer(db.Model):
     )
 
 
-class CustomerTypeRate(db.Model):
+class CustomerTypeRate(db.Model, BaseMixin):
     """Store each customer type rate.
 
     Every availability can have several customer type rates that are based on
@@ -147,7 +147,7 @@ class CustomerTypeRate(db.Model):
     )
 
 
-class CustomerPrototype(db.Model):
+class CustomerPrototype(db.Model, BaseMixin):
     """Store the customer prototypes.
 
     We define general customer types (like Adult, child, 2hours) that
@@ -163,7 +163,7 @@ class CustomerPrototype(db.Model):
     note = db.Column(db.Text)
 
 
-class CustomerType(db.Model):
+class CustomerType(db.Model, BaseMixin):
     """Store the customer type.
 
     This model is an extension of the customer Prototype storing the notes and
@@ -220,7 +220,7 @@ class CustomFieldValues(db.Model):
     )
 
 
-class CustomField(db.Model):
+class CustomField(db.Model, BaseMixin):
     """Store the types of custom fields available."""
     __table_name__ = "custom_field"
     id = db.Column(db.Integer, primary_key=True)

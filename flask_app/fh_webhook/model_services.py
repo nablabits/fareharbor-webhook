@@ -28,7 +28,7 @@ class UpdateItem:
     name = attr.ib()
 
     def run(self):
-        item = models.Item.query.get(self.item_id)
+        item = models.Item.get(self.item_id)
         item.name = self.name
         item.updated_at = datetime.utcnow()
         db.session.commit()
@@ -40,7 +40,7 @@ class DeleteItem:
     item_id = attr.ib(type=int)
 
     def run(self):
-        item = models.Item.query.get(self.item_id)
+        item = models.Item.get(self.item_id)
         db.session.delete(item)
         db.session.commit()
 
@@ -84,7 +84,7 @@ class UpdateAvailability:
     item_id = attr.ib(type=int)
 
     def run(self):
-        availability = models.Availability.query.get(self.availability_id)
+        availability = models.Availability.get(self.availability_id)
         availability.updated_at = datetime.utcnow()
         availability.capacity = self.capacity
         availability.minimum_party_size = self.minimum_party_size
@@ -103,7 +103,7 @@ class DeleteAvailability:
     availability_id = attr.ib(type=int)
 
     def run(self):
-        availability = models.Availability.query.get(self.availability_id)
+        availability = models.Availability.get(self.availability_id)
         db.session.delete(availability)
         db.session.commit()
 
@@ -520,7 +520,7 @@ class UpdateCustomField:
     extended_options = attr.ib(type=int, default=None)
 
     def run(self):
-        cf = models.CustomField.query.get(self.custom_field_id)
+        cf = models.CustomField.get(self.custom_field_id)
         cf.updated_at = datetime.utcnow()
         cf.title = self.title
         cf.name = self.name
@@ -548,7 +548,7 @@ class DeleteCustomField:
     custom_field_id = attr.ib(type=int)
 
     def run(self):
-        cf = models.CustomField.query.get(self.custom_field_id)
+        cf = models.CustomField.get(self.custom_field_id)
         db.session.delete(cf)
         db.session.commit()
 
@@ -586,7 +586,7 @@ class UpdateCustomerPrototype:
     note = attr.ib(type=str)
 
     def run(self):
-        customer_prototype = models.CustomerPrototype.query.get(
+        customer_prototype = models.CustomerPrototype.get(
             self.customer_prototype_id)
         customer_prototype.updated_at = datetime.utcnow()
         customer_prototype.total = self.total
@@ -603,7 +603,7 @@ class DeleteCustomerPrototype:
     customer_prototype_id = attr.ib(type=int)
 
     def run(self):
-        customer_prototype = models.CustomerPrototype.query.get(
+        customer_prototype = models.CustomerPrototype.get(
             self.customer_prototype_id
         )
         db.session.delete(customer_prototype)
@@ -637,7 +637,7 @@ class UpdateCustomerType:
     plural = attr.ib(type=str)
 
     def run(self):
-        customer_type = models.CustomerType.query.get(self.customer_type_id)
+        customer_type = models.CustomerType.get(self.customer_type_id)
         customer_type.updated_at = datetime.utcnow()
         customer_type.note = self.note
         customer_type.singular = self.singular
@@ -652,7 +652,7 @@ class DeleteCustomerType:
     customer_type_id = attr.ib(type=int)
 
     def run(self):
-        customer_type = models.CustomerType.query.get(self.customer_type_id)
+        customer_type = models.CustomerType.get(self.customer_type_id)
         db.session.delete(customer_type)
         db.session.commit()
 
