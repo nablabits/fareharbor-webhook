@@ -233,6 +233,39 @@ def test_delete_contact(database, contact_factory):
         models.Contact.get(c.id)
 
 
+def test_create_company(database, booking_factory):
+    b = booking_factory
+    c = model_services.CreateCompany(
+        name="foo",
+        short_name="bar",
+        currency="eur",
+        booking_id=b.id
+    ).run()
+    c = models.Company.get(c.id)
+    assert c.name == "foo"
+    assert c.booking_id == b.id
+
+
+def test_update_company(database, company_factory):
+    old_company = company_factory
+    new_company = model_services.UpdateCompany(
+        company_id=old_company.id,
+        name="baz",
+        short_name="bar",
+        currency="eur",
+    ).run()
+    # reload from db
+    new_company = models.Contact.get(new_company.id)
+    assert new_company.name == "bar"
+
+
+def test_delete_company(database, company_factory):
+    company = company_factory
+    model_services.DeleteCompany(company.id).run()
+    with pytest.raises(DoesNotExist):
+        models.Company.get(company.id)
+
+
 def test_create_custom_field(database):
     service = model_services.CreateCustomField(
         title="foo",

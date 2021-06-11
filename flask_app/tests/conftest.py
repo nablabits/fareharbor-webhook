@@ -117,6 +117,16 @@ def contact_factory(booking_factory):
 
 
 @pytest.fixture
+def company_factory(booking_factory):
+    return model_services.CreateCompany(
+        name="foo",
+        short_name="bar",
+        currency="eur",
+        booking_id=booking_factory.id
+    ).run()
+
+
+@pytest.fixture
 def custom_field_factory():
 
     return model_services.CreateCustomField(

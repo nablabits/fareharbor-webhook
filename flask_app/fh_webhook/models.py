@@ -267,7 +267,7 @@ class Contact(db.Model, BaseMixin):
     booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
 
 
-class Company(db.Model):
+class Company(db.Model, BaseMixin):
     """Store the company details for the booking.
 
     Is a 1:1 on bookings.

@@ -338,6 +338,61 @@ class DeleteContact:
         db.session.commit()
 
 
+# company services
+
+
+@attr.s
+class CreateCompany:
+    name = attr.ib(type=str)
+    short_name = attr.ib(type=str)
+    currency = attr.ib(type=str)
+    booking_id = attr.ib(type=int)
+
+    def run(self):
+        new_company = models.Company(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            name=self.name,
+            short_name=self.short_name,
+            currency=self.currency,
+            booking_id=self.booking_id
+        )
+        db.session.add(new_company)
+        db.session.commit()
+        return new_company
+
+
+@attr.s
+class UpdateCompany:
+    company_id = attr.ib(type=int)
+    name = attr.ib(type=str)
+    short_name = attr.ib(type=str)
+    currency = attr.ib(type=str)
+    # booking_id = attr.ib(type=int)
+    # as companies are a 1:1 to bookings we can't update right away the booking_id. We
+    # leave aside this action and we will implement it if neccessary
+
+    def run(self):
+        company = models.Company.get(self.company_id)
+        company.updated_at = datetime.utcnow()
+        company.name = self.name
+        company.short_name = self.short_name
+        company.currency = self.currency
+
+        db.session.add(company)
+        db.session.commit()
+        return company
+
+
+@attr.s
+class DeleteCompany:
+    company_id = attr.ib(type=int)
+
+    def run(self):
+        company = models.Company.get(self.company_id)
+        db.session.delete(company)
+        db.session.commit()
+
 # Custom Field services
 
 
