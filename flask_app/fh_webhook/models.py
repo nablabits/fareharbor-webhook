@@ -1,12 +1,26 @@
 """Define the models in the database."""
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from .exceptions import DoesNotExist
 
 metadata = MetaData()
 db = SQLAlchemy(metadata=metadata)
 
 
-class Booking(db.Model):
+class BaseMixin:
+    """Provide common methods for models."""
+
+    @classmethod
+    def get(cls, id):
+        """Try to get an instace or raise an error."""
+        instance = cls.query.get(id)
+        if instance:
+            return instance
+        else:
+            raise DoesNotExist(cls.__table_name__)
+
+
+class Booking(db.Model, BaseMixin):
     """Store the information about the booking."""
 
     __table_name__ = "booking"
@@ -235,7 +249,7 @@ class CustomField(db.Model):
         db.Integer, db.ForeignKey("custom_field.id"), nullable=True)
 
 
-class Contact(db.Model):
+class Contact(db.Model, BaseMixin):
     """Store the contact details for the booking.
 
     Is a 1:1 on bookings.
@@ -253,7 +267,7 @@ class Contact(db.Model):
     booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
 
 
-class Company(db.Model):
+class Company(db.Model, BaseMixin):
     """Store the company details for the booking.
 
     Is a 1:1 on bookings.
@@ -268,7 +282,7 @@ class Company(db.Model):
     booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
 
 
-class EffectiveCancellationPolicy(db.Model):
+class EffectiveCancellationPolicy(db.Model, BaseMixin):
     """Store the cancellation policy for the booking.
 
     Is a 1:1 on bookings.

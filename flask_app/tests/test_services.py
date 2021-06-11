@@ -1,6 +1,10 @@
 from datetime import datetime
+from uuid import uuid4
+
+import pytest
 
 from fh_webhook import models, model_services
+from fh_webhook.exceptions import DoesNotExist
 
 
 def test_create_item(database):
@@ -60,6 +64,241 @@ def test_delete_availabilty(database, availability_factory):
     model_services.DeleteAvailability(av.id).run()
     av = models.Availability.query.get(av.id)
     assert av is None
+
+
+def test_create_booking(database, availability_factory):
+    av = availability_factory
+    b = model_services.CreateBooking(
+        voucher_number="foo",
+        display_id="bar",
+        note_safe_html="baz",
+        agent="goo",
+        confirmation_url="kar",
+        customer_count=5,
+        affiliate_company="roo",
+        uuid=uuid4().hex,
+        dashboard_url="taz",
+        note="moo",
+        pickup="mar",
+        status="maz",
+        availability_id=av.id,
+        receipt_subtotals=10,
+        receipt_taxes=11,
+        receipt_total=12,
+        amount_paid=13,
+        invoice_price=14,
+        receipt_subtotal_display="10",
+        receipt_taxes_display="11",
+        receipt_total_display="12",
+        amount_paid_display="13",
+        invoice_price_display="14",
+        desk="soo",
+        is_eligible_for_cancellation=True,
+        arrival="sar",
+        rebooked_to="saz",
+        rebooked_from="woo",
+        external_id="war",
+        order="waz",
+    ).run()
+    b = models.Booking.query.get(b.id)
+    assert b.voucher_number == "foo"
+    assert b.availability_id == av.id
+
+
+def test_update_booking(database, booking_factory, availability_factory):
+    old_booking = booking_factory
+    av = availability_factory
+    b = model_services.UpdateBooking(
+        booking_id=old_booking.id,
+        voucher_number="roo",
+        display_id="bar",
+        note_safe_html="baz",
+        agent="goo",
+        confirmation_url="kar",
+        customer_count=5,
+        affiliate_company="roo",
+        uuid=uuid4().hex,
+        dashboard_url="taz",
+        note="moo",
+        pickup="mar",
+        status="maz",
+        availability_id=av.id,
+        receipt_subtotals=10,
+        receipt_taxes=11,
+        receipt_total=12,
+        amount_paid=13,
+        invoice_price=14,
+        receipt_subtotal_display="10",
+        receipt_taxes_display="11",
+        receipt_total_display="12",
+        amount_paid_display="13",
+        invoice_price_display="14",
+        desk="soo",
+        is_eligible_for_cancellation=True,
+        arrival="sar",
+        rebooked_to="saz",
+        rebooked_from="woo",
+        external_id="war",
+        order="waz",
+    ).run()
+    b = models.Booking.query.get(old_booking.id)
+    assert b.voucher_number == "roo"
+    assert b.availability_id == av.id
+
+
+def test_update_booking_raises_error(database, availability_factory):
+    av = availability_factory
+    with pytest.raises(DoesNotExist):
+        model_services.UpdateBooking(
+            booking_id=1000000,
+            voucher_number="roo",
+            display_id="bar",
+            note_safe_html="baz",
+            agent="goo",
+            confirmation_url="kar",
+            customer_count=5,
+            affiliate_company="roo",
+            uuid=uuid4().hex,
+            dashboard_url="taz",
+            note="moo",
+            pickup="mar",
+            status="maz",
+            availability_id=av.id,
+            receipt_subtotals=10,
+            receipt_taxes=11,
+            receipt_total=12,
+            amount_paid=13,
+            invoice_price=14,
+            receipt_subtotal_display="10",
+            receipt_taxes_display="11",
+            receipt_total_display="12",
+            amount_paid_display="13",
+            invoice_price_display="14",
+            desk="soo",
+            is_eligible_for_cancellation=True,
+            arrival="sar",
+            rebooked_to="saz",
+            rebooked_from="woo",
+            external_id="war",
+            order="waz",
+        ).run()
+
+
+def test_delete_booking(database, booking_factory):
+    booking = booking_factory
+    model_services.DeleteBooking(booking.id).run()
+    assert models.Booking.query.get(booking.id) is None
+
+
+def test_delete_booking_raises_error(database):
+    with pytest.raises(DoesNotExist):
+        model_services.DeleteBooking(100000).run()
+
+
+def test_create_contact(database, booking_factory):
+    b = booking_factory
+    c = model_services.CreateContact(
+        name="foo",
+        email="foo@bar.baz",
+        phone_country="49",
+        phone="00000",
+        normalized_phone="00000",
+        is_subscribed_for_email_updates=True,
+        booking_id=b.id
+    ).run()
+    c = models.Contact.get(c.id)
+    assert c.name == "foo"
+    assert c.booking_id == b.id
+
+
+def test_update_contact(database, contact_factory):
+    old_contact = contact_factory
+    new_contact = model_services.UpdateContact(
+        contact_id=old_contact.id,
+        name="bar",
+        email="foo@bar.baz",
+        phone_country="49",
+        phone="00000",
+        normalized_phone="00000",
+        is_subscribed_for_email_updates=True
+    ).run()
+    new_contact = models.Contact.get(new_contact.id)
+    assert new_contact.name == "bar"
+
+
+def test_delete_contact(database, contact_factory):
+    c = contact_factory
+    model_services.DeleteContact(c.id).run()
+    with pytest.raises(DoesNotExist):
+        models.Contact.get(c.id)
+
+
+def test_create_company(database, booking_factory):
+    b = booking_factory
+    c = model_services.CreateCompany(
+        name="foo",
+        short_name="bar",
+        currency="eur",
+        booking_id=b.id
+    ).run()
+    c = models.Company.get(c.id)
+    assert c.name == "foo"
+    assert c.booking_id == b.id
+
+
+def test_update_company(database, company_factory):
+    old_company = company_factory
+    new_company = model_services.UpdateCompany(
+        company_id=old_company.id,
+        name="baz",
+        short_name="bar",
+        currency="eur",
+    ).run()
+    # reload from db
+    new_company = models.Contact.get(new_company.id)
+    assert new_company.name == "bar"
+
+
+def test_delete_company(database, company_factory):
+    company = company_factory
+    model_services.DeleteCompany(company.id).run()
+    with pytest.raises(DoesNotExist):
+        models.Company.get(company.id)
+
+
+def test_create_cancellation_policy(database, booking_factory):
+    b = booking_factory
+    new_cp = model_services.CreateCancellationPolicy(
+        cutoff=datetime.utcnow(),
+        cancellation_type="foo",
+        booking_id=b.id
+    ).run()
+    cp = models.EffectiveCancellationPolicy.get(new_cp.id)
+    assert cp.cancellation_type == "foo"
+    assert cp.booking_id == b.id
+
+
+def test_update_cancellation_policy(database, cancellation_factory):
+    old_cp = cancellation_factory
+    new_date = datetime(2021, 5, 5)
+    new_cp = model_services.UpdateCancellationPolicy(
+        cp_id=old_cp.id,
+        cutoff=new_date,
+        cancellation_type="bar"
+    ).run()
+
+    # reload from db
+    new_cp = models.EffectiveCancellationPolicy.get(new_cp.id)
+    assert new_cp.cutoff.date() == new_date.date()
+    assert new_cp.cutoff.time() == new_date.time()
+    assert new_cp.cancellation_type == "bar"
+
+
+def test_delete_cancellation_policy(database, cancellation_factory):
+    cp = cancellation_factory
+    model_services.DeleteCancellationPolicy(cp.id).run()
+    with pytest.raises(DoesNotExist):
+        models.EffectiveCancellationPolicy.get(cp.id)
 
 
 def test_create_custom_field(database):
