@@ -555,6 +555,67 @@ class DeleteCustomField:
 
 # Customers' services
 
+@attr.s
+class CreateCustomerTypeRate:
+    capacity = attr.ib(type=int)
+    minimum_party_size = attr.ib(type=int)
+    maximum_party_size = attr.ib(type=int)
+    booking_id = attr.ib(type=int)
+    availability_id = attr.ib(type=int)
+    customer_prototype_id = attr.ib(type=int)
+    customer_type_id = attr.ib(type=int)
+
+    def run(self):
+        new_customer_type_rate = models.CustomerTypeRate(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            capacity=self.capacity,
+            minimum_party_size=self.minimum_party_size,
+            maximum_party_size=self.maximum_party_size,
+            booking_id=self.booking_id,
+            availability_id=self.availability_id,
+            customer_prototype_id=self.customer_prototype_id,
+            customer_type_id=self.customer_type_id,
+        )
+        db.session.add(new_customer_type_rate)
+        db.session.commit()
+        return(new_customer_type_rate)
+
+
+@attr.s
+class UpdateCustomerTypeRate:
+    ctr_id = attr.ib(type=int)
+    capacity = attr.ib(type=int)
+    minimum_party_size = attr.ib(type=int)
+    maximum_party_size = attr.ib(type=int)
+    booking_id = attr.ib(type=int)
+    availability_id = attr.ib(type=int)
+    customer_prototype_id = attr.ib(type=int)
+    customer_type_id = attr.ib(type=int)
+
+    def run(self):
+        ctr = models.CustomerTypeRate.get(self.ctr_id)
+        ctr.updated_at = datetime.utcnow(),
+        ctr.capacity = self.capacity,
+        ctr.minimum_party_size = self.minimum_party_size,
+        ctr.maximum_party_size = self.maximum_party_size,
+        ctr.booking_id = self.booking_id,
+        ctr.availability_id = self.availability_id,
+        ctr.customer_prototype_id = self.customer_prototype_id,
+        ctr.customer_type_id = self.customer_type_id,
+        db.session.commit()
+        return ctr
+
+
+@attr.s
+class DeleteCustomerTypeRate:
+    ctr_id = attr.ib(type=int)
+
+    def run(self):
+        ctr = models.CustomerTypeRate.get(self.ctr_id)
+        db.session.delete(ctr)
+        db.session.commit()
+
 
 @attr.s
 class CreateCustomerPrototype:

@@ -158,6 +158,22 @@ def custom_field_factory():
 
 
 @pytest.fixture
+def customer_type_rate_factory(
+    booking_factory, availability_factory, customer_type_factory,
+    customer_prototype_factory
+):
+    return model_services.CreateCustomerTypeRate(
+        capacity=4,
+        minimum_party_size=2,
+        maximum_party_size=4,
+        booking_id=booking_factory.id,
+        availability_id=availability_factory.id,
+        customer_prototype_id=customer_prototype_factory.id,
+        customer_type_id=customer_type_factory.id
+    ).run()
+
+
+@pytest.fixture
 def customer_prototype_factory():
     return model_services.CreateCustomerPrototype(
         total=10,

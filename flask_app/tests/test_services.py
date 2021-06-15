@@ -362,6 +362,46 @@ def test_delete_custom_field(database, custom_field_factory):
         models.CustomField.get(cf.id)
 
 
+def test_create_customer_type_rate(
+    database, booking_factory, availability_factory, customer_type_factory,
+    customer_prototype_factory
+):
+    ctr = model_services.CreateCustomerTypeRate(
+        capacity=4,
+        minimum_party_size=2,
+        maximum_party_size=4,
+        booking_id=booking_factory.id,
+        availability_id=availability_factory.id,
+        customer_prototype_id=customer_prototype_factory.id,
+        customer_type_id=customer_type_factory.id
+    ).run()
+    assert models.CustomerTypeRate.get(ctr.id)
+
+
+def test_update_customer_type_rate(database, customer_type_rate_factory):
+    old_ctr = customer_type_rate_factory
+    model_services.UpdateCustomerTypeRate(
+        ctr_id=old_ctr.id,
+        capacity=6,
+        minimum_party_size=1,
+        maximum_party_size=6,
+        booking_id=old_ctr.booking_id,
+        availability_id=old_ctr.availability_id,
+        customer_prototype_id=old_ctr.customer_prototype_id,
+        customer_type_id=old_ctr.customer_type_id
+    ).run()
+    updated_ctr = models.CustomerTypeRate.get(old_ctr.id)
+    assert updated_ctr.capacity == 6
+    assert updated_ctr.minimum_party_size == 1
+    assert updated_ctr.maximum_party_size == 6
+
+def test_delete_customer_type_rate(database, customer_type_rate_factory):
+    ctr = customer_type_rate_factory
+    model_services.DeleteCustomerTypeRate(ctr.id).run()
+    with pytest.raises(DoesNotExist):
+        models.CustomerTypeRate.get(ctr.id)
+
+
 def test_create_customer_prototype(database):
     service = model_services.CreateCustomerPrototype(
         total=10,
