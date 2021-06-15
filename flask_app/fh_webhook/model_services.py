@@ -556,6 +556,62 @@ class DeleteCustomField:
 # Customers' services
 
 @attr.s
+class CreateCustomer:
+    """Create Customer instances.
+
+    Notice that CustomerTypeRate also has a FK to bookings. They should both
+    point to the same booking instance but we add as an argument constructor
+    just in case that for some strange reason they differ.
+    """
+    checkin_url = attr.ib(type=str)
+    checking_status = attr.ib(type=str)
+    customer_type_rate_id = attr.ib(type=int)
+    booking_id = attr.ib(type=int)
+
+    def run(self):
+        new_customer = models.Customer(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            checkin_url=self.checkin_url,
+            checking_status=self.checking_status,
+            customer_type_rate_id=self.customer_type_rate_id,
+            booking_id=self.booking_id
+        )
+        db.session.add(new_customer)
+        db.session.commit()
+        return new_customer
+
+
+@attr.s
+class UpdateCustomer:
+    customer_id = attr.ib(type=int)
+    checkin_url = attr.ib(type=str)
+    checking_status = attr.ib(type=str)
+    customer_type_rate_id = attr.ib(type=int)
+    booking_id = attr.ib(type=int)
+
+    def run(self):
+        customer = models.Customer.get(self.customer_id)
+        customer.updated_at = datetime.utcnow(),
+        customer.checkin_url = self.checkin_url,
+        customer.checking_status = self.checking_status,
+        customer.customer_type_rate_id = self.customer_type_rate_id,
+        customer.booking_id = self.booking_id
+        db.session.commit()
+        return customer
+
+
+@attr.s
+class DeleteCustomer:
+    customer_id = attr.ib(type=int)
+
+    def run(self):
+        customer = models.Customer.get(self.customer_id)
+        db.session.delete(customer)
+        db.session.commit()
+
+
+@attr.s
 class CreateCustomerTypeRate:
     capacity = attr.ib(type=int)
     minimum_party_size = attr.ib(type=int)
@@ -579,7 +635,7 @@ class CreateCustomerTypeRate:
         )
         db.session.add(new_customer_type_rate)
         db.session.commit()
-        return(new_customer_type_rate)
+        return new_customer_type_rate
 
 
 @attr.s

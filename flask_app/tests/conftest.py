@@ -158,6 +158,16 @@ def custom_field_factory():
 
 
 @pytest.fixture
+def customer_factory(customer_type_rate_factory, booking_factory):
+    return model_services.CreateCustomer(
+        checkin_url="https://foo.bar",
+        checking_status="checked_in",
+        customer_type_rate_id=customer_type_rate_factory.id,
+        booking_id=booking_factory.id
+    ).run()
+
+
+@pytest.fixture
 def customer_type_rate_factory(
     booking_factory, availability_factory, customer_type_factory,
     customer_prototype_factory

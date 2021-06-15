@@ -103,6 +103,9 @@ class Customer(db.Model, BaseMixin):
     several customers chosen (3 Adults, 2 children) and the defined customer
     type rate can appear in different bookings as they are defined by the
     availability.
+
+    Note that CustomerTypeRate also points to Booking so it should have the
+    same value.
     """
     __table_name__ = "customer"
     id = db.Column(db.Integer, primary_key=True)

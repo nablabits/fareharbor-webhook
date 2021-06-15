@@ -362,6 +362,41 @@ def test_delete_custom_field(database, custom_field_factory):
         models.CustomField.get(cf.id)
 
 
+def test_create_customer(
+    database, customer_type_rate_factory, booking_factory
+):
+    ct = model_services.CreateCustomer(
+        checkin_url="https://foo.bar",
+        checking_status="checked_in",
+        customer_type_rate_id=customer_type_rate_factory.id,
+        booking_id=booking_factory.id
+    ).run()
+    assert models.Customer.get(ct.id)
+
+
+def test_update_customer(database, customer_factory):
+    old_customer = customer_factory
+    model_services.UpdateCustomer(
+        customer_id=old_customer.id,
+        checkin_url="https://bar.baz",
+        checking_status="checked_out",
+        customer_type_rate_id=old_customer.customer_type_rate_id,
+        booking_id=old_customer.booking_id
+    ).run()
+    ct = models.Customer.get(old_customer.id)
+    assert ct.checkin_url == "https://bar.baz"
+    assert ct.checking_status == "checked_out"
+
+
+def test_delete_customer(database, customer_factory):
+    ct = customer_factory
+
+    model_services.DeleteCustomer(ct.id).run()
+
+    with pytest.raises(DoesNotExist):
+        models.Customer.get(ct.id)
+
+
 def test_create_customer_type_rate(
     database, booking_factory, availability_factory, customer_type_factory,
     customer_prototype_factory
@@ -394,6 +429,7 @@ def test_update_customer_type_rate(database, customer_type_rate_factory):
     assert updated_ctr.capacity == 6
     assert updated_ctr.minimum_party_size == 1
     assert updated_ctr.maximum_party_size == 6
+
 
 def test_delete_customer_type_rate(database, customer_type_rate_factory):
     ctr = customer_type_rate_factory
