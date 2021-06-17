@@ -444,115 +444,6 @@ class DeleteCancellationPolicy:
         db.session.commit()
 
 
-# Custom Field services
-
-
-@attr.s
-class CreateCustomField:
-    title = attr.ib(type=str)
-    name = attr.ib(type=str)
-    modifier_kind = attr.ib(type=str)
-    modifier_type = attr.ib(type=str)
-    field_type = attr.ib(type=str)
-    offset = attr.ib(type=int)
-    percentage = attr.ib(type=int)
-
-    # text fields
-    description = attr.ib(type=str)
-    booking_notes = attr.ib(type=str)
-    description_safe_html = attr.ib(type=str)
-    booking_notes_safe_html = attr.ib(type=str)
-
-    # bool fields
-    is_required = attr.ib(type=bool)
-    is_taxable = attr.ib(type=bool)
-    is_always_per_customer = attr.ib(type=bool)
-
-    extended_options = attr.ib(type=int, default=None)
-
-    def run(self):
-        new_custom_field = models.CustomField(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-            title=self.title,
-            name=self.name,
-            modifier_kind=self.modifier_kind,
-            modifier_type=self.modifier_type,
-            field_type=self.field_type,
-            offset=self.offset,
-            percentage=self.percentage,
-            description=self.description,
-            booking_notes=self.booking_notes,
-            description_safe_html=self.description_safe_html,
-            booking_notes_safe_html=self.booking_notes_safe_html,
-            is_required=self.is_required,
-            is_taxable=self.is_taxable,
-            is_always_per_customer=self.is_always_per_customer,
-            extended_options=self.extended_options
-        )
-        db.session.add(new_custom_field)
-        db.session.commit()
-        return new_custom_field
-
-
-@attr.s
-class UpdateCustomField:
-    custom_field_id = attr.ib(type=int)
-    title = attr.ib(type=str)
-    name = attr.ib(type=str)
-    modifier_kind = attr.ib(type=str)
-    modifier_type = attr.ib(type=str)
-    field_type = attr.ib(type=str)
-    offset = attr.ib(type=int)
-    percentage = attr.ib(type=int)
-
-    # text fields
-    description = attr.ib(type=str)
-    booking_notes = attr.ib(type=str)
-    description_safe_html = attr.ib(type=str)
-    booking_notes_safe_html = attr.ib(type=str)
-
-    # bool fields
-    is_required = attr.ib(type=bool)
-    is_taxable = attr.ib(type=bool)
-    is_always_per_customer = attr.ib(type=bool)
-
-    extended_options = attr.ib(type=int, default=None)
-
-    def run(self):
-        cf = models.CustomField.get(self.custom_field_id)
-        cf.updated_at = datetime.utcnow()
-        cf.title = self.title
-        cf.name = self.name
-        cf.modifier_kind = self.modifier_kind
-        cf.modifier_type = self.modifier_type
-        cf.field_type = self.field_type
-        cf.offset = self.offset
-        cf.percentage = self.percentage
-        cf.description = self.description
-        cf.booking_notes = self.booking_notes
-        cf.description_safe_html = self.description_safe_html
-        cf.booking_notes_safe_html = self.booking_notes_safe_html
-        cf.is_required = self.is_required
-        cf.is_taxable = self.is_taxable
-        cf.is_always_per_customer = self.is_always_per_customer
-        cf.extended_options = self.extended_options
-
-        db.session.add(cf)
-        db.session.commit()
-        return cf
-
-
-@attr.s
-class DeleteCustomField:
-    custom_field_id = attr.ib(type=int)
-
-    def run(self):
-        cf = models.CustomField.get(self.custom_field_id)
-        db.session.delete(cf)
-        db.session.commit()
-
-
 # Customers' services
 
 @attr.s
@@ -771,5 +662,113 @@ class DeleteCustomerType:
     def run(self):
         customer_type = models.CustomerType.get(self.customer_type_id)
         db.session.delete(customer_type)
+        db.session.commit()
+
+
+# Custom Field services
+
+@attr.s
+class CreateCustomField:
+    title = attr.ib(type=str)
+    name = attr.ib(type=str)
+    modifier_kind = attr.ib(type=str)
+    modifier_type = attr.ib(type=str)
+    field_type = attr.ib(type=str)
+    offset = attr.ib(type=int)
+    percentage = attr.ib(type=int)
+
+    # text fields
+    description = attr.ib(type=str)
+    booking_notes = attr.ib(type=str)
+    description_safe_html = attr.ib(type=str)
+    booking_notes_safe_html = attr.ib(type=str)
+
+    # bool fields
+    is_required = attr.ib(type=bool)
+    is_taxable = attr.ib(type=bool)
+    is_always_per_customer = attr.ib(type=bool)
+
+    extended_options = attr.ib(type=int, default=None)
+
+    def run(self):
+        new_custom_field = models.CustomField(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            title=self.title,
+            name=self.name,
+            modifier_kind=self.modifier_kind,
+            modifier_type=self.modifier_type,
+            field_type=self.field_type,
+            offset=self.offset,
+            percentage=self.percentage,
+            description=self.description,
+            booking_notes=self.booking_notes,
+            description_safe_html=self.description_safe_html,
+            booking_notes_safe_html=self.booking_notes_safe_html,
+            is_required=self.is_required,
+            is_taxable=self.is_taxable,
+            is_always_per_customer=self.is_always_per_customer,
+            extended_options=self.extended_options
+        )
+        db.session.add(new_custom_field)
+        db.session.commit()
+        return new_custom_field
+
+
+@attr.s
+class UpdateCustomField:
+    custom_field_id = attr.ib(type=int)
+    title = attr.ib(type=str)
+    name = attr.ib(type=str)
+    modifier_kind = attr.ib(type=str)
+    modifier_type = attr.ib(type=str)
+    field_type = attr.ib(type=str)
+    offset = attr.ib(type=int)
+    percentage = attr.ib(type=int)
+
+    # text fields
+    description = attr.ib(type=str)
+    booking_notes = attr.ib(type=str)
+    description_safe_html = attr.ib(type=str)
+    booking_notes_safe_html = attr.ib(type=str)
+
+    # bool fields
+    is_required = attr.ib(type=bool)
+    is_taxable = attr.ib(type=bool)
+    is_always_per_customer = attr.ib(type=bool)
+
+    extended_options = attr.ib(type=int, default=None)
+
+    def run(self):
+        cf = models.CustomField.get(self.custom_field_id)
+        cf.updated_at = datetime.utcnow()
+        cf.title = self.title
+        cf.name = self.name
+        cf.modifier_kind = self.modifier_kind
+        cf.modifier_type = self.modifier_type
+        cf.field_type = self.field_type
+        cf.offset = self.offset
+        cf.percentage = self.percentage
+        cf.description = self.description
+        cf.booking_notes = self.booking_notes
+        cf.description_safe_html = self.description_safe_html
+        cf.booking_notes_safe_html = self.booking_notes_safe_html
+        cf.is_required = self.is_required
+        cf.is_taxable = self.is_taxable
+        cf.is_always_per_customer = self.is_always_per_customer
+        cf.extended_options = self.extended_options
+
+        db.session.add(cf)
+        db.session.commit()
+        return cf
+
+
+@attr.s
+class DeleteCustomField:
+    custom_field_id = attr.ib(type=int)
+
+    def run(self):
+        cf = models.CustomField.get(self.custom_field_id)
+        db.session.delete(cf)
         db.session.commit()
 
