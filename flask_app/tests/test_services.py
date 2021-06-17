@@ -369,11 +369,11 @@ def test_create_custom_field_instances(
     database, custom_field_factory, availability_factory
 ):
     cf, av = custom_field_factory(), availability_factory()
-    cfi = model_services.CreateCustomFieldInstances(
+    cfi = model_services.CreateCustomFieldInstance(
         custom_field_id=cf.id, availability_id=av.id
     ).run()
 
-    cfi = models.CustomFieldInstances.get(cfi.id)
+    cfi = models.CustomFieldInstance.get(cfi.id)
     assert cfi.custom_field_id == cf.id
     assert cfi.availability_id == av.id
 
@@ -385,21 +385,21 @@ def test_update_custom_field_instances(
 
     old_cfi = custom_field_instance_factory()
     old_av_id = old_cfi.availability_id
-    new_cfi = model_services.UpdateCustomFieldInstances(
+    new_cfi = model_services.UpdateCustomFieldInstance(
         custom_field_instance_id=old_cfi.id,
         custom_field_id=old_cfi.custom_field_id,
         availability_id=av.id,
     ).run()
-    new_cfi = models.CustomFieldInstances.get(new_cfi.id)
+    new_cfi = models.CustomFieldInstance.get(new_cfi.id)
     assert new_cfi.created_at == old_cfi.created_at
     assert new_cfi.availability_id != old_av_id
 
 
 def test_delete_custom_field_instances(database, custom_field_instance_factory):
     cfi = custom_field_instance_factory()
-    model_services.DeleteCustomFieldInstances(cfi.id).run()
+    model_services.DeleteCustomFieldInstance(cfi.id).run()
     with pytest.raises(DoesNotExist):
-        models.CustomFieldInstances.get(cfi.id)
+        models.CustomFieldInstance.get(cfi.id)
 
 
 def test_create_custom_field_value(database, custom_field_factory, customer_factory):
@@ -412,7 +412,7 @@ def test_create_custom_field_value(database, custom_field_factory, customer_fact
         booking_id=c.booking_id,
         customer_id=c.id,
     ).run()
-    cfv = models.CustomFieldValues.get(cfv.id)
+    cfv = models.CustomFieldValue.get(cfv.id)
     assert cfv.name == "foo"
     assert cfv.value == "bar"
     assert cfv.display_value == "baz"
@@ -434,7 +434,7 @@ def test_update_custom_field_value(
         booking_id=c.booking_id,
         customer_id=c.id,
     ).run()
-    cfv = models.CustomFieldValues.get(cfv.id)
+    cfv = models.CustomFieldValue.get(cfv.id)
     assert cfv.name == "goo"
     assert cfv.value == "zar"
     assert cfv.display_value == "zaz"
@@ -446,7 +446,7 @@ def test_delete_custom_field_value(database, custom_field_value_factory):
     cfv = custom_field_value_factory()
     model_services.DeleteCustomFieldValue(cfv.id).run()
     with pytest.raises(DoesNotExist):
-        models.CustomFieldValues.get(cfv.id)
+        models.CustomFieldValue.get(cfv.id)
 
 
 def test_create_customer(

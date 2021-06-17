@@ -768,12 +768,12 @@ class DeleteCustomField:
 
 
 @attr.s
-class CreateCustomFieldInstances:
+class CreateCustomFieldInstance:
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
 
     def run(self):
-        new_custom_field_instance = models.CustomFieldInstances(
+        new_custom_field_instance = models.CustomFieldInstance(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             custom_field_id=self.custom_field_id,
@@ -785,13 +785,13 @@ class CreateCustomFieldInstances:
 
 
 @attr.s
-class UpdateCustomFieldInstances:
+class UpdateCustomFieldInstance:
     custom_field_instance_id = attr.ib(type=int)
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
 
     def run(self):
-        custom_field_instance = models.CustomFieldInstances.get(
+        custom_field_instance = models.CustomFieldInstance.get(
             self.custom_field_instance_id
         )
         custom_field_instance.updated_at = (datetime.utcnow(),)
@@ -802,11 +802,11 @@ class UpdateCustomFieldInstances:
 
 
 @attr.s
-class DeleteCustomFieldInstances:
+class DeleteCustomFieldInstance:
     custom_field_instance_id = attr.ib(type=int)
 
     def run(self):
-        cfi = models.CustomFieldInstances.get(self.custom_field_instance_id)
+        cfi = models.CustomFieldInstance.get(self.custom_field_instance_id)
         db.session.delete(cfi)
         db.session.commit()
 
@@ -821,7 +821,7 @@ class CreateCustomFieldValue:
     customer_id = attr.ib(type=int)
 
     def run(self):
-        new_custom_field_value = models.CustomFieldValues(
+        new_custom_field_value = models.CustomFieldValue(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             name=self.name,
@@ -847,7 +847,7 @@ class UpdateCustomFieldValue:
     customer_id = attr.ib(type=int)
 
     def run(self):
-        cfv = models.CustomFieldValues.get(self.custom_field_value_id)
+        cfv = models.CustomFieldValue.get(self.custom_field_value_id)
         cfv.updated_at = (datetime.utcnow(),)
         cfv.name = (self.name,)
         cfv.value = (self.value,)
@@ -864,6 +864,6 @@ class DeleteCustomFieldValue:
     custom_field_value_id = attr.ib(type=int)
 
     def run(self):
-        cfv = models.CustomFieldValues.get(self.custom_field_value_id)
+        cfv = models.CustomFieldValue.get(self.custom_field_value_id)
         db.session.delete(cfv)
         db.session.commit()
