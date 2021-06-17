@@ -63,12 +63,12 @@ def availability_factory(item_factory):
         start_at=datetime.now(),
         end_at=datetime.now(),
         item_id=item.id
-    ).run()
+    ).run
 
 
 @pytest.fixture
 def booking_factory(availability_factory):
-    av = availability_factory
+    av = availability_factory()
     return model_services.CreateBooking(
         voucher_number="foo",
         display_id="bar",
@@ -154,7 +154,18 @@ def custom_field_factory():
         is_required=True,
         is_taxable=False,
         is_always_per_customer=False,
-    ).run()
+    ).run
+
+
+@pytest.fixture
+def custom_field_instance_factory(
+    database, custom_field_factory, availability_factory
+):
+    cf, av = custom_field_factory(), availability_factory()
+    return model_services.CreateCustomFieldInstances(
+        custom_field_id=cf.id,
+        availability_id=av.id
+    ).run
 
 
 @pytest.fixture
@@ -177,7 +188,7 @@ def customer_type_rate_factory(
         minimum_party_size=2,
         maximum_party_size=4,
         booking_id=booking_factory.id,
-        availability_id=availability_factory.id,
+        availability_id=availability_factory().id,
         customer_prototype_id=customer_prototype_factory.id,
         customer_type_id=customer_type_factory.id
     ).run()

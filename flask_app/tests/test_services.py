@@ -43,7 +43,7 @@ def test_create_availabilty(database, item_factory):
 
 def test_update_availability(database, item_factory, availability_factory):
     item = item_factory
-    av = availability_factory
+    av = availability_factory()
     model_services.UpdateAvailability(
         availability_id=av.id,
         capacity=20,
@@ -60,14 +60,14 @@ def test_update_availability(database, item_factory, availability_factory):
 
 
 def test_delete_availabilty(database, availability_factory):
-    av = availability_factory
+    av = availability_factory()
     model_services.DeleteAvailability(av.id).run()
     with pytest.raises(DoesNotExist):
         models.Availability.get(av.id)
 
 
 def test_create_booking(database, availability_factory):
-    av = availability_factory
+    av = availability_factory()
     b = model_services.CreateBooking(
         voucher_number="foo",
         display_id="bar",
@@ -107,7 +107,7 @@ def test_create_booking(database, availability_factory):
 
 def test_update_booking(database, booking_factory, availability_factory):
     old_booking = booking_factory
-    av = availability_factory
+    av = availability_factory()
     b = model_services.UpdateBooking(
         booking_id=old_booking.id,
         voucher_number="roo",
@@ -147,7 +147,7 @@ def test_update_booking(database, booking_factory, availability_factory):
 
 
 def test_update_booking_raises_error(database, availability_factory):
-    av = availability_factory
+    av = availability_factory()
     with pytest.raises(DoesNotExist):
         model_services.UpdateBooking(
             booking_id=1000000,
@@ -327,7 +327,7 @@ def test_create_custom_field(database):
 
 
 def test_update_custom_field(database, custom_field_factory):
-    old_cf = custom_field_factory
+    old_cf = custom_field_factory()
 
     model_services.UpdateCustomField(
         custom_field_id=old_cf.id,
@@ -354,12 +354,52 @@ def test_update_custom_field(database, custom_field_factory):
 
 
 def test_delete_custom_field(database, custom_field_factory):
-    cf = custom_field_factory
+    cf = custom_field_factory()
 
     model_services.DeleteCustomField(cf.id).run()
 
     with pytest.raises(DoesNotExist):
         models.CustomField.get(cf.id)
+
+
+def test_create_custom_field_instances(
+    database, custom_field_factory, availability_factory
+):
+    cf, av = custom_field_factory(), availability_factory()
+    cfi = model_services.CreateCustomFieldInstances(
+        custom_field_id=cf.id,
+        availability_id=av.id
+    ).run()
+
+    cfi = models.CustomFieldInstances.get(cfi.id)
+    assert cfi.custom_field_id == cf.id
+    assert cfi.availability_id == av.id
+
+
+def test_update_custom_field_instances(
+        database, custom_field_instance_factory, availability_factory
+):
+    av = availability_factory()
+
+    old_cfi = custom_field_instance_factory()
+    old_av_id = old_cfi.availability_id
+    new_cfi = model_services.UpdateCustomFieldInstances(
+        custom_field_instance_id=old_cfi.id,
+        custom_field_id=old_cfi.custom_field_id,
+        availability_id=av.id,
+    ).run()
+    new_cfi = models.CustomFieldInstances.get(new_cfi.id)
+    assert new_cfi.created_at == old_cfi.created_at
+    assert new_cfi.availability_id != old_av_id
+
+
+def test_delete_custom_field_instances(
+    database, custom_field_instance_factory
+):
+    cfi = custom_field_instance_factory()
+    model_services.DeleteCustomFieldInstances(cfi.id).run()
+    with pytest.raises(DoesNotExist):
+        models.CustomFieldInstances.get(cfi.id)
 
 
 def test_create_customer(
@@ -406,7 +446,7 @@ def test_create_customer_type_rate(
         minimum_party_size=2,
         maximum_party_size=4,
         booking_id=booking_factory.id,
-        availability_id=availability_factory.id,
+        availability_id=availability_factory().id,
         customer_prototype_id=customer_prototype_factory.id,
         customer_type_id=customer_type_factory.id
     ).run()

@@ -772,3 +772,47 @@ class DeleteCustomField:
         db.session.delete(cf)
         db.session.commit()
 
+
+@attr.s
+class CreateCustomFieldInstances:
+    custom_field_id = attr.ib(type=int)
+    availability_id = attr.ib(type=int)
+
+    def run(self):
+        new_custom_field_instance = models.CustomFieldInstances(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            custom_field_id=self.custom_field_id,
+            availability_id=self.availability_id
+        )
+        db.session.add(new_custom_field_instance)
+        db.session.commit()
+        return new_custom_field_instance
+
+
+@attr.s
+class UpdateCustomFieldInstances:
+    custom_field_instance_id = attr.ib(type=int)
+    custom_field_id = attr.ib(type=int)
+    availability_id = attr.ib(type=int)
+
+    def run(self):
+        custom_field_instance = models.CustomFieldInstances.get(
+            self.custom_field_instance_id
+        )
+        custom_field_instance.updated_at = datetime.utcnow(),
+        custom_field_instance.custom_field_id = self.custom_field_id,
+        custom_field_instance.availability_id = self.availability_id
+        db.session.commit()
+        return custom_field_instance
+
+@attr.s
+class DeleteCustomFieldInstances:
+    custom_field_instance_id = attr.ib(type=int)
+
+    def run(self):
+        cfi = models.CustomFieldInstances.get(self.custom_field_instance_id)
+        db.session.delete(cfi)
+        db.session.commit()
+
+

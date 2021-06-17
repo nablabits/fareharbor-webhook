@@ -181,7 +181,7 @@ class CustomerType(db.Model, BaseMixin):
     plural = db.Column(db.String(64), nullable=False)
 
 
-class CustomFieldInstances(db.Model):
+class CustomFieldInstances(db.Model, BaseMixin):
     """Make the M2M between Availability and Custom field models.
 
     An availability can have several custom fields defined and the same custom
@@ -197,7 +197,7 @@ class CustomFieldInstances(db.Model):
         db.Integer, db.ForeignKey("availability.id"))
 
 
-class CustomFieldValues(db.Model):
+class CustomFieldValues(db.Model, BaseMixin):
     """Store the chosen values for each booking/customer.
 
     Acts as M2M among bookings-custom_fields and customer-custom_fields.
