@@ -27,7 +27,7 @@ def runner(app):
     return app.test_cli_runner()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def database(request):
     """
     Create a Postgres database for the tests, and drop it when the tests are done.
@@ -62,7 +62,7 @@ def availability_factory(item_factory):
         maximum_party_size=12,
         start_at=datetime.now(),
         end_at=datetime.now(),
-        item_id=item.id
+        item_id=item.id,
     ).run
 
 
@@ -99,7 +99,7 @@ def booking_factory(availability_factory):
         rebooked_to="saz",
         rebooked_from="woo",
         external_id="war",
-        order="waz"
+        order="waz",
     )
 
 
@@ -115,7 +115,7 @@ def contact_factory(booking_factory):
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
-        booking_id=b.id
+        booking_id=b.id,
     ).run
 
 
@@ -125,10 +125,7 @@ def company_factory(booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCompany(
-        name="foo",
-        short_name="bar",
-        currency="eur",
-        booking_id=b.id
+        name="foo", short_name="bar", currency="eur", booking_id=b.id
     ).run
 
 
@@ -139,9 +136,7 @@ def cancellation_factory(booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCancellationPolicy(
-        cutoff=datetime.utcnow(),
-        cancellation_type="foo",
-        booking_id=b.id
+        cutoff=datetime.utcnow(), cancellation_type="foo", booking_id=b.id
     ).run
 
 
@@ -167,20 +162,15 @@ def custom_field_factory():
 
 
 @pytest.fixture
-def custom_field_instance_factory(
-    database, custom_field_factory, availability_factory
-):
+def custom_field_instance_factory(database, custom_field_factory, availability_factory):
     cf, av = custom_field_factory(), availability_factory()
     return model_services.CreateCustomFieldInstances(
-        custom_field_id=cf.id,
-        availability_id=av.id
+        custom_field_id=cf.id, availability_id=av.id
     ).run
 
 
 @pytest.fixture
-def custom_field_value_factory(
-        database, custom_field_factory, customer_factory
-):
+def custom_field_value_factory(database, custom_field_factory, customer_factory):
     c = customer_factory()
     return model_services.CreateCustomFieldValue(
         name="foo",
@@ -188,8 +178,9 @@ def custom_field_value_factory(
         display_value="baz",
         custom_field_id=custom_field_factory().id,
         booking_id=c.booking_id,
-        customer_id=c.id
+        customer_id=c.id,
     ).run
+
 
 @pytest.fixture
 def customer_factory(customer_type_rate_factory, booking_factory):
@@ -200,14 +191,16 @@ def customer_factory(customer_type_rate_factory, booking_factory):
         checkin_url="https://foo.bar",
         checking_status="checked_in",
         customer_type_rate_id=customer_type_rate_factory().id,
-        booking_id=b.id
+        booking_id=b.id,
     ).run
 
 
 @pytest.fixture
 def customer_type_rate_factory(
-    booking_factory, availability_factory, customer_type_factory,
-    customer_prototype_factory
+    booking_factory,
+    availability_factory,
+    customer_type_factory,
+    customer_prototype_factory,
 ):
     s = booking_factory
     s.uuid = uuid4().hex
@@ -219,17 +212,14 @@ def customer_type_rate_factory(
         booking_id=b.id,
         availability_id=availability_factory().id,
         customer_prototype_id=customer_prototype_factory().id,
-        customer_type_id=customer_type_factory().id
+        customer_type_id=customer_type_factory().id,
     ).run
 
 
 @pytest.fixture
 def customer_prototype_factory():
     return model_services.CreateCustomerPrototype(
-        total=10,
-        total_including_tax=10,
-        display_name="foo",
-        note="bar"
+        total=10, total_including_tax=10, display_name="foo", note="bar"
     ).run
 
 

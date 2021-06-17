@@ -13,9 +13,7 @@ class CreateItem:
 
     def run(self):
         new_item = models.Item(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-            name=self.name
+            created_at=datetime.utcnow(), updated_at=datetime.utcnow(), name=self.name
         )
         db.session.add(new_item)
         db.session.commit()
@@ -66,7 +64,7 @@ class CreateAvailability:
             maximum_party_size=self.maximum_party_size,
             start_at=self.start_at,
             end_at=self.end_at,
-            item_id=self.item_id
+            item_id=self.item_id,
         )
         db.session.add(new_availability)
         db.session.commit()
@@ -93,7 +91,6 @@ class UpdateAvailability:
         availability.end_at = self.end_at
         availability.item_id = self.item_id
 
-        db.session.add(availability)
         db.session.commit()
         return availability
 
@@ -184,7 +181,7 @@ class CreateBooking:
             rebooked_to=self.rebooked_to,
             rebooked_from=self.rebooked_from,
             external_id=self.external_id,
-            order=self.order
+            order=self.order,
         )
         db.session.add(new_booking)
         db.session.commit()
@@ -258,7 +255,6 @@ class UpdateBooking:
         booking.rebooked_from = self.rebooked_from
         booking.external_id = self.external_id
         booking.order = self.order
-        db.session.add(booking)
         db.session.commit()
         return booking
 
@@ -271,6 +267,7 @@ class DeleteBooking:
         booking = models.Booking.get(self.booking_id)
         db.session.delete(booking)
         db.session.commit()
+
 
 # Contact services
 
@@ -296,7 +293,7 @@ class CreateContact:
             phone=self.phone,
             normalized_phone=self.normalized_phone,
             is_subscribed_for_email_updates=opt_in,
-            booking_id=self.booking_id
+            booking_id=self.booking_id,
         )
         db.session.add(new_contact)
         db.session.commit()
@@ -316,14 +313,13 @@ class UpdateContact:
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
         contact = models.Contact.get(self.contact_id)
-        contact.updated_at = datetime.utcnow(),
-        contact.name = self.name,
-        contact.email = self.email,
-        contact.phone_country = self.phone_country,
-        contact.phone = self.phone,
-        contact.normalized_phone = self.normalized_phone,
+        contact.updated_at = (datetime.utcnow(),)
+        contact.name = (self.name,)
+        contact.email = (self.email,)
+        contact.phone_country = (self.phone_country,)
+        contact.phone = (self.phone,)
+        contact.normalized_phone = (self.normalized_phone,)
         contact.is_subscribed_for_email_updates = opt_in
-        db.session.add(contact)
         db.session.commit()
         return contact
 
@@ -355,7 +351,7 @@ class CreateCompany:
             name=self.name,
             short_name=self.short_name,
             currency=self.currency,
-            booking_id=self.booking_id
+            booking_id=self.booking_id,
         )
         db.session.add(new_company)
         db.session.commit()
@@ -379,7 +375,6 @@ class UpdateCompany:
         company.short_name = self.short_name
         company.currency = self.currency
 
-        db.session.add(company)
         db.session.commit()
         return company
 
@@ -396,6 +391,7 @@ class DeleteCompany:
 
 # Cancellation policy services
 
+
 @attr.s
 class CreateCancellationPolicy:
     cutoff = attr.ib(type=datetime)
@@ -408,7 +404,7 @@ class CreateCancellationPolicy:
             updated_at=datetime.utcnow(),
             cutoff=self.cutoff,
             cancellation_type=self.cancellation_type,
-            booking_id=self.booking_id
+            booking_id=self.booking_id,
         )
         db.session.add(new_cp)
         db.session.commit()
@@ -429,7 +425,6 @@ class UpdateCancellationPolicy:
         cp.cutoff = self.cutoff
         cp.cancellation_type = self.cancellation_type
 
-        db.session.add(cp)
         db.session.commit()
         return cp
 
@@ -446,6 +441,7 @@ class DeleteCancellationPolicy:
 
 # Customers' services
 
+
 @attr.s
 class CreateCustomer:
     """Create Customer instances.
@@ -454,6 +450,7 @@ class CreateCustomer:
     point to the same booking instance but we add as an argument constructor
     just in case that for some strange reason they differ.
     """
+
     checkin_url = attr.ib(type=str)
     checking_status = attr.ib(type=str)
     customer_type_rate_id = attr.ib(type=int)
@@ -466,7 +463,7 @@ class CreateCustomer:
             checkin_url=self.checkin_url,
             checking_status=self.checking_status,
             customer_type_rate_id=self.customer_type_rate_id,
-            booking_id=self.booking_id
+            booking_id=self.booking_id,
         )
         db.session.add(new_customer)
         db.session.commit()
@@ -483,10 +480,10 @@ class UpdateCustomer:
 
     def run(self):
         customer = models.Customer.get(self.customer_id)
-        customer.updated_at = datetime.utcnow(),
-        customer.checkin_url = self.checkin_url,
-        customer.checking_status = self.checking_status,
-        customer.customer_type_rate_id = self.customer_type_rate_id,
+        customer.updated_at = (datetime.utcnow(),)
+        customer.checkin_url = (self.checkin_url,)
+        customer.checking_status = (self.checking_status,)
+        customer.customer_type_rate_id = (self.customer_type_rate_id,)
         customer.booking_id = self.booking_id
         db.session.commit()
         return customer
@@ -542,14 +539,14 @@ class UpdateCustomerTypeRate:
 
     def run(self):
         ctr = models.CustomerTypeRate.get(self.ctr_id)
-        ctr.updated_at = datetime.utcnow(),
-        ctr.capacity = self.capacity,
-        ctr.minimum_party_size = self.minimum_party_size,
-        ctr.maximum_party_size = self.maximum_party_size,
-        ctr.booking_id = self.booking_id,
-        ctr.availability_id = self.availability_id,
-        ctr.customer_prototype_id = self.customer_prototype_id,
-        ctr.customer_type_id = self.customer_type_id,
+        ctr.updated_at = (datetime.utcnow(),)
+        ctr.capacity = (self.capacity,)
+        ctr.minimum_party_size = (self.minimum_party_size,)
+        ctr.maximum_party_size = (self.maximum_party_size,)
+        ctr.booking_id = (self.booking_id,)
+        ctr.availability_id = (self.availability_id,)
+        ctr.customer_prototype_id = (self.customer_prototype_id,)
+        ctr.customer_type_id = (self.customer_type_id,)
         db.session.commit()
         return ctr
 
@@ -578,7 +575,7 @@ class CreateCustomerPrototype:
             total=self.total,
             total_including_tax=self.total_including_tax,
             display_name=self.display_name,
-            note=self.note
+            note=self.note,
         )
         db.session.add(new_customer_prototype)
         db.session.commit()
@@ -594,8 +591,7 @@ class UpdateCustomerPrototype:
     note = attr.ib(type=str)
 
     def run(self):
-        customer_prototype = models.CustomerPrototype.get(
-            self.customer_prototype_id)
+        customer_prototype = models.CustomerPrototype.get(self.customer_prototype_id)
         customer_prototype.updated_at = datetime.utcnow()
         customer_prototype.total = self.total
         customer_prototype.total_including_tax = self.total_including_tax
@@ -611,9 +607,7 @@ class DeleteCustomerPrototype:
     customer_prototype_id = attr.ib(type=int)
 
     def run(self):
-        customer_prototype = models.CustomerPrototype.get(
-            self.customer_prototype_id
-        )
+        customer_prototype = models.CustomerPrototype.get(self.customer_prototype_id)
         db.session.delete(customer_prototype)
         db.session.commit()
 
@@ -630,7 +624,7 @@ class CreateCustomerType:
             updated_at=datetime.utcnow(),
             note=self.note,
             singular=self.singular,
-            plural=self.plural
+            plural=self.plural,
         )
         db.session.add(new_customer_type)
         db.session.commit()
@@ -666,6 +660,7 @@ class DeleteCustomerType:
 
 
 # Custom Field services
+
 
 @attr.s
 class CreateCustomField:
@@ -708,7 +703,7 @@ class CreateCustomField:
             is_required=self.is_required,
             is_taxable=self.is_taxable,
             is_always_per_customer=self.is_always_per_customer,
-            extended_options=self.extended_options
+            extended_options=self.extended_options,
         )
         db.session.add(new_custom_field)
         db.session.commit()
@@ -758,7 +753,6 @@ class UpdateCustomField:
         cf.is_always_per_customer = self.is_always_per_customer
         cf.extended_options = self.extended_options
 
-        db.session.add(cf)
         db.session.commit()
         return cf
 
@@ -783,7 +777,7 @@ class CreateCustomFieldInstances:
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             custom_field_id=self.custom_field_id,
-            availability_id=self.availability_id
+            availability_id=self.availability_id,
         )
         db.session.add(new_custom_field_instance)
         db.session.commit()
@@ -800,8 +794,8 @@ class UpdateCustomFieldInstances:
         custom_field_instance = models.CustomFieldInstances.get(
             self.custom_field_instance_id
         )
-        custom_field_instance.updated_at = datetime.utcnow(),
-        custom_field_instance.custom_field_id = self.custom_field_id,
+        custom_field_instance.updated_at = (datetime.utcnow(),)
+        custom_field_instance.custom_field_id = (self.custom_field_id,)
         custom_field_instance.availability_id = self.availability_id
         db.session.commit()
         return custom_field_instance
@@ -854,13 +848,13 @@ class UpdateCustomFieldValue:
 
     def run(self):
         cfv = models.CustomFieldValues.get(self.custom_field_value_id)
-        cfv.updated_at = datetime.utcnow(),
-        cfv.name = self.name,
-        cfv.value = self.value,
-        cfv.display_value = self.display_value,
-        cfv.custom_field_id = self.custom_field_id,
-        cfv.booking_id = self.booking_id,
-        cfv.customer_id = self.customer_id,
+        cfv.updated_at = (datetime.utcnow(),)
+        cfv.name = (self.name,)
+        cfv.value = (self.value,)
+        cfv.display_value = (self.display_value,)
+        cfv.custom_field_id = (self.custom_field_id,)
+        cfv.booking_id = (self.booking_id,)
+        cfv.customer_id = (self.customer_id,)
         db.session.commit()
         return cfv
 

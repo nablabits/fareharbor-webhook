@@ -36,7 +36,7 @@ def test_create_availabilty(database, item_factory):
         maximum_party_size=12,
         start_at=datetime.now(),
         end_at=datetime.now(),
-        item_id=item.id
+        item_id=item.id,
     ).run()
     assert models.Availability.get(availability.id)
 
@@ -51,7 +51,7 @@ def test_update_availability(database, item_factory, availability_factory):
         maximum_party_size=22,
         start_at=datetime.now(),
         end_at=datetime.now(),
-        item_id=item.id
+        item_id=item.id,
     ).run()
     av = models.Availability.get(av.id)
     assert av.capacity == 20
@@ -211,7 +211,7 @@ def test_create_contact(database, booking_factory):
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
-        booking_id=b.id
+        booking_id=b.id,
     ).run()
     c = models.Contact.get(c.id)
     assert c.name == "foo"
@@ -227,7 +227,7 @@ def test_update_contact(database, contact_factory):
         phone_country="49",
         phone="00000",
         normalized_phone="00000",
-        is_subscribed_for_email_updates=True
+        is_subscribed_for_email_updates=True,
     ).run()
     new_contact = models.Contact.get(new_contact.id)
     assert new_contact.name == "bar"
@@ -245,10 +245,7 @@ def test_create_company(database, booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     c = model_services.CreateCompany(
-        name="foo",
-        short_name="bar",
-        currency="eur",
-        booking_id=b.id
+        name="foo", short_name="bar", currency="eur", booking_id=b.id
     ).run()
     c = models.Company.get(c.id)
     assert c.name == "foo"
@@ -280,9 +277,7 @@ def test_create_cancellation_policy(database, booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     new_cp = model_services.CreateCancellationPolicy(
-        cutoff=datetime.utcnow(),
-        cancellation_type="foo",
-        booking_id=b.id
+        cutoff=datetime.utcnow(), cancellation_type="foo", booking_id=b.id
     ).run()
     cp = models.EffectiveCancellationPolicy.get(new_cp.id)
     assert cp.cancellation_type == "foo"
@@ -293,9 +288,7 @@ def test_update_cancellation_policy(database, cancellation_factory):
     old_cp = cancellation_factory()
     new_date = datetime(2021, 5, 5)
     new_cp = model_services.UpdateCancellationPolicy(
-        cp_id=old_cp.id,
-        cutoff=new_date,
-        cancellation_type="bar"
+        cp_id=old_cp.id, cutoff=new_date, cancellation_type="bar"
     ).run()
 
     # reload from db
@@ -377,8 +370,7 @@ def test_create_custom_field_instances(
 ):
     cf, av = custom_field_factory(), availability_factory()
     cfi = model_services.CreateCustomFieldInstances(
-        custom_field_id=cf.id,
-        availability_id=av.id
+        custom_field_id=cf.id, availability_id=av.id
     ).run()
 
     cfi = models.CustomFieldInstances.get(cfi.id)
@@ -387,7 +379,7 @@ def test_create_custom_field_instances(
 
 
 def test_update_custom_field_instances(
-        database, custom_field_instance_factory, availability_factory
+    database, custom_field_instance_factory, availability_factory
 ):
     av = availability_factory()
 
@@ -403,18 +395,14 @@ def test_update_custom_field_instances(
     assert new_cfi.availability_id != old_av_id
 
 
-def test_delete_custom_field_instances(
-    database, custom_field_instance_factory
-):
+def test_delete_custom_field_instances(database, custom_field_instance_factory):
     cfi = custom_field_instance_factory()
     model_services.DeleteCustomFieldInstances(cfi.id).run()
     with pytest.raises(DoesNotExist):
         models.CustomFieldInstances.get(cfi.id)
 
 
-def test_create_custom_field_value(
-        database, custom_field_factory, customer_factory
-):
+def test_create_custom_field_value(database, custom_field_factory, customer_factory):
     c = customer_factory()
     cfv = model_services.CreateCustomFieldValue(
         name="foo",
@@ -422,7 +410,7 @@ def test_create_custom_field_value(
         display_value="baz",
         custom_field_id=custom_field_factory().id,
         booking_id=c.booking_id,
-        customer_id=c.id
+        customer_id=c.id,
     ).run()
     cfv = models.CustomFieldValues.get(cfv.id)
     assert cfv.name == "foo"
@@ -444,7 +432,7 @@ def test_update_custom_field_value(
         display_value="zaz",
         custom_field_id=old_cfv.custom_field_id,
         booking_id=c.booking_id,
-        customer_id=c.id
+        customer_id=c.id,
     ).run()
     cfv = models.CustomFieldValues.get(cfv.id)
     assert cfv.name == "goo"
@@ -471,7 +459,7 @@ def test_create_customer(
         checkin_url="https://foo.bar",
         checking_status="checked_in",
         customer_type_rate_id=customer_type_rate_factory().id,
-        booking_id=b.id
+        booking_id=b.id,
     ).run()
     assert models.Customer.get(ct.id)
 
@@ -483,7 +471,7 @@ def test_update_customer(database, customer_factory):
         checkin_url="https://bar.baz",
         checking_status="checked_out",
         customer_type_rate_id=old_customer.customer_type_rate_id,
-        booking_id=old_customer.booking_id
+        booking_id=old_customer.booking_id,
     ).run()
     ct = models.Customer.get(old_customer.id)
     assert ct.checkin_url == "https://bar.baz"
@@ -500,8 +488,11 @@ def test_delete_customer(database, customer_factory):
 
 
 def test_create_customer_type_rate(
-    database, booking_factory, availability_factory, customer_type_factory,
-    customer_prototype_factory
+    database,
+    booking_factory,
+    availability_factory,
+    customer_type_factory,
+    customer_prototype_factory,
 ):
     s = booking_factory
     s.uuid = uuid4().hex
@@ -513,7 +504,7 @@ def test_create_customer_type_rate(
         booking_id=b.id,
         availability_id=availability_factory().id,
         customer_prototype_id=customer_prototype_factory().id,
-        customer_type_id=customer_type_factory().id
+        customer_type_id=customer_type_factory().id,
     ).run()
     assert models.CustomerTypeRate.get(ctr.id)
 
@@ -528,7 +519,7 @@ def test_update_customer_type_rate(database, customer_type_rate_factory):
         booking_id=old_ctr.booking_id,
         availability_id=old_ctr.availability_id,
         customer_prototype_id=old_ctr.customer_prototype_id,
-        customer_type_id=old_ctr.customer_type_id
+        customer_type_id=old_ctr.customer_type_id,
     ).run()
     updated_ctr = models.CustomerTypeRate.get(old_ctr.id)
     assert updated_ctr.capacity == 6
@@ -545,10 +536,7 @@ def test_delete_customer_type_rate(database, customer_type_rate_factory):
 
 def test_create_customer_prototype(database):
     service = model_services.CreateCustomerPrototype(
-        total=10,
-        total_including_tax=10,
-        display_name="foo",
-        note="bar"
+        total=10, total_including_tax=10, display_name="foo", note="bar"
     )
     new_customer_prototype = service.run()
     assert models.CustomerPrototype.get(new_customer_prototype.id)
@@ -562,7 +550,7 @@ def test_update_customer_prototype(database, customer_prototype_factory):
         total=20,
         total_including_tax=20,
         display_name="bar",
-        note="baz"
+        note="baz",
     ).run()
 
     cp = models.CustomerPrototype.get(old_cp.id)
@@ -591,10 +579,7 @@ def test_create_customer_type(database):
 def test_update_customer_type(database, customer_type_factory):
     ct = customer_type_factory()
     model_services.UpdateCustomerType(
-        customer_type_id=ct.id,
-        note="goo",
-        singular="kar",
-        plural="kaz"
+        customer_type_id=ct.id, note="goo", singular="kar", plural="kaz"
     ).run()
 
     updated_ct = models.CustomerType.get(ct.id)
