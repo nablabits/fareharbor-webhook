@@ -806,6 +806,7 @@ class UpdateCustomFieldInstances:
         db.session.commit()
         return custom_field_instance
 
+
 @attr.s
 class DeleteCustomFieldInstances:
     custom_field_instance_id = attr.ib(type=int)
@@ -816,3 +817,59 @@ class DeleteCustomFieldInstances:
         db.session.commit()
 
 
+@attr.s
+class CreateCustomFieldValue:
+    name = attr.ib(type=str)
+    value = attr.ib(type=str)
+    display_value = attr.ib(type=str)
+    custom_field_id = attr.ib(type=int)
+    booking_id = attr.ib(type=int)
+    customer_id = attr.ib(type=int)
+
+    def run(self):
+        new_custom_field_value = models.CustomFieldValues(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            name=self.name,
+            value=self.value,
+            display_value=self.display_value,
+            custom_field_id=self.custom_field_id,
+            booking_id=self.booking_id,
+            customer_id=self.customer_id,
+        )
+        db.session.add(new_custom_field_value)
+        db.session.commit()
+        return new_custom_field_value
+
+
+@attr.s
+class UpdateCustomFieldValue:
+    custom_field_value_id = attr.ib(type=int)
+    name = attr.ib(type=str)
+    value = attr.ib(type=str)
+    display_value = attr.ib(type=str)
+    custom_field_id = attr.ib(type=int)
+    booking_id = attr.ib(type=int)
+    customer_id = attr.ib(type=int)
+
+    def run(self):
+        cfv = models.CustomFieldValues.get(self.custom_field_value_id)
+        cfv.updated_at = datetime.utcnow(),
+        cfv.name = self.name,
+        cfv.value = self.value,
+        cfv.display_value = self.display_value,
+        cfv.custom_field_id = self.custom_field_id,
+        cfv.booking_id = self.booking_id,
+        cfv.customer_id = self.customer_id,
+        db.session.commit()
+        return cfv
+
+
+@attr.s
+class DeleteCustomFieldValue:
+    custom_field_value_id = attr.ib(type=int)
+
+    def run(self):
+        cfv = models.CustomFieldValues.get(self.custom_field_value_id)
+        db.session.delete(cfv)
+        db.session.commit()

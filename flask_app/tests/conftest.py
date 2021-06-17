@@ -178,6 +178,20 @@ def custom_field_instance_factory(
 
 
 @pytest.fixture
+def custom_field_value_factory(
+        database, custom_field_factory, customer_factory
+):
+    c = customer_factory()
+    return model_services.CreateCustomFieldValue(
+        name="foo",
+        value="bar",
+        display_value="baz",
+        custom_field_id=custom_field_factory().id,
+        booking_id=c.booking_id,
+        customer_id=c.id
+    ).run
+
+@pytest.fixture
 def customer_factory(customer_type_rate_factory, booking_factory):
     s = booking_factory
     s.uuid = uuid4().hex
