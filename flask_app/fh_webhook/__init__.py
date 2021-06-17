@@ -30,7 +30,9 @@ def create_app(test_config=False):
     # load auth
     auth = HTTPBasicAuth()
     fh_pass = app.config["FH_PASSWORD"]
-    users = {"fareharbor": generate_password_hash(fh_pass), }
+    users = {
+        "fareharbor": generate_password_hash(fh_pass),
+    }
     test_pass = app.config.get("TEST_PASSWORD")
     if test_pass:
         users["test"] = generate_password_hash(test_pass)
@@ -89,4 +91,5 @@ def create_app(test_config=False):
         if app_name:
             return "Hello from flask on a Docker environment"
         return "Hello from Flask"
+
     return app

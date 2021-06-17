@@ -42,7 +42,8 @@ class Booking(db.Model, BaseMixin):
 
     # Foreign key fields
     availability_id = db.Column(
-        db.Integer, db.ForeignKey("availability.id"), nullable=False)
+        db.Integer, db.ForeignKey("availability.id"), nullable=False
+    )
 
     # price fields
     receipt_subtotals = db.Column(db.Integer)
@@ -72,6 +73,7 @@ class Availability(db.Model, BaseMixin):
 
     Each booking belongs to one and only availability
     """
+
     __table_name__ = "availability"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -83,12 +85,12 @@ class Availability(db.Model, BaseMixin):
     end_at = db.Column(db.DateTime(timezone=True), nullable=False)
 
     # foreign key fields
-    item_id = db.Column(
-        db.Integer, db.ForeignKey("item.id"), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.id"), nullable=False)
 
 
 class Item(db.Model, BaseMixin):
     """Items are the products we sell in the business."""
+
     __table_name__ = "item"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -107,6 +109,7 @@ class Customer(db.Model, BaseMixin):
     Note that CustomerTypeRate also points to Booking so it should have the
     same value.
     """
+
     __table_name__ = "customer"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -119,9 +122,7 @@ class Customer(db.Model, BaseMixin):
         db.Integer, db.ForeignKey("customer_type_rate.id"), nullable=False
     )
     # M2M to booking
-    booking_id = db.Column(
-        db.Integer, db.ForeignKey("booking.id"), nullable=False
-    )
+    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
 
 
 class CustomerTypeRate(db.Model, BaseMixin):
@@ -131,6 +132,7 @@ class CustomerTypeRate(db.Model, BaseMixin):
     customer prototypes (the ones defined in the settings).
     It acts as a M2M between the availability and the customer prototype.
     """
+
     __table_name__ = "customer_type_rate"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -141,7 +143,9 @@ class CustomerTypeRate(db.Model, BaseMixin):
 
     # Foreign key fields
     booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
-    availability_id = db.Column(db.Integer, db.ForeignKey("availability.id"), nullable=False)
+    availability_id = db.Column(
+        db.Integer, db.ForeignKey("availability.id"), nullable=False
+    )
     customer_prototype_id = db.Column(
         db.Integer, db.ForeignKey("customer_prototype.id"), nullable=False
     )
@@ -156,6 +160,7 @@ class CustomerPrototype(db.Model, BaseMixin):
     We define general customer types (like Adult, child, 2hours) that
     afterwards can be added to the availabilities.
     """
+
     __table_name__ = "customer_prototype"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -172,6 +177,7 @@ class CustomerType(db.Model, BaseMixin):
     This model is an extension of the customer Prototype storing the notes and
     the names in singular plural.
     """
+
     __table_name__ = "customer_type"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -181,27 +187,27 @@ class CustomerType(db.Model, BaseMixin):
     plural = db.Column(db.String(64), nullable=False)
 
 
-class CustomFieldInstances(db.Model):
+class CustomFieldInstances(db.Model, BaseMixin):
     """Make the M2M between Availability and Custom field models.
 
     An availability can have several custom fields defined and the same custom
     field can appear in different availabilities.
     """
+
     __table_name__ = "custom_field_instance"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    custom_field_id = db.Column(
-        db.Integer, db.ForeignKey("custom_field.id"))
-    availability_id = db.Column(
-        db.Integer, db.ForeignKey("availability.id"))
+    custom_field_id = db.Column(db.Integer, db.ForeignKey("custom_field.id"))
+    availability_id = db.Column(db.Integer, db.ForeignKey("availability.id"))
 
 
-class CustomFieldValues(db.Model):
+class CustomFieldValues(db.Model, BaseMixin):
     """Store the chosen values for each booking/customer.
 
     Acts as M2M among bookings-custom_fields and customer-custom_fields.
     """
+
     __table_name__ = "custom_field_values"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -211,20 +217,15 @@ class CustomFieldValues(db.Model):
     display_value = db.Column(db.String(2048))
 
     # Foreign key fields
-    custom_field_id = db.Column(
-        db.Integer, db.ForeignKey("custom_field.id")
-    )
+    custom_field_id = db.Column(db.Integer, db.ForeignKey("custom_field.id"))
     # M2M to booking and customer
-    booking_id = db.Column(
-        db.Integer, db.ForeignKey("booking.id"), nullable=False
-    )
-    customer_id = db.Column(
-        db.Integer, db.ForeignKey("customer.id"), nullable=False
-    )
+    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
 
 
 class CustomField(db.Model, BaseMixin):
     """Store the types of custom fields available."""
+
     __table_name__ = "custom_field"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -249,7 +250,8 @@ class CustomField(db.Model, BaseMixin):
     is_always_per_customer = db.Column(db.Boolean, nullable=False)
 
     extended_options = db.Column(
-        db.Integer, db.ForeignKey("custom_field.id"), nullable=True)
+        db.Integer, db.ForeignKey("custom_field.id"), nullable=True
+    )
 
 
 class Contact(db.Model, BaseMixin):
@@ -257,6 +259,7 @@ class Contact(db.Model, BaseMixin):
 
     Is a 1:1 on bookings.
     """
+
     __table_name__ = "contact"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -267,7 +270,9 @@ class Contact(db.Model, BaseMixin):
     phone = db.Column(db.String(30))
     normalized_phone = db.Column(db.String(30))
     is_subscribed_for_email_updates = db.Column(db.Boolean, nullable=False)
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
+    booking_id = db.Column(
+        db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False
+    )
 
 
 class Company(db.Model, BaseMixin):
@@ -275,6 +280,7 @@ class Company(db.Model, BaseMixin):
 
     Is a 1:1 on bookings.
     """
+
     __table_name__ = "company"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -282,7 +288,9 @@ class Company(db.Model, BaseMixin):
     name = db.Column(db.String(256), nullable=False)
     short_name = db.Column(db.String(30), nullable=False)
     currency = db.Column(db.String(10), nullable=False)
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
+    booking_id = db.Column(
+        db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False
+    )
 
 
 class EffectiveCancellationPolicy(db.Model, BaseMixin):
@@ -290,10 +298,13 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
 
     Is a 1:1 on bookings.
     """
+
     __table_name__ = "effective_cancellation_policy"
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     cutoff = db.Column(db.DateTime(timezone=True), nullable=False)
     cancellation_type = db.Column(db.String(64), nullable=False)
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False)
+    booking_id = db.Column(
+        db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False
+    )

@@ -27,7 +27,7 @@ def runner(app):
     return app.test_cli_runner()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def database(request):
     """
     Create a Postgres database for the tests, and drop it when the tests are done.
@@ -49,12 +49,12 @@ def database(request):
 
 @pytest.fixture
 def item_factory():
-    return model_services.CreateItem(name="foo").run()
+    return model_services.CreateItem(name="foo").run
 
 
 @pytest.fixture
 def availability_factory(item_factory):
-    item = item_factory
+    item = item_factory()
 
     return model_services.CreateAvailability(
         capacity=10,
@@ -62,13 +62,13 @@ def availability_factory(item_factory):
         maximum_party_size=12,
         start_at=datetime.now(),
         end_at=datetime.now(),
-        item_id=item.id
-    ).run()
+        item_id=item.id,
+    ).run
 
 
 @pytest.fixture
 def booking_factory(availability_factory):
-    av = availability_factory
+    av = availability_factory()
     return model_services.CreateBooking(
         voucher_number="foo",
         display_id="bar",
@@ -99,12 +99,15 @@ def booking_factory(availability_factory):
         rebooked_to="saz",
         rebooked_from="woo",
         external_id="war",
-        order="waz"
-    ).run()
+        order="waz",
+    )
 
 
 @pytest.fixture
 def contact_factory(booking_factory):
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     return model_services.CreateContact(
         name="foo",
         email="foo@bar.baz",
@@ -112,28 +115,29 @@ def contact_factory(booking_factory):
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
-        booking_id=booking_factory.id
-    ).run()
+        booking_id=b.id,
+    ).run
 
 
 @pytest.fixture
 def company_factory(booking_factory):
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     return model_services.CreateCompany(
-        name="foo",
-        short_name="bar",
-        currency="eur",
-        booking_id=booking_factory.id
-    ).run()
+        name="foo", short_name="bar", currency="eur", booking_id=b.id
+    ).run
 
 
 @pytest.fixture
 def cancellation_factory(booking_factory):
     """Create a cancellation policy for tests."""
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     return model_services.CreateCancellationPolicy(
-        cutoff=datetime.utcnow(),
-        cancellation_type="foo",
-        booking_id=booking_factory.id
-    ).run()
+        cutoff=datetime.utcnow(), cancellation_type="foo", booking_id=b.id
+    ).run
 
 
 @pytest.fixture
@@ -154,43 +158,69 @@ def custom_field_factory():
         is_required=True,
         is_taxable=False,
         is_always_per_customer=False,
-    ).run()
+    ).run
+
+
+@pytest.fixture
+def custom_field_instance_factory(database, custom_field_factory, availability_factory):
+    cf, av = custom_field_factory(), availability_factory()
+    return model_services.CreateCustomFieldInstances(
+        custom_field_id=cf.id, availability_id=av.id
+    ).run
+
+
+@pytest.fixture
+def custom_field_value_factory(database, custom_field_factory, customer_factory):
+    c = customer_factory()
+    return model_services.CreateCustomFieldValue(
+        name="foo",
+        value="bar",
+        display_value="baz",
+        custom_field_id=custom_field_factory().id,
+        booking_id=c.booking_id,
+        customer_id=c.id,
+    ).run
 
 
 @pytest.fixture
 def customer_factory(customer_type_rate_factory, booking_factory):
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     return model_services.CreateCustomer(
         checkin_url="https://foo.bar",
         checking_status="checked_in",
-        customer_type_rate_id=customer_type_rate_factory.id,
-        booking_id=booking_factory.id
-    ).run()
+        customer_type_rate_id=customer_type_rate_factory().id,
+        booking_id=b.id,
+    ).run
 
 
 @pytest.fixture
 def customer_type_rate_factory(
-    booking_factory, availability_factory, customer_type_factory,
-    customer_prototype_factory
+    booking_factory,
+    availability_factory,
+    customer_type_factory,
+    customer_prototype_factory,
 ):
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     return model_services.CreateCustomerTypeRate(
         capacity=4,
         minimum_party_size=2,
         maximum_party_size=4,
-        booking_id=booking_factory.id,
-        availability_id=availability_factory.id,
-        customer_prototype_id=customer_prototype_factory.id,
-        customer_type_id=customer_type_factory.id
-    ).run()
+        booking_id=b.id,
+        availability_id=availability_factory().id,
+        customer_prototype_id=customer_prototype_factory().id,
+        customer_type_id=customer_type_factory().id,
+    ).run
 
 
 @pytest.fixture
 def customer_prototype_factory():
     return model_services.CreateCustomerPrototype(
-        total=10,
-        total_including_tax=10,
-        display_name="foo",
-        note="bar"
-    ).run()
+        total=10, total_including_tax=10, display_name="foo", note="bar"
+    ).run
 
 
 @pytest.fixture
@@ -199,4 +229,4 @@ def customer_type_factory():
         note="foo",
         singular="bar",
         plural="baz",
-    ).run()
+    ).run

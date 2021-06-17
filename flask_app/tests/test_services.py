@@ -14,7 +14,7 @@ def test_create_item(database):
 
 
 def test_update_item(database, item_factory):
-    old_item = item_factory
+    old_item = item_factory()
     s = model_services.UpdateItem(item_id=old_item.id, name="bar")
     s.run()
     item = models.Item.get(old_item.id)
@@ -22,28 +22,28 @@ def test_update_item(database, item_factory):
 
 
 def test_delete_item(database, item_factory):
-    item = item_factory
+    item = item_factory()
     model_services.DeleteItem(item.id).run()
     with pytest.raises(DoesNotExist):
         models.Item.get(item.id)
 
 
 def test_create_availabilty(database, item_factory):
-    item = item_factory
+    item = item_factory()
     availability = model_services.CreateAvailability(
         capacity=10,
         minimum_party_size=11,
         maximum_party_size=12,
         start_at=datetime.now(),
         end_at=datetime.now(),
-        item_id=item.id
+        item_id=item.id,
     ).run()
     assert models.Availability.get(availability.id)
 
 
 def test_update_availability(database, item_factory, availability_factory):
-    item = item_factory
-    av = availability_factory
+    item = item_factory()
+    av = availability_factory()
     model_services.UpdateAvailability(
         availability_id=av.id,
         capacity=20,
@@ -51,7 +51,7 @@ def test_update_availability(database, item_factory, availability_factory):
         maximum_party_size=22,
         start_at=datetime.now(),
         end_at=datetime.now(),
-        item_id=item.id
+        item_id=item.id,
     ).run()
     av = models.Availability.get(av.id)
     assert av.capacity == 20
@@ -60,14 +60,14 @@ def test_update_availability(database, item_factory, availability_factory):
 
 
 def test_delete_availabilty(database, availability_factory):
-    av = availability_factory
+    av = availability_factory()
     model_services.DeleteAvailability(av.id).run()
     with pytest.raises(DoesNotExist):
         models.Availability.get(av.id)
 
 
 def test_create_booking(database, availability_factory):
-    av = availability_factory
+    av = availability_factory()
     b = model_services.CreateBooking(
         voucher_number="foo",
         display_id="bar",
@@ -106,8 +106,10 @@ def test_create_booking(database, availability_factory):
 
 
 def test_update_booking(database, booking_factory, availability_factory):
-    old_booking = booking_factory
-    av = availability_factory
+    s = booking_factory
+    s.uuid = uuid4().hex
+    old_booking = s.run()
+    av = availability_factory()
     b = model_services.UpdateBooking(
         booking_id=old_booking.id,
         voucher_number="roo",
@@ -147,7 +149,7 @@ def test_update_booking(database, booking_factory, availability_factory):
 
 
 def test_update_booking_raises_error(database, availability_factory):
-    av = availability_factory
+    av = availability_factory()
     with pytest.raises(DoesNotExist):
         model_services.UpdateBooking(
             booking_id=1000000,
@@ -185,7 +187,9 @@ def test_update_booking_raises_error(database, availability_factory):
 
 
 def test_delete_booking(database, booking_factory):
-    booking = booking_factory
+    s = booking_factory
+    s.uuid = uuid4().hex
+    booking = s.run()
     model_services.DeleteBooking(booking.id).run()
     with pytest.raises(DoesNotExist):
         models.Booking.get(booking.id)
@@ -197,7 +201,9 @@ def test_delete_booking_raises_error(database):
 
 
 def test_create_contact(database, booking_factory):
-    b = booking_factory
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     c = model_services.CreateContact(
         name="foo",
         email="foo@bar.baz",
@@ -205,7 +211,7 @@ def test_create_contact(database, booking_factory):
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
-        booking_id=b.id
+        booking_id=b.id,
     ).run()
     c = models.Contact.get(c.id)
     assert c.name == "foo"
@@ -213,7 +219,7 @@ def test_create_contact(database, booking_factory):
 
 
 def test_update_contact(database, contact_factory):
-    old_contact = contact_factory
+    old_contact = contact_factory()
     new_contact = model_services.UpdateContact(
         contact_id=old_contact.id,
         name="bar",
@@ -221,26 +227,25 @@ def test_update_contact(database, contact_factory):
         phone_country="49",
         phone="00000",
         normalized_phone="00000",
-        is_subscribed_for_email_updates=True
+        is_subscribed_for_email_updates=True,
     ).run()
     new_contact = models.Contact.get(new_contact.id)
     assert new_contact.name == "bar"
 
 
 def test_delete_contact(database, contact_factory):
-    c = contact_factory
+    c = contact_factory()
     model_services.DeleteContact(c.id).run()
     with pytest.raises(DoesNotExist):
         models.Contact.get(c.id)
 
 
 def test_create_company(database, booking_factory):
-    b = booking_factory
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     c = model_services.CreateCompany(
-        name="foo",
-        short_name="bar",
-        currency="eur",
-        booking_id=b.id
+        name="foo", short_name="bar", currency="eur", booking_id=b.id
     ).run()
     c = models.Company.get(c.id)
     assert c.name == "foo"
@@ -248,7 +253,7 @@ def test_create_company(database, booking_factory):
 
 
 def test_update_company(database, company_factory):
-    old_company = company_factory
+    old_company = company_factory()
     new_company = model_services.UpdateCompany(
         company_id=old_company.id,
         name="baz",
@@ -261,18 +266,18 @@ def test_update_company(database, company_factory):
 
 
 def test_delete_company(database, company_factory):
-    company = company_factory
+    company = company_factory()
     model_services.DeleteCompany(company.id).run()
     with pytest.raises(DoesNotExist):
         models.Company.get(company.id)
 
 
 def test_create_cancellation_policy(database, booking_factory):
-    b = booking_factory
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     new_cp = model_services.CreateCancellationPolicy(
-        cutoff=datetime.utcnow(),
-        cancellation_type="foo",
-        booking_id=b.id
+        cutoff=datetime.utcnow(), cancellation_type="foo", booking_id=b.id
     ).run()
     cp = models.EffectiveCancellationPolicy.get(new_cp.id)
     assert cp.cancellation_type == "foo"
@@ -280,12 +285,10 @@ def test_create_cancellation_policy(database, booking_factory):
 
 
 def test_update_cancellation_policy(database, cancellation_factory):
-    old_cp = cancellation_factory
+    old_cp = cancellation_factory()
     new_date = datetime(2021, 5, 5)
     new_cp = model_services.UpdateCancellationPolicy(
-        cp_id=old_cp.id,
-        cutoff=new_date,
-        cancellation_type="bar"
+        cp_id=old_cp.id, cutoff=new_date, cancellation_type="bar"
     ).run()
 
     # reload from db
@@ -296,7 +299,7 @@ def test_update_cancellation_policy(database, cancellation_factory):
 
 
 def test_delete_cancellation_policy(database, cancellation_factory):
-    cp = cancellation_factory
+    cp = cancellation_factory()
     model_services.DeleteCancellationPolicy(cp.id).run()
     with pytest.raises(DoesNotExist):
         models.EffectiveCancellationPolicy.get(cp.id)
@@ -327,7 +330,7 @@ def test_create_custom_field(database):
 
 
 def test_update_custom_field(database, custom_field_factory):
-    old_cf = custom_field_factory
+    old_cf = custom_field_factory()
 
     model_services.UpdateCustomField(
         custom_field_id=old_cf.id,
@@ -354,7 +357,7 @@ def test_update_custom_field(database, custom_field_factory):
 
 
 def test_delete_custom_field(database, custom_field_factory):
-    cf = custom_field_factory
+    cf = custom_field_factory()
 
     model_services.DeleteCustomField(cf.id).run()
 
@@ -362,26 +365,113 @@ def test_delete_custom_field(database, custom_field_factory):
         models.CustomField.get(cf.id)
 
 
-def test_create_customer(
-    database, customer_type_rate_factory, booking_factory
+def test_create_custom_field_instances(
+    database, custom_field_factory, availability_factory
 ):
+    cf, av = custom_field_factory(), availability_factory()
+    cfi = model_services.CreateCustomFieldInstances(
+        custom_field_id=cf.id, availability_id=av.id
+    ).run()
+
+    cfi = models.CustomFieldInstances.get(cfi.id)
+    assert cfi.custom_field_id == cf.id
+    assert cfi.availability_id == av.id
+
+
+def test_update_custom_field_instances(
+    database, custom_field_instance_factory, availability_factory
+):
+    av = availability_factory()
+
+    old_cfi = custom_field_instance_factory()
+    old_av_id = old_cfi.availability_id
+    new_cfi = model_services.UpdateCustomFieldInstances(
+        custom_field_instance_id=old_cfi.id,
+        custom_field_id=old_cfi.custom_field_id,
+        availability_id=av.id,
+    ).run()
+    new_cfi = models.CustomFieldInstances.get(new_cfi.id)
+    assert new_cfi.created_at == old_cfi.created_at
+    assert new_cfi.availability_id != old_av_id
+
+
+def test_delete_custom_field_instances(database, custom_field_instance_factory):
+    cfi = custom_field_instance_factory()
+    model_services.DeleteCustomFieldInstances(cfi.id).run()
+    with pytest.raises(DoesNotExist):
+        models.CustomFieldInstances.get(cfi.id)
+
+
+def test_create_custom_field_value(database, custom_field_factory, customer_factory):
+    c = customer_factory()
+    cfv = model_services.CreateCustomFieldValue(
+        name="foo",
+        value="bar",
+        display_value="baz",
+        custom_field_id=custom_field_factory().id,
+        booking_id=c.booking_id,
+        customer_id=c.id,
+    ).run()
+    cfv = models.CustomFieldValues.get(cfv.id)
+    assert cfv.name == "foo"
+    assert cfv.value == "bar"
+    assert cfv.display_value == "baz"
+    assert cfv.booking_id == c.booking_id
+    assert cfv.customer_id == c.id
+
+
+def test_update_custom_field_value(
+    database, custom_field_value_factory, customer_factory
+):
+    old_cfv = custom_field_value_factory()
+    c = customer_factory()
+    cfv = model_services.UpdateCustomFieldValue(
+        custom_field_value_id=old_cfv.id,
+        name="goo",
+        value="zar",
+        display_value="zaz",
+        custom_field_id=old_cfv.custom_field_id,
+        booking_id=c.booking_id,
+        customer_id=c.id,
+    ).run()
+    cfv = models.CustomFieldValues.get(cfv.id)
+    assert cfv.name == "goo"
+    assert cfv.value == "zar"
+    assert cfv.display_value == "zaz"
+    assert cfv.booking_id == c.booking_id
+    assert cfv.customer_id == c.id
+
+
+def test_delete_custom_field_value(database, custom_field_value_factory):
+    cfv = custom_field_value_factory()
+    model_services.DeleteCustomFieldValue(cfv.id).run()
+    with pytest.raises(DoesNotExist):
+        models.CustomFieldValues.get(cfv.id)
+
+
+def test_create_customer(
+    database, customer_type_rate_factory, booking_factory, availability_factory
+):
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     ct = model_services.CreateCustomer(
         checkin_url="https://foo.bar",
         checking_status="checked_in",
-        customer_type_rate_id=customer_type_rate_factory.id,
-        booking_id=booking_factory.id
+        customer_type_rate_id=customer_type_rate_factory().id,
+        booking_id=b.id,
     ).run()
     assert models.Customer.get(ct.id)
 
 
 def test_update_customer(database, customer_factory):
-    old_customer = customer_factory
+    old_customer = customer_factory()
     model_services.UpdateCustomer(
         customer_id=old_customer.id,
         checkin_url="https://bar.baz",
         checking_status="checked_out",
         customer_type_rate_id=old_customer.customer_type_rate_id,
-        booking_id=old_customer.booking_id
+        booking_id=old_customer.booking_id,
     ).run()
     ct = models.Customer.get(old_customer.id)
     assert ct.checkin_url == "https://bar.baz"
@@ -389,7 +479,7 @@ def test_update_customer(database, customer_factory):
 
 
 def test_delete_customer(database, customer_factory):
-    ct = customer_factory
+    ct = customer_factory()
 
     model_services.DeleteCustomer(ct.id).run()
 
@@ -398,23 +488,29 @@ def test_delete_customer(database, customer_factory):
 
 
 def test_create_customer_type_rate(
-    database, booking_factory, availability_factory, customer_type_factory,
-    customer_prototype_factory
+    database,
+    booking_factory,
+    availability_factory,
+    customer_type_factory,
+    customer_prototype_factory,
 ):
+    s = booking_factory
+    s.uuid = uuid4().hex
+    b = s.run()
     ctr = model_services.CreateCustomerTypeRate(
         capacity=4,
         minimum_party_size=2,
         maximum_party_size=4,
-        booking_id=booking_factory.id,
-        availability_id=availability_factory.id,
-        customer_prototype_id=customer_prototype_factory.id,
-        customer_type_id=customer_type_factory.id
+        booking_id=b.id,
+        availability_id=availability_factory().id,
+        customer_prototype_id=customer_prototype_factory().id,
+        customer_type_id=customer_type_factory().id,
     ).run()
     assert models.CustomerTypeRate.get(ctr.id)
 
 
 def test_update_customer_type_rate(database, customer_type_rate_factory):
-    old_ctr = customer_type_rate_factory
+    old_ctr = customer_type_rate_factory()
     model_services.UpdateCustomerTypeRate(
         ctr_id=old_ctr.id,
         capacity=6,
@@ -423,7 +519,7 @@ def test_update_customer_type_rate(database, customer_type_rate_factory):
         booking_id=old_ctr.booking_id,
         availability_id=old_ctr.availability_id,
         customer_prototype_id=old_ctr.customer_prototype_id,
-        customer_type_id=old_ctr.customer_type_id
+        customer_type_id=old_ctr.customer_type_id,
     ).run()
     updated_ctr = models.CustomerTypeRate.get(old_ctr.id)
     assert updated_ctr.capacity == 6
@@ -432,7 +528,7 @@ def test_update_customer_type_rate(database, customer_type_rate_factory):
 
 
 def test_delete_customer_type_rate(database, customer_type_rate_factory):
-    ctr = customer_type_rate_factory
+    ctr = customer_type_rate_factory()
     model_services.DeleteCustomerTypeRate(ctr.id).run()
     with pytest.raises(DoesNotExist):
         models.CustomerTypeRate.get(ctr.id)
@@ -440,24 +536,21 @@ def test_delete_customer_type_rate(database, customer_type_rate_factory):
 
 def test_create_customer_prototype(database):
     service = model_services.CreateCustomerPrototype(
-        total=10,
-        total_including_tax=10,
-        display_name="foo",
-        note="bar"
+        total=10, total_including_tax=10, display_name="foo", note="bar"
     )
     new_customer_prototype = service.run()
     assert models.CustomerPrototype.get(new_customer_prototype.id)
 
 
 def test_update_customer_prototype(database, customer_prototype_factory):
-    old_cp = customer_prototype_factory
+    old_cp = customer_prototype_factory()
 
     model_services.UpdateCustomerPrototype(
         customer_prototype_id=old_cp.id,
         total=20,
         total_including_tax=20,
         display_name="bar",
-        note="baz"
+        note="baz",
     ).run()
 
     cp = models.CustomerPrototype.get(old_cp.id)
@@ -468,7 +561,7 @@ def test_update_customer_prototype(database, customer_prototype_factory):
 
 
 def test_delete_customer_prototype(database, customer_prototype_factory):
-    cp = customer_prototype_factory
+    cp = customer_prototype_factory()
     model_services.DeleteCustomerPrototype(cp.id).run()
     with pytest.raises(DoesNotExist):
         models.CustomerPrototype.get(cp.id)
@@ -484,12 +577,9 @@ def test_create_customer_type(database):
 
 
 def test_update_customer_type(database, customer_type_factory):
-    ct = customer_type_factory
+    ct = customer_type_factory()
     model_services.UpdateCustomerType(
-        customer_type_id=ct.id,
-        note="goo",
-        singular="kar",
-        plural="kaz"
+        customer_type_id=ct.id, note="goo", singular="kar", plural="kaz"
     ).run()
 
     updated_ct = models.CustomerType.get(ct.id)
@@ -497,7 +587,7 @@ def test_update_customer_type(database, customer_type_factory):
 
 
 def test_delete_customer_type(database, customer_type_factory):
-    ct = customer_type_factory
+    ct = customer_type_factory()
 
     assert models.CustomerType.get(ct.id)
     model_services.DeleteCustomerType(ct.id).run()
