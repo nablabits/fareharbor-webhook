@@ -1,3 +1,5 @@
+import json
+import os
 import base64
 import pytest
 from fh_webhook import create_app
@@ -16,6 +18,10 @@ def test_dummy_webhook_only_accepts_POST(client):
     response = client.post("/test_webhook", headers=get_headers())
     assert response.status_code == 400  # Since the request was empty
 
+    # purge created files
+    path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
 
 def test_dummy_webhook_auth_error(client):
     wrong_user = base64.b64encode(b"void:test").decode("utf-8")
@@ -25,7 +31,6 @@ def test_dummy_webhook_auth_error(client):
         json={
             "name": "foo",
             "age": 45,
-            "test": True,
         },
         headers=headers,
     )
@@ -33,14 +38,12 @@ def test_dummy_webhook_auth_error(client):
     assert response.status_code == 401
     assert response.data == b"Unauthorized Access"
 
-    wrong_pass = base64.b64encode(b"test:void").decode("utf-8")
     headers = {"Authorization": "Basic " + wrong_user}
     response = client.post(
         "/test_webhook",
         json={
             "name": "foo",
             "age": 45,
-            "test": True,
         },
         headers=headers,
     )
@@ -50,49 +53,46 @@ def test_dummy_webhook_auth_error(client):
 
 
 def test_dummy_webhook_saves_content_to_a_file(client):
+    path = client.application.config.get("RESPONSES_PATH")
+    data = {
+        "name": "foo",
+        "age": 45,
+    }
     response = client.post(
         "/test_webhook",
         headers=get_headers(),
-        json={
-            "name": "foo",
-            "age": 45,
-            "test": True,
-        },
+        json=data,
     )
-    assert response.status_code == 200
-    with open(bytes.decode(response.data), "r") as f:
-        assert f.readline() == '{"age": 45, "name": "foo", "test": true}'
 
-
-def test_dummy_webhook_returns_200(client):
-    response = client.post(
-        "/test_webhook",
-        headers=get_headers(),
-        json={
-            "name": "foo",
-            "age": 45,
-        },
-    )
+    files_in_dir = os.listdir(path)
     assert response.status_code == 200
+    assert len(files_in_dir) == 1
+    with open(os.path.join(path, files_in_dir[0])) as json_file:
+        data = json.load(json_file)
+        assert data == data
+
+    # purge created files
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
 
 def test_dummy_webhook_trows_empty_requests_to_a_log(client):
-    try:
-        with open("fh_webhook/responses/errors.log", "r") as f:
-            entries = len(f.readlines())
-    except FileNotFoundError:
-        entries = 0
+    path = client.application.config.get("RESPONSES_PATH")
     response = client.post(
         "/test_webhook",
         headers=get_headers(),
     )
-    # breakpoint()
+
+    files_in_dir = os.listdir(path)
     assert response.status_code == 400  # Since the request was empty
+    assert len(files_in_dir) == 1
+    assert files_in_dir[0] == "errors.log"
+    with open(os.path.join(path, files_in_dir[0])) as error_file:
+        content = error_file.readlines()
+        # get the last 22 chars as the others depend on datetime.now()
+        assert content[0][-22:] == "the request was empty\n"
 
-    with open("fh_webhook/responses/errors.log", "r") as f:
-        entries_plus_error = len(f.readlines())
-
-    assert entries + 1 == entries_plus_error
+    # purge created files
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
 
 def test_webhook_endpoint_only_accepts_POST(client):

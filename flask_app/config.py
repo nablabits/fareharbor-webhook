@@ -3,7 +3,7 @@ import os
 from decouple import config
 
 
-class Config(object):
+class Config:
     """Define a base class."""
 
     DEBUG = False
@@ -13,6 +13,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = config("DB_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     FH_PASSWORD = config("FH_PASSWORD")
+    RESPONSES_PATH = "fh_webhook/responses/"
 
 
 class ProductionConfig(Config):
@@ -34,3 +35,4 @@ class TestingConfig(Config):
     TESTING = True
     TEST_PASSWORD = "test"
     SQLALCHEMY_DATABASE_URI = "postgresql:///webhook-test"
+    RESPONSES_PATH = "test/responses/"

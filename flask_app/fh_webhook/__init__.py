@@ -54,30 +54,30 @@ def create_app(test_config=False):
         to create the tables accordingly. So we need a way to store the data
         to inspect it.
         """
-        path = "fh_webhook/responses/"
+        path = app.config.get("RESPONSES_PATH")
         try:
             os.makedirs(path)
         except OSError:
             pass
         now = datetime.now()
         if request.json:
-
-            # Dump the content onto a file
+            # Save the request in a json file
             name = str(now.timestamp()) + ".json"
             filename = os.path.join(path, name)
             with open(filename, "w") as fp:
                 json.dump(request.json, fp)
 
-            # if we are testing we should return the filename somehow
-            try:
-                request.json["test"]
-                return app.make_response(filename)
-            except KeyError:
-                return Response(status=200)
+            # Here goes the process that saves on the fly the response content
+            # right in the database. For the first months we might want also to
+            # keep the file functionality just in case.
+            # request.json is a python object we can just pass to ProcessJSONResponse
+
         else:
             with open(os.path.join(path, "errors.log"), "a") as f:
                 f.write("{} - the request was empty\n".format(now))
             return Response("The request was empty", status=400)
+
+        return Response(status=200)
 
     @app.route("/webhook", methods=["POST"])
     def respond():
