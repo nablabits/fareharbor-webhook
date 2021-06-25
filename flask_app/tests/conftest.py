@@ -68,13 +68,16 @@ def availability_factory(item_factory):
         start_at=datetime.now(),
         end_at=datetime.now(),
         item_id=item.id,
-    ).run
+    )
 
 
 @pytest.fixture
 def booking_factory(availability_factory):
-    av = availability_factory()
+    s = availability_factory
+    s.availability_id = randint(1, 10_000_000),
+    av = s.run()
     return model_services.CreateBooking(
+        booking_id=randint(1, 10_000_000),
         voucher_number="foo",
         display_id="bar",
         note_safe_html="baz",
@@ -88,7 +91,7 @@ def booking_factory(availability_factory):
         pickup="mar",
         status="maz",
         availability_id=av.id,
-        receipt_subtotals=10,
+        receipt_subtotal=10,
         receipt_taxes=11,
         receipt_total=12,
         amount_paid=13,
@@ -114,6 +117,7 @@ def contact_factory(booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateContact(
+        contact_id=b.id,
         name="foo",
         email="foo@bar.baz",
         phone_country="49",

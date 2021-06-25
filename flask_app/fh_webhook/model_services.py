@@ -122,6 +122,7 @@ class DeleteAvailability:
 
 @attr.s
 class CreateBooking:
+    booking_id = attr.ib(type=int)
     voucher_number = attr.ib(type=str)
     display_id = attr.ib(type=str)
     note_safe_html = attr.ib(type=str)
@@ -139,7 +140,7 @@ class CreateBooking:
     availability_id = attr.ib(type=int)
 
     # price fields
-    receipt_subtotals = attr.ib(type=int)
+    receipt_subtotal = attr.ib(type=int)
     receipt_taxes = attr.ib(type=int)
     receipt_total = attr.ib(type=int)
     amount_paid = attr.ib(type=int)
@@ -164,6 +165,7 @@ class CreateBooking:
         new_booking = models.Booking(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.booking_id,
             voucher_number=self.voucher_number,
             display_id=self.display_id,
             note_safe_html=self.note_safe_html,
@@ -177,7 +179,7 @@ class CreateBooking:
             pickup=self.pickup,
             status=self.status,
             availability_id=self.availability_id,
-            receipt_subtotals=self.receipt_subtotals,
+            receipt_subtotal=self.receipt_subtotal,
             receipt_taxes=self.receipt_taxes,
             receipt_total=self.receipt_total,
             amount_paid=self.amount_paid,
@@ -216,7 +218,7 @@ class UpdateBooking:
     pickup = attr.ib(type=str)
     status = attr.ib(type=str)
     availability_id = attr.ib(type=int)
-    receipt_subtotals = attr.ib(type=int)
+    receipt_subtotal = attr.ib(type=int)
     receipt_taxes = attr.ib(type=int)
     receipt_total = attr.ib(type=int)
     amount_paid = attr.ib(type=int)
@@ -250,7 +252,7 @@ class UpdateBooking:
         booking.pickup = self.pickup
         booking.status = self.status
         booking.availability_id = self.availability_id
-        booking.receipt_subtotals = self.receipt_subtotals
+        booking.receipt_subtotal = self.receipt_subtotal
         booking.receipt_taxes = self.receipt_taxes
         booking.receipt_total = self.receipt_total
         booking.amount_paid = self.amount_paid

@@ -10,10 +10,8 @@ def test_populate_db_creates_item(database, app):
     # created
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
-    items = models.Item.query.all()
-    assert len(items) == 1
-    assert items[0].id == 159068
-    assert items[0].name == "Alquiler Urbana"
+    item = models.Item.get(159068)
+    assert item.name == "Alquiler Urbana"
 
 
 def test_populate_db_creates_availability(database, app, item_factory):
@@ -23,10 +21,7 @@ def test_populate_db_creates_availability(database, app, item_factory):
     """
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
-    availabilities = models.Availability.query.all()
-    assert len(availabilities) == 1
-    av = availabilities[0]
-    assert av.id == 619118440
+    av = models.Availability.get(619118440)
     assert av.capacity == 49
     assert av.minimum_party_size == 1
     assert av.maximum_party_size is None
@@ -34,24 +29,45 @@ def test_populate_db_creates_availability(database, app, item_factory):
     assert av.end_at.isoformat() == "2021-04-05T13:00:00+02:00"
 
 
-def test_delete_item(database, item_factory):
-    item = item_factory()
-    model_services.DeleteItem(item.id).run()
-    with pytest.raises(DoesNotExist):
-        models.Item.get(item.id)
-
-
-def test_create_availabilty(database, item_factory):
-    item = item_factory()
-    availability = model_services.CreateAvailability(
-        capacity=10,
-        minimum_party_size=11,
-        maximum_party_size=12,
-        start_at=datetime.now(),
-        end_at=datetime.now(),
-        item_id=item.id,
-    ).run()
-    assert models.Availability.get(availability.id)
+def test_populate_db_creates_booking(database, app, item_factory):
+    """
+    Although the first test actually saves all the data contained in
+    sample_data, we split the tests into manageable chunks for readability.
+    """
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+    b = models.Booking.get(75125154)
+    assert b.id == 75125154
+    assert b.voucher_number == ""
+    assert b.display_id == "#75125154"
+    assert b.note_safe_html == ""
+    assert b.agent is None
+    assert b.confirmation_url == "https://fareharbor.com/embeds/book/tournebilbao/items/159068/booking/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
+    assert b.customer_count == 1
+    assert b.affiliate_company is None
+    assert b.uuid == "c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e"
+    assert b.dashboard_url == "https://fareharbor.com/tournebilbao/dashboard/?overlay=/contacts/64015149/bookings/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
+    assert b.note == ""
+    assert b.pickup is None
+    assert b.status == "booked"
+    assert b.availability_id == 619118440
+    assert b.receipt_subtotal == 1240
+    assert b.receipt_taxes == 260
+    assert b.receipt_total == 1500
+    assert b.amount_paid == 0
+    assert b.invoice_price == 0
+    assert b.receipt_subtotal_display == "12,40\\u00a0"
+    assert b.receipt_taxes_display == "2,60\\u00a0"
+    assert b.receipt_total_display == "15,00\\u00a0"
+    assert b.amount_paid_display == "0,00\\u00a0"
+    assert b.invoice_price_display == "0,00\\u00a0"
+    assert b.desk is None
+    assert b.is_eligible_for_cancellation is True
+    assert b.arrival is None
+    assert b.rebooked_to is None
+    assert b.rebooked_from is None
+    assert b.external_id == ""
+    assert b.order is None
 
 
 

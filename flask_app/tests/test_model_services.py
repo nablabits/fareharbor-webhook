@@ -48,7 +48,7 @@ def test_create_availability(database, item_factory):
 
 
 def test_update_availability(database, item_factory, availability_factory):
-    av = availability_factory()
+    av = availability_factory.run()
     model_services.UpdateAvailability(
         availability_id=av.id,
         capacity=20,
@@ -65,15 +65,16 @@ def test_update_availability(database, item_factory, availability_factory):
 
 
 def test_delete_availabilty(database, availability_factory):
-    av = availability_factory()
+    av = availability_factory.run()
     model_services.DeleteAvailability(av.id).run()
     with pytest.raises(DoesNotExist):
         models.Availability.get(av.id)
 
 
 def test_create_booking(database, availability_factory):
-    av = availability_factory()
+    av = availability_factory.run()
     b = model_services.CreateBooking(
+        booking_id=randint(1, 10_000_000),
         voucher_number="foo",
         display_id="bar",
         note_safe_html="baz",
@@ -87,7 +88,7 @@ def test_create_booking(database, availability_factory):
         pickup="mar",
         status="maz",
         availability_id=av.id,
-        receipt_subtotals=10,
+        receipt_subtotal=10,
         receipt_taxes=11,
         receipt_total=12,
         amount_paid=13,
@@ -114,7 +115,6 @@ def test_update_booking(database, booking_factory, availability_factory):
     s = booking_factory
     s.uuid = uuid4().hex
     old_booking = s.run()
-    av = availability_factory()
     b = model_services.UpdateBooking(
         booking_id=old_booking.id,
         voucher_number="roo",
@@ -129,8 +129,8 @@ def test_update_booking(database, booking_factory, availability_factory):
         note="moo",
         pickup="mar",
         status="maz",
-        availability_id=av.id,
-        receipt_subtotals=10,
+        availability_id=old_booking.availability_id,
+        receipt_subtotal=10,
         receipt_taxes=11,
         receipt_total=12,
         amount_paid=13,
@@ -150,11 +150,11 @@ def test_update_booking(database, booking_factory, availability_factory):
     ).run()
     b = models.Booking.get(old_booking.id)
     assert b.voucher_number == "roo"
-    assert b.availability_id == av.id
+    assert b.availability_id == old_booking.availability_id
 
 
 def test_update_booking_raises_error(database, availability_factory):
-    av = availability_factory()
+    av = availability_factory.run()
     with pytest.raises(DoesNotExist):
         model_services.UpdateBooking(
             booking_id=1000000,
@@ -171,7 +171,7 @@ def test_update_booking_raises_error(database, availability_factory):
             pickup="mar",
             status="maz",
             availability_id=av.id,
-            receipt_subtotals=10,
+            receipt_subtotal=10,
             receipt_taxes=11,
             receipt_total=12,
             amount_paid=13,

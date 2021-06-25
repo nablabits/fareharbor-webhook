@@ -59,7 +59,7 @@ class Booking(db.Model, BaseMixin):
     )
 
     # price fields
-    receipt_subtotals = db.Column(db.Integer)
+    receipt_subtotal = db.Column(db.Integer)
     receipt_taxes = db.Column(db.Integer)
     receipt_total = db.Column(db.Integer)
     amount_paid = db.Column(db.Integer)
@@ -92,8 +92,8 @@ class Availability(db.Model, BaseMixin):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     capacity = db.Column(db.SmallInteger, nullable=False)
-    minimum_party_size = db.Column(db.SmallInteger, nullable=False)
-    maximum_party_size = db.Column(db.SmallInteger, nullable=False)
+    minimum_party_size = db.Column(db.SmallInteger)
+    maximum_party_size = db.Column(db.SmallInteger)
     start_at = db.Column(db.DateTime(timezone=True), nullable=False)
     end_at = db.Column(db.DateTime(timezone=True), nullable=False)
 

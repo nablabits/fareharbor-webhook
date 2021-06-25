@@ -73,5 +73,50 @@ class ProcessJSONResponse:
             end_at=av_data["end_at"],
             item_id=item_id
         ).run()
+
+    def _save_booking(self, av_id):
+        """Save the booking information contained in the data."""
+        b_data = self.data["booking"]
+        booking = models.Booking.get_object_or_none(b_data["pk"])
+        if booking:
+            service = model_services.UpdateBooking
+        else:
+            service = model_services.CreateBooking
+        return service(
+            booking_id=b_data["pk"],
+            voucher_number=b_data["voucher_number"],
+            display_id=b_data["display_id"],
+            note_safe_html=b_data["note_safe_html"],
+            agent=b_data["agent"],
+            confirmation_url=b_data["confirmation_url"],
+            customer_count=b_data["customer_count"],
+            affiliate_company=b_data["affiliate_company"],
+            uuid=b_data["uuid"],
+            dashboard_url=b_data["dashboard_url"],
+            note=b_data["note"],
+            pickup=b_data["pickup"],
+            status=b_data["status"],
+            availability_id=av_id,
+            receipt_subtotal=b_data["receipt_subtotal"],
+            receipt_taxes=b_data["receipt_taxes"],
+            receipt_total=b_data["receipt_total"],
+            amount_paid=b_data["amount_paid"],
+            invoice_price=b_data["invoice_price"],
+            receipt_subtotal_display=b_data["receipt_subtotal_display"],
+            receipt_taxes_display=b_data["receipt_taxes_display"],
+            receipt_total_display=b_data["receipt_total_display"],
+            amount_paid_display=b_data["amount_paid_display"],
+            invoice_price_display=b_data["invoice_price_display"],
+            desk=b_data["desk"],
+            is_eligible_for_cancellation=b_data["is_eligible_for_cancellation"],
+            arrival=b_data["arrival"],
+            rebooked_to=b_data["rebooked_to"],
+            rebooked_from=b_data["rebooked_from"],
+            external_id=b_data["external_id"],
+            order=b_data["order"],
+        ).run()
+
     def run(self):
         item = self._save_item()
+        av = self._save_availability(item.id)
+        booking = self._save_booking(av.id)
