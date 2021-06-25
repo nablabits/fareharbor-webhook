@@ -18,7 +18,7 @@ def test_create_item(database):
 
 
 def test_update_item(database, item_factory):
-    old_item = item_factory()
+    old_item = item_factory.run()
     s = model_services.UpdateItem(item_id=old_item.id, name="bar")
     s.run()
     item = models.Item.get(old_item.id)
@@ -26,15 +26,17 @@ def test_update_item(database, item_factory):
 
 
 def test_delete_item(database, item_factory):
-    item = item_factory()
+    item = item_factory.run()
     model_services.DeleteItem(item.id).run()
     with pytest.raises(DoesNotExist):
         models.Item.get(item.id)
 
 
-def test_create_availabilty(database, item_factory):
-    item = item_factory()
+def test_create_availability(database, item_factory):
+    item = item_factory.run()
+    random_id = randint(1, 10_000_000)
     availability = model_services.CreateAvailability(
+        availability_id=random_id,
         capacity=10,
         minimum_party_size=11,
         maximum_party_size=12,
@@ -46,7 +48,6 @@ def test_create_availabilty(database, item_factory):
 
 
 def test_update_availability(database, item_factory, availability_factory):
-    item = item_factory()
     av = availability_factory()
     model_services.UpdateAvailability(
         availability_id=av.id,
@@ -55,7 +56,7 @@ def test_update_availability(database, item_factory, availability_factory):
         maximum_party_size=22,
         start_at=datetime.now(),
         end_at=datetime.now(),
-        item_id=item.id,
+        item_id=av.item_id,
     ).run()
     av = models.Availability.get(av.id)
     assert av.capacity == 20

@@ -58,6 +58,7 @@ class DeleteItem:
 
 @attr.s
 class CreateAvailability:
+    availability_id = attr.ib(type=int)
     capacity = attr.ib(type=int)
     minimum_party_size = attr.ib(type=int)
     maximum_party_size = attr.ib(type=int)
@@ -69,6 +70,7 @@ class CreateAvailability:
         new_availability = models.Availability(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.availability_id,
             capacity=self.capacity,
             minimum_party_size=self.minimum_party_size,
             maximum_party_size=self.maximum_party_size,

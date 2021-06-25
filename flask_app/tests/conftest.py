@@ -51,14 +51,17 @@ def database(request):
 @pytest.fixture
 def item_factory():
     random_id = randint(1, 10_000_000)
-    return model_services.CreateItem(item_id=random_id, name="foo").run
+    return model_services.CreateItem(item_id=random_id, name="foo")
 
 
 @pytest.fixture
 def availability_factory(item_factory):
-    item = item_factory()
+    s = item_factory
+    s.item_id = randint(1, 10_000)
+    item = s.run()
 
     return model_services.CreateAvailability(
+        availability_id=randint(1, 10_000_000),
         capacity=10,
         minimum_party_size=11,
         maximum_party_size=12,
