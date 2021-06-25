@@ -9,11 +9,21 @@ from .exceptions import DoesNotExist
 
 @attr.s
 class CreateItem:
+    """
+    Create items in the database.
+
+    Instead of generating a auto increment here we will use the unique id
+    identifier provided by fareharbor.
+    """
+    item_id = attr.ib(type=int)
     name = attr.ib()
 
     def run(self):
         new_item = models.Item(
-            created_at=datetime.utcnow(), updated_at=datetime.utcnow(), name=self.name
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            id=self.item_id,
+            name=self.name
         )
         db.session.add(new_item)
         db.session.commit()

@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import uuid4
+from random import randint
 import pytest
 from fh_webhook import models, model_services, create_app
 from fh_webhook.models import db
@@ -49,7 +50,8 @@ def database(request):
 
 @pytest.fixture
 def item_factory():
-    return model_services.CreateItem(name="foo").run
+    random_id = randint(1, 10_000_000)
+    return model_services.CreateItem(item_id=random_id, name="foo").run
 
 
 @pytest.fixture

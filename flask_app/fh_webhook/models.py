@@ -12,12 +12,25 @@ class BaseMixin:
 
     @classmethod
     def get(cls, id):
-        """Try to get an instace or raise an error."""
+        """
+        Try to get an instace or raise an error.
+
+        Useful when we try to update an object that does not exist.
+        """
         instance = cls.query.get(id)
         if instance:
             return instance
         else:
             raise DoesNotExist(cls.__table_name__)
+
+    @classmethod
+    def get_object_or_none(cls, id):
+        """
+        Get the object or none.
+
+        This method is a wrapper of query.get() that is less readable.
+        """
+        return cls.query.get(id)
 
 
 class Booking(db.Model, BaseMixin):

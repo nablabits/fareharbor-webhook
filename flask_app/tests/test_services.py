@@ -1,16 +1,19 @@
-from datetime import datetime
-from uuid import uuid4
-
+import json
+from datetime import date
 import pytest
 
-from fh_webhook import models, model_services
-from fh_webhook.exceptions import DoesNotExist
+from fh_webhook import services, models
 
 
-def test_create_item(database):
-    service = model_services.CreateItem(name="foo")
-    new_item = service.run()
-    assert models.Item.get(new_item.id)
+def test_populate_db_creates_item(database, app):
+    # TODO: use this function to test populate db just the ids of the obj
+    # created
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+    items = models.Item.query.all()
+    assert len(items) == 1
+    assert items[0].id == 159068
+    assert items[0].name == "Alquiler Urbana"
 
 
 def test_update_item(database, item_factory):

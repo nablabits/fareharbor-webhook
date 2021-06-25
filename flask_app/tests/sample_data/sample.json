@@ -1,0 +1,633 @@
+{
+  "booking": {
+    "voucher_number": "",
+    "display_id": "#75125154",
+    "rebooked_to": null,
+    "receipt_subtotal": 1240,
+    "receipt_total_display": "15,00\\u00a0",
+    "note_safe_html": "",
+    "customers": [
+      {
+        "checkin_url": "https://fhchk.co/faYT3",
+        "pk": 224262373,
+        "custom_field_values": [],
+        "checkin_status": null,
+        "customer_type_rate": {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655990,
+            "total": 1240,
+            "display_name": "Ocho horas",
+            "total_including_tax": 1500
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "total_including_tax": 1500,
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 314999,
+            "plural": "Ocho horas",
+            "singular": "Ocho horas"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873546,
+          "total": 1240
+        }
+      }
+    ],
+    "agent": null,
+    "confirmation_url": "https://fareharbor.com/embeds/book/tournebilbao/items/159068/booking/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/",
+    "customer_count": 1,
+    "affiliate_company": null,
+    "availability": {
+      "capacity": 49,
+      "minimum_party_size": 1,
+      "customer_type_rates": [
+        {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655988,
+            "total": 661,
+            "display_name": "Dos horas",
+            "total_including_tax": 800
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "custom_field_instances": [],
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 314997,
+            "plural": "Dos horas",
+            "singular": "Dos horas"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873544,
+          "total_including_tax": 800,
+          "total": 661
+        },
+        {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655989,
+            "total": 826,
+            "display_name": "Cuatro horas",
+            "total_including_tax": 1000
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "custom_field_instances": [
+            {
+              "pk": 4050488,
+              "custom_field": {
+                "is_required": false,
+                "description": "",
+                "title": "Cinco horas",
+                "booking_notes_safe_html": "",
+                "is_taxable": true,
+                "modifier_kind": "offset",
+                "description_safe_html": "",
+                "booking_notes": "",
+                "offset": 200,
+                "pk": 922177,
+                "percentage": 0,
+                "modifier_type": "adjust",
+                "type": "yes-no",
+                "is_always_per_customer": false,
+                "name": "cinco horas"
+              }
+            },
+            {
+              "pk": 4050489,
+              "custom_field": {
+                "is_required": false,
+                "description": "",
+                "title": "Seis horas",
+                "booking_notes_safe_html": "",
+                "is_taxable": true,
+                "modifier_kind": "offset",
+                "description_safe_html": "",
+                "booking_notes": "",
+                "offset": 400,
+                "pk": 922178,
+                "percentage": 0,
+                "modifier_type": "adjust",
+                "type": "yes-no",
+                "is_always_per_customer": false,
+                "name": "Seis horas"
+              }
+            }
+          ],
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 314998,
+            "plural": "Cuatro horas",
+            "singular": "Cuatro horas"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873545,
+          "total_including_tax": 1000,
+          "total": 826
+        },
+        {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655990,
+            "total": 1240,
+            "display_name": "Ocho horas",
+            "total_including_tax": 1500
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "custom_field_instances": [],
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 314999,
+            "plural": "Ocho horas",
+            "singular": "Ocho horas"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873546,
+          "total_including_tax": 1500,
+          "total": 1240
+        },
+        {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655991,
+            "total": 1653,
+            "display_name": "Veinticuatro horas",
+            "total_including_tax": 2000
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "custom_field_instances": [],
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 315000,
+            "plural": "Veinticuatro horas",
+            "singular": "Veinticuatro horas"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873547,
+          "total_including_tax": 2000,
+          "total": 1653
+        },
+        {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655992,
+            "total": 2479,
+            "display_name": "Dos d\\u00edas",
+            "total_including_tax": 3000
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "custom_field_instances": [],
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 315001,
+            "plural": "Dos d\\u00edas",
+            "singular": "Dos d\\u00edas"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873548,
+          "total_including_tax": 3000,
+          "total": 2479
+        },
+        {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655993,
+            "total": 5785,
+            "display_name": "Siete d\\u00edas",
+            "total_including_tax": 7000
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "custom_field_instances": [],
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 315002,
+            "plural": "Siete d\\u00edas",
+            "singular": "Siete d\\u00edas"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873549,
+          "total_including_tax": 7000,
+          "total": 5785
+        },
+        {
+          "customer_prototype": {
+            "note": "Todas las edades",
+            "pk": 655994,
+            "total": 826,
+            "display_name": "D\\u00eda extra",
+            "total_including_tax": 1000
+          },
+          "capacity": 49,
+          "minimum_party_size": null,
+          "custom_field_instances": [],
+          "customer_type": {
+            "note": "Todas las edades",
+            "pk": 315003,
+            "plural": "D\\u00edas extras",
+            "singular": "D\\u00eda extra"
+          },
+          "maximum_party_size": null,
+          "pk": 2576873550,
+          "total_including_tax": 1000,
+          "total": 826
+        }
+      ],
+      "custom_field_instances": [
+        {
+          "pk": 2379541,
+          "custom_field": {
+            "is_required": false,
+            "description": "",
+            "title": "\\u00bfD\\u00f3nde nos conociste?",
+            "booking_notes_safe_html": "",
+            "type": "extended-option",
+            "is_taxable": true,
+            "modifier_kind": "offset",
+            "description_safe_html": "",
+            "booking_notes": "",
+            "offset": 0,
+            "pk": 637022,
+            "percentage": 0,
+            "modifier_type": "none",
+            "extended_options": [
+              {
+                "name": "Google",
+                "is_taxable": true,
+                "modifier_kind": "offset",
+                "description_safe_html": "<p>Nosotros tambi\\u00e9n usamos google cuando no sabemos algo \\ud83e\\uddd0</p>",
+                "offset": 0,
+                "pk": 6160114,
+                "percentage": 0,
+                "modifier_type": "none",
+                "is_always_per_customer": false,
+                "description": "Nosotros tambi\\u00e9n usamos google cuando no sabemos algo \\ud83e\\uddd0"
+              },
+              {
+                "name": "TripAdvisor",
+                "is_taxable": true,
+                "modifier_kind": "offset",
+                "description_safe_html": "<p>Ahh, cl\\u00e1sico TripAdvisor</p>",
+                "offset": 0,
+                "pk": 6160113,
+                "percentage": 0,
+                "modifier_type": "none",
+                "is_always_per_customer": false,
+                "description": "Ahh, cl\\u00e1sico TripAdvisor"
+              },
+              {
+                "name": "Amigos",
+                "is_taxable": true,
+                "modifier_kind": "offset",
+                "description_safe_html": "<p>Qu\\u00e9 bien! seguro que tu tambi\\u00e9n disfrutas la experiencia. \\ud83e\\udd17</p>",
+                "offset": 0,
+                "pk": 6160118,
+                "percentage": 0,
+                "modifier_type": "none",
+                "is_always_per_customer": false,
+                "description": "Qu\\u00e9 bien! seguro que tu tambi\\u00e9n disfrutas la experiencia. \\ud83e\\udd17"
+              },
+              {
+                "name": "Vi las bicis por la calle \\ud83d\\udeb2",
+                "is_taxable": true,
+                "modifier_kind": "offset",
+                "description_safe_html": "<p>Lo sab\\u00edamos! ibas por la calle y sucumbiste al encanto de nuestras bicis tan <em>cool.</em> Tranquilo, no eres el primero \\ud83d\\ude09</p>",
+                "offset": 0,
+                "pk": 6999966,
+                "percentage": 0,
+                "modifier_type": "none",
+                "is_always_per_customer": false,
+                "description": "Lo sab\\u00edamos! ibas por la calle y sucumbiste al encanto de nuestras bicis tan *cool.* Tranquilo, no eres el primero \\ud83d\\ude09"
+              },
+              {
+                "name": "Otro",
+                "is_taxable": true,
+                "modifier_kind": "offset",
+                "description_safe_html": "<p>Vaya, deber\\u00edamos pensar en alguna otra opci\\u00f3n \\ud83e\\udd14</p>",
+                "offset": 0,
+                "pk": 6160120,
+                "percentage": 0,
+                "modifier_type": "none",
+                "is_always_per_customer": false,
+                "description": "Vaya, deber\\u00edamos pensar en alguna otra opci\\u00f3n \\ud83e\\udd14"
+              }
+            ],
+            "is_always_per_customer": false,
+            "name": "\\u00bfD\\u00f3nde nos conociste?"
+          }
+        },
+        {
+          "pk": 4050530,
+          "custom_field": {
+            "is_required": false,
+            "description": "",
+            "title": "Botella de agua",
+            "booking_notes_safe_html": "",
+            "is_taxable": true,
+            "modifier_kind": "offset",
+            "description_safe_html": "",
+            "booking_notes": "",
+            "offset": 100,
+            "pk": 922180,
+            "percentage": 0,
+            "modifier_type": "adjust",
+            "type": "count",
+            "is_always_per_customer": false,
+            "name": "Botella de agua"
+          }
+        },
+        {
+          "pk": 3963212,
+          "custom_field": {
+            "is_required": false,
+            "description": "",
+            "title": "Viaje a Getxo",
+            "booking_notes_safe_html": "",
+            "is_taxable": true,
+            "modifier_kind": "offset",
+            "description_safe_html": "",
+            "booking_notes": "",
+            "offset": 0,
+            "pk": 910098,
+            "percentage": 0,
+            "modifier_type": "none",
+            "type": "yes-no",
+            "is_always_per_customer": false,
+            "name": "Viaje a Getxo"
+          }
+        },
+        {
+          "pk": 4050531,
+          "custom_field": {
+            "is_required": false,
+            "description": "",
+            "title": "Silla de bebe",
+            "booking_notes_safe_html": "",
+            "is_taxable": true,
+            "modifier_kind": "offset",
+            "description_safe_html": "",
+            "booking_notes": "",
+            "offset": 0,
+            "pk": 910095,
+            "percentage": 0,
+            "modifier_type": "none",
+            "type": "yes-no",
+            "is_always_per_customer": false,
+            "name": "Silla de bebe"
+          }
+        },
+        {
+          "pk": 3950663,
+          "custom_field": {
+            "is_required": false,
+            "description": "",
+            "title": "Pago con bono",
+            "booking_notes_safe_html": "",
+            "is_taxable": true,
+            "modifier_kind": "offset",
+            "description_safe_html": "",
+            "booking_notes": "",
+            "offset": 100,
+            "pk": 908052,
+            "percentage": 0,
+            "modifier_type": "none",
+            "type": "yes-no",
+            "is_always_per_customer": false,
+            "name": "Pago Bono"
+          }
+        }
+      ],
+      "item": {
+        "pk": 159068,
+        "name": "Alquiler Urbana"
+      },
+      "maximum_party_size": null,
+      "start_at": "2021-04-05T12:30:00+0200",
+      "end_at": "2021-04-05T13:00:00+0200",
+      "pk": 619118440
+    },
+    "invoice_price_display": "0,00\\u00a0",
+    "uuid": "c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e",
+    "dashboard_url": "https://fareharbor.com/tournebilbao/dashboard/?overlay=/contacts/64015149/bookings/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/",
+    "amount_paid_display": "0,00\\u00a0",
+    "note": "",
+    "pickup": null,
+    "pk": 75125154,
+    "company": {
+      "currency": "eur",
+      "shortname": "tournebilbao",
+      "name": "Tourne"
+    },
+    "status": "booked",
+    "receipt_total": 1500,
+    "custom_field_values": [
+      {
+        "pk": 347938962,
+        "custom_field": {
+          "is_required": false,
+          "description": "",
+          "title": "\\u00bfD\\u00f3nde nos conociste?",
+          "booking_notes_safe_html": "",
+          "type": "extended-option",
+          "is_taxable": true,
+          "modifier_kind": "offset",
+          "description_safe_html": "",
+          "booking_notes": "",
+          "offset": 0,
+          "pk": 637022,
+          "percentage": 0,
+          "modifier_type": "none",
+          "extended_options": [
+            {
+              "name": "Google",
+              "is_taxable": true,
+              "modifier_kind": "offset",
+              "description_safe_html": "<p>Nosotros tambi\\u00e9n usamos google cuando no sabemos algo \\ud83e\\uddd0</p>",
+              "offset": 0,
+              "pk": 6160114,
+              "percentage": 0,
+              "modifier_type": "none",
+              "is_always_per_customer": false,
+              "description": "Nosotros tambi\\u00e9n usamos google cuando no sabemos algo \\ud83e\\uddd0"
+            },
+            {
+              "name": "TripAdvisor",
+              "is_taxable": true,
+              "modifier_kind": "offset",
+              "description_safe_html": "<p>Ahh, cl\\u00e1sico TripAdvisor</p>",
+              "offset": 0,
+              "pk": 6160113,
+              "percentage": 0,
+              "modifier_type": "none",
+              "is_always_per_customer": false,
+              "description": "Ahh, cl\\u00e1sico TripAdvisor"
+            },
+            {
+              "name": "Amigos",
+              "is_taxable": true,
+              "modifier_kind": "offset",
+              "description_safe_html": "<p>Qu\\u00e9 bien! seguro que tu tambi\\u00e9n disfrutas la experiencia. \\ud83e\\udd17</p>",
+              "offset": 0,
+              "pk": 6160118,
+              "percentage": 0,
+              "modifier_type": "none",
+              "is_always_per_customer": false,
+              "description": "Qu\\u00e9 bien! seguro que tu tambi\\u00e9n disfrutas la experiencia. \\ud83e\\udd17"
+            },
+            {
+              "name": "Vi las bicis por la calle \\ud83d\\udeb2",
+              "is_taxable": true,
+              "modifier_kind": "offset",
+              "description_safe_html": "<p>Lo sab\\u00edamos! ibas por la calle y sucumbiste al encanto de nuestras bicis tan <em>cool.</em> Tranquilo, no eres el primero \\ud83d\\ude09</p>",
+              "offset": 0,
+              "pk": 6999966,
+              "percentage": 0,
+              "modifier_type": "none",
+              "is_always_per_customer": false,
+              "description": "Lo sab\\u00edamos! ibas por la calle y sucumbiste al encanto de nuestras bicis tan *cool.* Tranquilo, no eres el primero \\ud83d\\ude09"
+            },
+            {
+              "name": "Otro",
+              "is_taxable": true,
+              "modifier_kind": "offset",
+              "description_safe_html": "<p>Vaya, deber\\u00edamos pensar en alguna otra opci\\u00f3n \\ud83e\\udd14</p>",
+              "offset": 0,
+              "pk": 6160120,
+              "percentage": 0,
+              "modifier_type": "none",
+              "is_always_per_customer": false,
+              "description": "Vaya, deber\\u00edamos pensar en alguna otra opci\\u00f3n \\ud83e\\udd14"
+            }
+          ],
+          "is_always_per_customer": false,
+          "name": "\\u00bfD\\u00f3nde nos conociste?"
+        },
+        "name": "\\u00bfD\\u00f3nde nos conociste?",
+        "value": "",
+        "display_value": ""
+      },
+      {
+        "pk": 347938963,
+        "custom_field": {
+          "is_required": false,
+          "description": "",
+          "title": "Botella de agua",
+          "booking_notes_safe_html": "",
+          "is_taxable": true,
+          "modifier_kind": "offset",
+          "description_safe_html": "",
+          "booking_notes": "",
+          "offset": 100,
+          "pk": 922180,
+          "percentage": 0,
+          "modifier_type": "adjust",
+          "type": "count",
+          "is_always_per_customer": false,
+          "name": "Botella de agua"
+        },
+        "name": "Botella de agua",
+        "value": "0",
+        "display_value": "0"
+      },
+      {
+        "pk": 347938964,
+        "custom_field": {
+          "is_required": false,
+          "description": "",
+          "title": "Viaje a Getxo",
+          "booking_notes_safe_html": "",
+          "is_taxable": true,
+          "modifier_kind": "offset",
+          "description_safe_html": "",
+          "booking_notes": "",
+          "offset": 0,
+          "pk": 910098,
+          "percentage": 0,
+          "modifier_type": "none",
+          "type": "yes-no",
+          "is_always_per_customer": false,
+          "name": "Viaje a Getxo"
+        },
+        "name": "Viaje a Getxo",
+        "value": "",
+        "display_value": "No"
+      },
+      {
+        "pk": 347938965,
+        "custom_field": {
+          "is_required": false,
+          "description": "",
+          "title": "Silla de bebe",
+          "booking_notes_safe_html": "",
+          "is_taxable": true,
+          "modifier_kind": "offset",
+          "description_safe_html": "",
+          "booking_notes": "",
+          "offset": 0,
+          "pk": 910095,
+          "percentage": 0,
+          "modifier_type": "none",
+          "type": "yes-no",
+          "is_always_per_customer": false,
+          "name": "Silla de bebe"
+        },
+        "name": "Silla de bebe",
+        "value": "",
+        "display_value": "No"
+      },
+      {
+        "pk": 347938966,
+        "custom_field": {
+          "is_required": false,
+          "description": "",
+          "title": "Pago con bono",
+          "booking_notes_safe_html": "",
+          "is_taxable": true,
+          "modifier_kind": "offset",
+          "description_safe_html": "",
+          "booking_notes": "",
+          "offset": 100,
+          "pk": 908052,
+          "percentage": 0,
+          "modifier_type": "none",
+          "type": "yes-no",
+          "is_always_per_customer": false,
+          "name": "Pago Bono"
+        },
+        "name": "Pago Bono",
+        "value": "",
+        "display_value": "No"
+      }
+    ],
+    "effective_cancellation_policy": {
+      "cutoff": "2021-04-03T12:30:00+0200",
+      "type": "hours-before-start"
+    },
+    "receipt_subtotal_display": "12,40\\u00a0",
+    "amount_paid": 0,
+    "desk": null,
+    "is_eligible_for_cancellation": true,
+    "is_subscribed_for_sms_updates": false,
+    "receipt_taxes": 260,
+    "arrival": null,
+    "contact": {
+      "phone_country": "ES",
+      "name": "valentin martinez",
+      "is_subscribed_for_email_updates": false,
+      "normalized_phone": "+34605739774",
+      "phone": "605739774",
+      "email": "valenbilbao@yahoo.es"
+    },
+    "invoice_price": 0,
+    "receipt_taxes_display": "2,60\\u00a0",
+    "rebooked_from": null,
+    "external_id": "",
+    "order": null
+  }
+}

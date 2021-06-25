@@ -35,4 +35,4 @@ class TestingConfig(Config):
     TESTING = True
     TEST_PASSWORD = "test"
     SQLALCHEMY_DATABASE_URI = "postgresql:///webhook-test"
-    RESPONSES_PATH = "test/responses/"
+    RESPONSES_PATH = "tests/responses/"
