@@ -210,23 +210,23 @@ def test_create_contact(database, booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     c = model_services.CreateContact(
+        id=b.id,
         name="foo",
         email="foo@bar.baz",
         phone_country="49",
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
-        booking_id=b.id,
     ).run()
     c = models.Contact.get(c.id)
     assert c.name == "foo"
-    assert c.booking_id == b.id
+    assert c.id == b.id
 
 
 def test_update_contact(database, contact_factory):
     old_contact = contact_factory()
     new_contact = model_services.UpdateContact(
-        contact_id=old_contact.id,
+        id=old_contact.id,
         name="bar",
         email="foo@bar.baz",
         phone_country="49",

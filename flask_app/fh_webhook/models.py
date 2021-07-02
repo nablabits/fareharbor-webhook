@@ -274,7 +274,7 @@ class Contact(db.Model, BaseMixin):
     """
 
     __table_name__ = "contact"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
@@ -283,9 +283,6 @@ class Contact(db.Model, BaseMixin):
     phone = db.Column(db.String(30))
     normalized_phone = db.Column(db.String(30))
     is_subscribed_for_email_updates = db.Column(db.Boolean, nullable=False)
-    booking_id = db.Column(
-        db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False
-    )
 
 
 class Company(db.Model, BaseMixin):

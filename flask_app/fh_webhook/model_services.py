@@ -288,17 +288,18 @@ class DeleteBooking:
 
 @attr.s
 class CreateContact:
+    id = attr.ib(type=int)
     name = attr.ib(type=str)
     email = attr.ib(type=str)
     phone_country = attr.ib(type=str)
     phone = attr.ib(type=str)
     normalized_phone = attr.ib(type=str)
     is_subscribed_for_email_updates = attr.ib(type=bool)
-    booking_id = attr.ib(type=int)
 
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
         new_contact = models.Contact(
+            id=self.id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             name=self.name,
@@ -307,7 +308,6 @@ class CreateContact:
             phone=self.phone,
             normalized_phone=self.normalized_phone,
             is_subscribed_for_email_updates=opt_in,
-            booking_id=self.booking_id,
         )
         db.session.add(new_contact)
         db.session.commit()
@@ -316,7 +316,7 @@ class CreateContact:
 
 @attr.s
 class UpdateContact:
-    contact_id = attr.ib(type=int)
+    id = attr.ib(type=int)
     name = attr.ib(type=str)
     email = attr.ib(type=str)
     phone_country = attr.ib(type=str)
@@ -326,7 +326,7 @@ class UpdateContact:
 
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
-        contact = models.Contact.get(self.contact_id)
+        contact = models.Contact.get(self.id)
         contact.updated_at = (datetime.utcnow(),)
         contact.name = (self.name,)
         contact.email = (self.email,)
@@ -340,10 +340,10 @@ class UpdateContact:
 
 @attr.s
 class DeleteContact:
-    contact_id = attr.ib(type=int)
+    id = attr.ib(type=int)
 
     def run(self):
-        contact = models.Contact.get(self.contact_id)
+        contact = models.Contact.get(self.id)
         db.session.delete(contact)
         db.session.commit()
 
