@@ -6,8 +6,6 @@ from fh_webhook import services, models
 
 
 def test_populate_db_creates_item(database, app):
-    # TODO: use this function to test populate db just the ids of the obj
-    # created
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
     item = models.Item.get(159068)
@@ -18,6 +16,9 @@ def test_populate_db_creates_availability(database, app, item_factory):
     """
     Although the first test actually saves all the data contained in
     sample_data, we split the tests into manageable chunks for readability.
+    This comes with the trade off of speed as to avoid unique field exceptions,
+    the scope of the database has to be set to function and therefore an empty
+    database is used per test that increases the running time.
     """
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
@@ -33,6 +34,9 @@ def test_populate_db_creates_booking(database, app, item_factory):
     """
     Although the first test actually saves all the data contained in
     sample_data, we split the tests into manageable chunks for readability.
+    This comes with the trade off of speed as to avoid unique field exceptions,
+    the scope of the database has to be set to function and therefore an empty
+    database is used per test that increases the running time.
     """
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
@@ -70,4 +74,22 @@ def test_populate_db_creates_booking(database, app, item_factory):
     assert b.order is None
 
 
+def test_populate_db_creates_contact(database, app):
+    """
+    Although the first test actually saves all the data contained in
+    sample_data, we split the tests into manageable chunks for readability.
+    This comes with the trade off of speed as to avoid unique field exceptions,
+    the scope of the database has to be set to function and therefore an empty
+    database is used per test that increases the running time.
+    """
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    contact = models.Contact.get(75125154)
+    assert contact.phone_country == "ES"
+    assert contact.name == "Foo Bar"
+    assert contact.is_subscribed_for_email_updates is False
+    assert contact.normalized_phone == "+34444"
+    assert contact.phone == "44444"
+    assert contact.email == "foo@bar.baz"
 

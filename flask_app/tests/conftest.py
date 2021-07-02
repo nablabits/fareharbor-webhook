@@ -28,7 +28,7 @@ def runner(app):
     return app.test_cli_runner()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def database(request):
     """
     Create a Postgres database for the tests, and drop it when the tests are done.
@@ -117,14 +117,13 @@ def contact_factory(booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateContact(
-        contact_id=b.id,
+        id=b.id,
         name="foo",
         email="foo@bar.baz",
         phone_country="49",
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
-        booking_id=b.id,
     ).run
 
 

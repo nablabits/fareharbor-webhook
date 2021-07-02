@@ -618,11 +618,11 @@
     "arrival": null,
     "contact": {
       "phone_country": "ES",
-      "name": "valentin martinez",
+      "name": "Foo Bar",
       "is_subscribed_for_email_updates": false,
-      "normalized_phone": "+34605739774",
-      "phone": "605739774",
-      "email": "valenbilbao@yahoo.es"
+      "normalized_phone": "+34444",
+      "phone": "44444",
+      "email": "foo@bar.baz"
     },
     "invoice_price": 0,
     "receipt_taxes_display": "2,60\\u00a0",
