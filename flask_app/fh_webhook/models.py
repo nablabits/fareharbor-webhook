@@ -39,7 +39,7 @@ class Booking(db.Model, BaseMixin):
     __table_name__ = "booking"
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     voucher_number = db.Column(db.String(64))
     display_id = db.Column(db.String(64), nullable=False)
     note_safe_html = db.Column(db.Text)
@@ -55,7 +55,7 @@ class Booking(db.Model, BaseMixin):
 
     # Foreign key fields
     availability_id = db.Column(
-        db.Integer, db.ForeignKey("availability.id"), nullable=False
+        db.BigInteger, db.ForeignKey("availability.id"), nullable=False
     )
 
     # price fields
@@ -88,7 +88,7 @@ class Availability(db.Model, BaseMixin):
     """
 
     __table_name__ = "availability"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     capacity = db.Column(db.SmallInteger, nullable=False)
@@ -98,14 +98,14 @@ class Availability(db.Model, BaseMixin):
     end_at = db.Column(db.DateTime(timezone=True), nullable=False)
 
     # foreign key fields
-    item_id = db.Column(db.Integer, db.ForeignKey("item.id"), nullable=False)
+    item_id = db.Column(db.BigInteger, db.ForeignKey("item.id"), nullable=False)
 
 
 class Item(db.Model, BaseMixin):
     """Items are the products we sell in the business."""
 
     __table_name__ = "item"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(200))
@@ -121,18 +121,19 @@ class Customer(db.Model, BaseMixin):
     """
 
     __table_name__ = "customer"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     checkin_url = db.Column(db.String(264))
-    checking_status = db.Column(db.String(64))
+    checkin_status = db.Column(db.String(64))
 
     # Foreign Key fields
     customer_type_rate_id = db.Column(
-        db.Integer, db.ForeignKey("customer_type_rate.id"), nullable=False
+        db.BigInteger, db.ForeignKey("customer_type_rate.id"), nullable=False
     )
     # M2M to booking
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
+    booking_id = db.Column(
+        db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
 
 
 class CustomerTypeRate(db.Model, BaseMixin):
@@ -155,13 +156,13 @@ class CustomerTypeRate(db.Model, BaseMixin):
 
     # Foreign key fields
     availability_id = db.Column(
-        db.Integer, db.ForeignKey("availability.id"), nullable=False
+        db.BigInteger, db.ForeignKey("availability.id"), nullable=False
     )
     customer_prototype_id = db.Column(
-        db.Integer, db.ForeignKey("customer_prototype.id"), nullable=False
+        db.BigInteger, db.ForeignKey("customer_prototype.id"), nullable=False
     )
     customer_type_id = db.Column(
-        db.Integer, db.ForeignKey("customer_type.id"), nullable=False
+        db.BigInteger, db.ForeignKey("customer_type.id"), nullable=False
     )
 
 
@@ -173,7 +174,7 @@ class CustomerPrototype(db.Model, BaseMixin):
     """
 
     __table_name__ = "customer_prototype"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     total = db.Column(db.Integer)
@@ -190,7 +191,7 @@ class CustomerType(db.Model, BaseMixin):
     """
 
     __table_name__ = "customer_type"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     note = db.Column(db.Text)
@@ -206,11 +207,11 @@ class CustomFieldInstance(db.Model, BaseMixin):
     """
 
     __table_name__ = "custom_field_instance"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    custom_field_id = db.Column(db.Integer, db.ForeignKey("custom_field.id"))
-    availability_id = db.Column(db.Integer, db.ForeignKey("availability.id"))
+    custom_field_id = db.Column(db.BigInteger, db.ForeignKey("custom_field.id"))
+    availability_id = db.Column(db.BigInteger, db.ForeignKey("availability.id"))
 
 
 class CustomFieldValue(db.Model, BaseMixin):
@@ -220,7 +221,7 @@ class CustomFieldValue(db.Model, BaseMixin):
     """
 
     __table_name__ = "custom_field_values"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(64), nullable=False)
@@ -228,17 +229,17 @@ class CustomFieldValue(db.Model, BaseMixin):
     display_value = db.Column(db.String(2048))
 
     # Foreign key fields
-    custom_field_id = db.Column(db.Integer, db.ForeignKey("custom_field.id"))
+    custom_field_id = db.Column(db.BigInteger, db.ForeignKey("custom_field.id"))
     # M2M to booking and customer
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
-    customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
+    booking_id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
+    customer_id = db.Column(db.BigInteger, db.ForeignKey("customer.id"), nullable=False)
 
 
 class CustomField(db.Model, BaseMixin):
     """Store the types of custom fields available."""
 
     __table_name__ = "custom_field"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     title = db.Column(db.String(64), nullable=False)
@@ -261,7 +262,7 @@ class CustomField(db.Model, BaseMixin):
     is_always_per_customer = db.Column(db.Boolean, nullable=False)
 
     extended_options = db.Column(
-        db.Integer, db.ForeignKey("custom_field.id"), nullable=True
+        db.BigInteger, db.ForeignKey("custom_field.id"), nullable=True
     )
 
 
@@ -272,7 +273,7 @@ class Contact(db.Model, BaseMixin):
     """
 
     __table_name__ = "contact"
-    id = db.Column(db.Integer, db.ForeignKey("booking.id"), primary_key=True)
+    id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
@@ -290,7 +291,7 @@ class Company(db.Model, BaseMixin):
     """
 
     __table_name__ = "company"
-    id = db.Column(db.Integer, db.ForeignKey("booking.id"), primary_key=True)
+    id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
@@ -305,7 +306,7 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
     """
 
     __table_name__ = "effective_cancellation_policy"
-    id = db.Column(db.Integer, db.ForeignKey("booking.id"), primary_key=True)
+    id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     cutoff = db.Column(db.DateTime(timezone=True), nullable=False)
