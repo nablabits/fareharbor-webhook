@@ -286,7 +286,7 @@ def test_create_cancellation_policy(database, booking_factory):
     ).run()
     cp = models.EffectiveCancellationPolicy.get(new_cp.id)
     assert cp.cancellation_type == "foo"
-    assert cp.booking_id == b.id
+    assert cp.id == b.id
 
 
 def test_update_cancellation_policy(database, cancellation_factory):

@@ -405,17 +405,17 @@ class DeleteCompany:
 
 @attr.s
 class CreateCancellationPolicy:
+    booking_id = attr.ib(type=int)
     cutoff = attr.ib(type=datetime)
     cancellation_type = attr.ib(type=str)
-    booking_id = attr.ib(type=int)
 
     def run(self):
         new_cp = models.EffectiveCancellationPolicy(
+            id=self.booking_id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             cutoff=self.cutoff,
             cancellation_type=self.cancellation_type,
-            booking_id=self.booking_id,
         )
         db.session.add(new_cp)
         db.session.commit()
@@ -427,9 +427,6 @@ class UpdateCancellationPolicy:
     cp_id = attr.ib(type=int)
     cutoff = attr.ib(type=datetime)
     cancellation_type = attr.ib(type=str)
-    # booking_id = attr.ib(type=int)
-    # as cancellations are a 1:1 to bookings we can't update right away the booking_id. We
-    # leave aside this action and we will implement it if neccessary
 
     def run(self):
         cp = models.EffectiveCancellationPolicy.get(self.cp_id)

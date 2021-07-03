@@ -307,11 +307,8 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
     """
 
     __table_name__ = "effective_cancellation_policy"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     cutoff = db.Column(db.DateTime(timezone=True), nullable=False)
     cancellation_type = db.Column(db.String(64), nullable=False)
-    booking_id = db.Column(
-        db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False
-    )
