@@ -217,6 +217,32 @@ class ProcessJSONResponse:
             display_name=ct_data["display_name"]
         ).run()
 
+    def _save_customer_type_rate(self, ctr_data, ct, cpt, av):
+        """
+        Save the customer prototype information contained in the data.
+
+        In the json we can find customer prototypes in a similar way to that of
+        customer types: under bookings__customers and under
+        booking__availability__customer_type_rates
+        """
+        ctr = models.CustomerTypeRate.get_object_or_none(ctr_data["pk"])
+        if ctr:
+            service = model_services.UpdateCustomerTypeRate
+        else:
+            service = model_services.CreateCustomerTypeRate
+
+        return service(
+            ctr_id=ctr_data["pk"],
+            capacity=ctr_data["capacity"],
+            minimum_party_size=ctr_data["minimum_party_size"],
+            maximum_party_size=ctr_data["maximum_party_size"],
+            total=ctr_data["total"],
+            total_including_tax=ctr_data["total_including_tax"],
+            availability_id=av.id,
+            customer_prototype_id=cpt.id,
+            customer_type_id=ct.id,
+        ).run()
+
     def run(self):
         item = self._save_item()
         av = self._save_availability(item.id)
@@ -228,15 +254,18 @@ class ProcessJSONResponse:
         booking = self.data["booking"]
         customers = booking["customers"]
         customer_type_rates = booking["availability"]["customer_type_rates"]
-        for ctr in customer_type_rates:
-            ct_data = ctr["customer_type"]
-            ctp_data = ctr["customer_prototype"]
+        for ctr_data in customer_type_rates:
+            ct_data = ctr_data["customer_type"]
+            cpt_data = ctr_data["customer_prototype"]
             ct = self._save_customer_type(ct_data)
-            ctp = self._save_customer_prototype(ctp_data)
+            cpt = self._save_customer_prototype(cpt_data)
+            self._save_customer_type_rate(ctr_data, ct, cpt, av)
 
         for customer in customers:
             ct_data = customer["customer_type_rate"]["customer_type"]
-            ctp_data = customer["customer_type_rate"]["customer_prototype"]
+            cpt_data = customer["customer_type_rate"]["customer_prototype"]
             ct = self._save_customer_type(ct_data)
-            ctp = self._save_customer_prototype(ctp_data)
+            cpt = self._save_customer_prototype(cpt_data)
+            self._save_customer_type_rate(
+                customer["customer_type_rate"], ct, cpt, av)
 

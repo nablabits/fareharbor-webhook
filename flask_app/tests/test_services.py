@@ -132,3 +132,26 @@ def test_populate_db_creates_customer_prototypes(database, app):
     assert ctp.total == 826
     assert ctp.total_including_tax == 1000
     assert ctp.display_name == "D\\u00eda extra"
+
+
+def test_populate_db_creates_customer_type_rates(database, app):
+    """
+    As with customer types, note that 2576873546 is duplicated as it's the
+    chosen one among availability possible customer type rates.
+    """
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    ctr_ids = (
+        2576873544, 2576873545, 2576873546, 2576873547, 2576873548, 2576873549,
+        2576873550, 2576873546
+    )
+    for ctr_id in ctr_ids:
+        ctp = models.CustomerTypeRate.get(ctr_id)
+    assert len(models.CustomerTypeRate.query.all()) == len(ctr_ids) - 1
+    assert ctp.capacity == 49
+    assert ctp.minimum_party_size is None
+    assert ctp.maximum_party_size is None
+    assert ctp.total_including_tax == 1500
+    assert ctp.total == 1240
+
