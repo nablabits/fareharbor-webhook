@@ -292,15 +292,12 @@ class Company(db.Model, BaseMixin):
     """
 
     __table_name__ = "company"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
     short_name = db.Column(db.String(30), nullable=False)
     currency = db.Column(db.String(10), nullable=False)
-    booking_id = db.Column(
-        db.Integer, db.ForeignKey("booking.id"), unique=True, nullable=False
-    )
 
 
 class EffectiveCancellationPolicy(db.Model, BaseMixin):

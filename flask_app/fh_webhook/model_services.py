@@ -353,19 +353,19 @@ class DeleteContact:
 
 @attr.s
 class CreateCompany:
+    booking_id = attr.ib(type=int)
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
-    booking_id = attr.ib(type=int)
 
     def run(self):
         new_company = models.Company(
+            id=self.booking_id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             name=self.name,
             short_name=self.short_name,
             currency=self.currency,
-            booking_id=self.booking_id,
         )
         db.session.add(new_company)
         db.session.commit()
@@ -378,9 +378,6 @@ class UpdateCompany:
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
-    # booking_id = attr.ib(type=int)
-    # as companies are a 1:1 to bookings we can't update right away the booking_id. We
-    # leave aside this action and we will implement it if neccessary
 
     def run(self):
         company = models.Company.get(self.company_id)

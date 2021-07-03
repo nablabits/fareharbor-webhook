@@ -254,7 +254,7 @@ def test_create_company(database, booking_factory):
     ).run()
     c = models.Company.get(c.id)
     assert c.name == "foo"
-    assert c.booking_id == b.id
+    assert c.id == b.id
 
 
 def test_update_company(database, company_factory):
@@ -266,8 +266,8 @@ def test_update_company(database, company_factory):
         currency="eur",
     ).run()
     # reload from db
-    new_company = models.Contact.get(new_company.id)
-    assert new_company.name == "bar"
+    new_company = models.Company.get(new_company.id)
+    assert new_company.name == "baz"
 
 
 def test_delete_company(database, company_factory):
