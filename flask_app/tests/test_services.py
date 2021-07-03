@@ -109,3 +109,19 @@ def test_populate_db_creates_company(database, app):
     assert company.name == "Tourne"
     assert company.short_name == "tournebilbao"
     assert company.currency == "eur"
+
+
+def test_populate_db_creates_cancellation_policy(database, app):
+    """
+    Although the first test actually saves all the data contained in
+    sample_data, we split the tests into manageable chunks for readability.
+    This comes with the trade off of speed as to avoid unique field exceptions,
+    the scope of the database has to be set to function and therefore an empty
+    database is used per test that increases the running time.
+    """
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    cp = models.EffectiveCancellationPolicy.get(75125154)
+    assert cp.cutoff.isoformat() == "2021-04-03T12:30:00+02:00"
+    assert cp.cancellation_type == "hours-before-start"

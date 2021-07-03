@@ -156,9 +156,28 @@ class ProcessJSONResponse:
             currency=c_data["currency"]
         ).run()
 
+    def _save_cancellation_policy(self, booking_id):
+        """
+        Save cancellation policy information contained in the data.
+        """
+        c_data = self.data["booking"]["effective_cancellation_policy"]
+        cp = models.EffectiveCancellationPolicy.get_object_or_none(
+            booking_id)
+        if cp:
+            service = model_services.UpdateCancellationPolicy
+        else:
+            service = model_services.CreateCancellationPolicy
+
+        return service(
+            booking_id=booking_id,
+            cutoff=c_data["cutoff"],
+            cancellation_type=c_data["type"]
+        ).run()
+
     def run(self):
         item = self._save_item()
         av = self._save_availability(item.id)
         booking = self._save_booking(av.id)
         self._save_contact(booking.id)
         self._save_company(booking.id)
+        self._save_cancellation_policy(booking.id)
