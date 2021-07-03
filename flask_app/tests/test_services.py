@@ -155,3 +155,11 @@ def test_populate_db_creates_customer_type_rates(database, app):
     assert ctp.total_including_tax == 1500
     assert ctp.total == 1240
 
+
+def test_populate_db_creates_customer(database, app):
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    customer = models.Customer.get(224262373)
+    assert customer.checkin_url == "https://fhchk.co/faYT3"
+    assert customer.checkin_status is None

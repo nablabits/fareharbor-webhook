@@ -243,17 +243,35 @@ class ProcessJSONResponse:
             customer_type_id=ct.id,
         ).run()
 
+    def _save_customer(self, c_data, ctr_id, booking_id):
+        """
+        Save the customer information contained in the data.
+        """
+        ctr = models.Customer.get_object_or_none(c_data["pk"])
+        if ctr:
+            service = model_services.UpdateCustomer
+        else:
+            service = model_services.CreateCustomer
+
+        return service(
+            customer_id=c_data["pk"],
+            checkin_url=c_data["checkin_url"],
+            checkin_status=c_data["checkin_status"],
+            customer_type_rate_id=ctr_id,
+            booking_id=booking_id,
+        ).run()
+
     def run(self):
         item = self._save_item()
         av = self._save_availability(item.id)
-        booking = self._save_booking(av.id)
-        self._save_contact(booking.id)
-        self._save_company(booking.id)
-        self._save_cancellation_policy(booking.id)
+        b = self._save_booking(av.id)
+        self._save_contact(b.id)
+        self._save_company(b.id)
+        self._save_cancellation_policy(b.id)
 
-        booking = self.data["booking"]
-        customers = booking["customers"]
-        customer_type_rates = booking["availability"]["customer_type_rates"]
+        bookings = self.data["booking"]
+        customers = bookings["customers"]
+        customer_type_rates = bookings["availability"]["customer_type_rates"]
         for ctr_data in customer_type_rates:
             ct_data = ctr_data["customer_type"]
             cpt_data = ctr_data["customer_prototype"]
@@ -261,11 +279,12 @@ class ProcessJSONResponse:
             cpt = self._save_customer_prototype(cpt_data)
             self._save_customer_type_rate(ctr_data, ct, cpt, av)
 
-        for customer in customers:
-            ct_data = customer["customer_type_rate"]["customer_type"]
-            cpt_data = customer["customer_type_rate"]["customer_prototype"]
+        for c_data in customers:
+            ct_data = c_data["customer_type_rate"]["customer_type"]
+            cpt_data = c_data["customer_type_rate"]["customer_prototype"]
             ct = self._save_customer_type(ct_data)
             cpt = self._save_customer_prototype(cpt_data)
-            self._save_customer_type_rate(
-                customer["customer_type_rate"], ct, cpt, av)
+            ctr = self._save_customer_type_rate(
+                c_data["customer_type_rate"], ct, cpt, av)
+            self._save_customer(c_data, ctr.id, b.id)
 
