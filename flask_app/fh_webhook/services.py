@@ -195,6 +195,28 @@ class ProcessJSONResponse:
             plural=ct_data["plural"]
         ).run()
 
+    def _save_customer_prototype(self, ct_data):
+        """
+        Save the customer prototype information contained in the data.
+
+        In the json we can find customer prototypes in a similar way to that of
+        customer types: under bookings__customers and under
+        booking__availability__customer_type_rates
+        """
+        cpt = models.CustomerPrototype.get_object_or_none(ct_data["pk"])
+        if cpt:
+            service = model_services.UpdateCustomerPrototype
+        else:
+            service = model_services.CreateCustomerPrototype
+
+        return service(
+            customer_prototype_id=ct_data["pk"],
+            note=ct_data["note"],
+            total=ct_data["total"],
+            total_including_tax=ct_data["total_including_tax"],
+            display_name=ct_data["display_name"]
+        ).run()
+
     def run(self):
         item = self._save_item()
         av = self._save_availability(item.id)
@@ -205,12 +227,16 @@ class ProcessJSONResponse:
 
         booking = self.data["booking"]
         customers = booking["customers"]
-        for customer in customers:
-            ct_data = customer["customer_type_rate"]["customer_type"]
-            ct = self._save_customer_type(ct_data)
-
         customer_type_rates = booking["availability"]["customer_type_rates"]
         for ctr in customer_type_rates:
             ct_data = ctr["customer_type"]
+            ctp_data = ctr["customer_prototype"]
             ct = self._save_customer_type(ct_data)
+            ctp = self._save_customer_prototype(ctp_data)
+
+        for customer in customers:
+            ct_data = customer["customer_type_rate"]["customer_type"]
+            ctp_data = customer["customer_type_rate"]["customer_prototype"]
+            ct = self._save_customer_type(ct_data)
+            ctp = self._save_customer_prototype(ctp_data)
 

@@ -114,3 +114,21 @@ def test_populate_db_creates_customer_types(database, app):
     assert ct.note == "Todas las edades"
     assert ct.singular == "D\\u00eda extra"
     assert ct.plural == "D\\u00edas extras"
+
+
+def test_populate_db_creates_customer_prototypes(database, app):
+    """
+    As with customer types, note that 655990 is duplicated as it's the chosen
+    one among availability possible customer prototypes.
+    """
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    ctp_ids = (655990, 655988, 655989, 655990, 655991, 655992, 655993, 655994)
+    for ctp_id in ctp_ids:
+        ctp = models.CustomerPrototype.get(ctp_id)
+    assert len(models.CustomerPrototype.query.all()) == len(ctp_ids) - 1
+    assert ctp.note == "Todas las edades"
+    assert ctp.total == 826
+    assert ctp.total_including_tax == 1000
+    assert ctp.display_name == "D\\u00eda extra"
