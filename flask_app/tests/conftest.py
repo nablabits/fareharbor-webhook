@@ -196,8 +196,9 @@ def customer_factory(customer_type_rate_factory, booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCustomer(
+        customer_id=randint(1, 10_000_000),
         checkin_url="https://foo.bar",
-        checking_status="checked_in",
+        checkin_status="checked_in",
         customer_type_rate_id=customer_type_rate_factory().id,
         booking_id=b.id,
     ).run

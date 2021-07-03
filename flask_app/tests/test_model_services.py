@@ -461,8 +461,9 @@ def test_create_customer(
     s.uuid = uuid4().hex
     b = s.run()
     ct = model_services.CreateCustomer(
+        customer_id=randint(1, 10_000_000),
         checkin_url="https://foo.bar",
-        checking_status="checked_in",
+        checkin_status="checked_in",
         customer_type_rate_id=customer_type_rate_factory().id,
         booking_id=b.id,
     ).run()
@@ -474,13 +475,13 @@ def test_update_customer(database, customer_factory):
     model_services.UpdateCustomer(
         customer_id=old_customer.id,
         checkin_url="https://bar.baz",
-        checking_status="checked_out",
+        checkin_status="checked_out",
         customer_type_rate_id=old_customer.customer_type_rate_id,
         booking_id=old_customer.booking_id,
     ).run()
     ct = models.Customer.get(old_customer.id)
     assert ct.checkin_url == "https://bar.baz"
-    assert ct.checking_status == "checked_out"
+    assert ct.checkin_status == "checked_out"
 
 
 def test_delete_customer(database, customer_factory):

@@ -459,8 +459,9 @@ class CreateCustomer:
     just in case that for some strange reason they differ.
     """
 
+    customer_id = attr.ib(type=int)
     checkin_url = attr.ib(type=str)
-    checking_status = attr.ib(type=str)
+    checkin_status = attr.ib(type=str)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
 
@@ -468,8 +469,9 @@ class CreateCustomer:
         new_customer = models.Customer(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.customer_id,
             checkin_url=self.checkin_url,
-            checking_status=self.checking_status,
+            checkin_status=self.checkin_status,
             customer_type_rate_id=self.customer_type_rate_id,
             booking_id=self.booking_id,
         )
@@ -482,7 +484,7 @@ class CreateCustomer:
 class UpdateCustomer:
     customer_id = attr.ib(type=int)
     checkin_url = attr.ib(type=str)
-    checking_status = attr.ib(type=str)
+    checkin_status = attr.ib(type=str)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
 
@@ -490,7 +492,7 @@ class UpdateCustomer:
         customer = models.Customer.get(self.customer_id)
         customer.updated_at = (datetime.utcnow(),)
         customer.checkin_url = (self.checkin_url,)
-        customer.checking_status = (self.checking_status,)
+        customer.checkin_status = (self.checkin_status,)
         customer.customer_type_rate_id = (self.customer_type_rate_id,)
         customer.booking_id = self.booking_id
         db.session.commit()
@@ -527,11 +529,11 @@ class CreateCustomerTypeRate:
             capacity=self.capacity,
             minimum_party_size=self.minimum_party_size,
             maximum_party_size=self.maximum_party_size,
+            total=self.total,
+            total_including_tax=self.total_including_tax,
             availability_id=self.availability_id,
             customer_prototype_id=self.customer_prototype_id,
             customer_type_id=self.customer_type_id,
-            total=self.total,
-            total_including_tax=self.total_including_tax,
         )
         db.session.add(new_customer_type_rate)
         db.session.commit()
