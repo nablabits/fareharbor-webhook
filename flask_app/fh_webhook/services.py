@@ -150,7 +150,7 @@ class ProcessJSONResponse:
             service = model_services.CreateCompany
 
         return service(
-            booking_id=booking_id,
+            company_id=booking_id,
             name=c_data["name"],
             short_name=c_data["shortname"],
             currency=c_data["currency"]
@@ -169,7 +169,7 @@ class ProcessJSONResponse:
             service = model_services.CreateCancellationPolicy
 
         return service(
-            booking_id=booking_id,
+            cp_id=booking_id,
             cutoff=c_data["cutoff"],
             cancellation_type=c_data["type"]
         ).run()

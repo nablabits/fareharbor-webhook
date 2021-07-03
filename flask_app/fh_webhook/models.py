@@ -118,9 +118,6 @@ class Customer(db.Model, BaseMixin):
     several customers chosen (3 Adults, 2 children) and the defined customer
     type rate can appear in different bookings as they are defined by the
     availability.
-
-    Note that CustomerTypeRate also points to Booking so it should have the
-    same value.
     """
 
     __table_name__ = "customer"
@@ -147,15 +144,16 @@ class CustomerTypeRate(db.Model, BaseMixin):
     """
 
     __table_name__ = "customer_type_rate"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    capacity = db.Column(db.SmallInteger, nullable=False)
-    minimum_party_size = db.Column(db.SmallInteger, nullable=False)
-    maximum_party_size = db.Column(db.SmallInteger, nullable=False)
+    capacity = db.Column(db.SmallInteger)
+    minimum_party_size = db.Column(db.SmallInteger)
+    maximum_party_size = db.Column(db.SmallInteger)
+    total = db.Column(db.Integer)
+    total_including_tax = db.Column(db.Integer)
 
     # Foreign key fields
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking.id"), nullable=False)
     availability_id = db.Column(
         db.Integer, db.ForeignKey("availability.id"), nullable=False
     )

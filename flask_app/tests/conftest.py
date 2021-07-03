@@ -133,7 +133,7 @@ def company_factory(booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCompany(
-        name="foo", short_name="bar", currency="eur", booking_id=b.id
+        name="foo", short_name="bar", currency="eur", company_id=b.id
     ).run
 
 
@@ -144,7 +144,7 @@ def cancellation_factory(booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCancellationPolicy(
-        cutoff=datetime.utcnow(), cancellation_type="foo", booking_id=b.id
+        cutoff=datetime.utcnow(), cancellation_type="foo", cp_id=b.id
     ).run
 
 
@@ -205,20 +205,19 @@ def customer_factory(customer_type_rate_factory, booking_factory):
 
 @pytest.fixture
 def customer_type_rate_factory(
-    booking_factory,
     availability_factory,
     customer_type_factory,
     customer_prototype_factory,
 ):
-    s = booking_factory
-    s.uuid = uuid4().hex
-    b = s.run()
+    av = availability_factory.run()
     return model_services.CreateCustomerTypeRate(
+        ctr_id=randint(1, 10_000_000),
         capacity=4,
         minimum_party_size=2,
         maximum_party_size=4,
-        booking_id=b.id,
-        availability_id=availability_factory().id,
+        availability_id=av.id,
+        total=10,
+        total_including_tax=10,
         customer_prototype_id=customer_prototype_factory().id,
         customer_type_id=customer_type_factory().id,
     ).run

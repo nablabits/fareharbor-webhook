@@ -353,14 +353,14 @@ class DeleteContact:
 
 @attr.s
 class CreateCompany:
-    booking_id = attr.ib(type=int)
+    company_id = attr.ib(type=int)
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
 
     def run(self):
         new_company = models.Company(
-            id=self.booking_id,
+            id=self.company_id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             name=self.name,
@@ -405,13 +405,13 @@ class DeleteCompany:
 
 @attr.s
 class CreateCancellationPolicy:
-    booking_id = attr.ib(type=int)
+    cp_id = attr.ib(type=int)
     cutoff = attr.ib(type=datetime)
     cancellation_type = attr.ib(type=str)
 
     def run(self):
         new_cp = models.EffectiveCancellationPolicy(
-            id=self.booking_id,
+            id=self.cp_id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             cutoff=self.cutoff,
@@ -509,25 +509,29 @@ class DeleteCustomer:
 
 @attr.s
 class CreateCustomerTypeRate:
+    ctr_id = attr.ib(type=int)
     capacity = attr.ib(type=int)
     minimum_party_size = attr.ib(type=int)
     maximum_party_size = attr.ib(type=int)
-    booking_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
     customer_prototype_id = attr.ib(type=int)
     customer_type_id = attr.ib(type=int)
+    total = attr.ib(type=int)
+    total_including_tax = attr.ib(type=int)
 
     def run(self):
         new_customer_type_rate = models.CustomerTypeRate(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.ctr_id,
             capacity=self.capacity,
             minimum_party_size=self.minimum_party_size,
             maximum_party_size=self.maximum_party_size,
-            booking_id=self.booking_id,
             availability_id=self.availability_id,
             customer_prototype_id=self.customer_prototype_id,
             customer_type_id=self.customer_type_id,
+            total=self.total,
+            total_including_tax=self.total_including_tax,
         )
         db.session.add(new_customer_type_rate)
         db.session.commit()
@@ -540,7 +544,8 @@ class UpdateCustomerTypeRate:
     capacity = attr.ib(type=int)
     minimum_party_size = attr.ib(type=int)
     maximum_party_size = attr.ib(type=int)
-    booking_id = attr.ib(type=int)
+    total = attr.ib(type=int)
+    total_including_tax = attr.ib(type=int)
     availability_id = attr.ib(type=int)
     customer_prototype_id = attr.ib(type=int)
     customer_type_id = attr.ib(type=int)
@@ -551,7 +556,8 @@ class UpdateCustomerTypeRate:
         ctr.capacity = (self.capacity,)
         ctr.minimum_party_size = (self.minimum_party_size,)
         ctr.maximum_party_size = (self.maximum_party_size,)
-        ctr.booking_id = (self.booking_id,)
+        ctr.total = self.total
+        ctr.total_including_tax = self.total_including_tax
         ctr.availability_id = (self.availability_id,)
         ctr.customer_prototype_id = (self.customer_prototype_id,)
         ctr.customer_type_id = (self.customer_type_id,)

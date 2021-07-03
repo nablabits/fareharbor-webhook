@@ -250,7 +250,7 @@ def test_create_company(database, booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     c = model_services.CreateCompany(
-        name="foo", short_name="bar", currency="eur", booking_id=b.id
+        name="foo", short_name="bar", currency="eur", company_id=b.id
     ).run()
     c = models.Company.get(c.id)
     assert c.name == "foo"
@@ -282,7 +282,7 @@ def test_create_cancellation_policy(database, booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     new_cp = model_services.CreateCancellationPolicy(
-        cutoff=datetime.utcnow(), cancellation_type="foo", booking_id=b.id
+        cutoff=datetime.utcnow(), cancellation_type="foo", cp_id=b.id
     ).run()
     cp = models.EffectiveCancellationPolicy.get(new_cp.id)
     assert cp.cancellation_type == "foo"
@@ -494,20 +494,19 @@ def test_delete_customer(database, customer_factory):
 
 def test_create_customer_type_rate(
     database,
-    booking_factory,
     availability_factory,
     customer_type_factory,
     customer_prototype_factory,
 ):
-    s = booking_factory
-    s.uuid = uuid4().hex
-    b = s.run()
+    av = availability_factory.run()
     ctr = model_services.CreateCustomerTypeRate(
+        ctr_id=randint(1, 10_000_000),
         capacity=4,
         minimum_party_size=2,
         maximum_party_size=4,
-        booking_id=b.id,
-        availability_id=availability_factory().id,
+        total=10,
+        total_including_tax=10,
+        availability_id=av.id,
         customer_prototype_id=customer_prototype_factory().id,
         customer_type_id=customer_type_factory().id,
     ).run()
@@ -521,7 +520,8 @@ def test_update_customer_type_rate(database, customer_type_rate_factory):
         capacity=6,
         minimum_party_size=1,
         maximum_party_size=6,
-        booking_id=old_ctr.booking_id,
+        total=11,
+        total_including_tax=11,
         availability_id=old_ctr.availability_id,
         customer_prototype_id=old_ctr.customer_prototype_id,
         customer_type_id=old_ctr.customer_type_id,
@@ -530,6 +530,8 @@ def test_update_customer_type_rate(database, customer_type_rate_factory):
     assert updated_ctr.capacity == 6
     assert updated_ctr.minimum_party_size == 1
     assert updated_ctr.maximum_party_size == 6
+    assert updated_ctr.total == 11
+    assert updated_ctr.total_including_tax == 11
 
 
 def test_delete_customer_type_rate(database, customer_type_rate_factory):
