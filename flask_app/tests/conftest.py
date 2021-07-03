@@ -234,6 +234,7 @@ def customer_prototype_factory():
 @pytest.fixture
 def customer_type_factory():
     return model_services.CreateCustomerType(
+        customer_type_id=randint(1, 10_000_000),
         note="foo",
         singular="bar",
         plural="baz",

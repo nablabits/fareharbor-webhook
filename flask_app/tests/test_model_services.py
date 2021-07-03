@@ -574,6 +574,7 @@ def test_delete_customer_prototype(database, customer_prototype_factory):
 
 def test_create_customer_type(database):
     ct = model_services.CreateCustomerType(
+        customer_type_id=randint(1, 10_000_000),
         note="foo",
         singular="bar",
         plural="baz",

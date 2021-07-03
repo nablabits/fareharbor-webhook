@@ -622,6 +622,7 @@ class DeleteCustomerPrototype:
 
 @attr.s
 class CreateCustomerType:
+    customer_type_id = attr.ib(type=int)
     note = attr.ib(type=str)
     singular = attr.ib(type=str)
     plural = attr.ib(type=str)
@@ -630,6 +631,7 @@ class CreateCustomerType:
         new_customer_type = models.CustomerType(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.customer_type_id,
             note=self.note,
             singular=self.singular,
             plural=self.plural,
