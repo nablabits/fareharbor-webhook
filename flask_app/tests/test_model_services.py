@@ -541,6 +541,7 @@ def test_delete_customer_type_rate(database, customer_type_rate_factory):
 
 def test_create_customer_prototype(database):
     service = model_services.CreateCustomerPrototype(
+        customer_prototype_id=randint(1, 10_000_000),
         total=10, total_including_tax=10, display_name="foo", note="bar"
     )
     new_customer_prototype = service.run()

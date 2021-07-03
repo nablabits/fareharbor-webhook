@@ -571,6 +571,7 @@ class DeleteCustomerTypeRate:
 
 @attr.s
 class CreateCustomerPrototype:
+    customer_prototype_id = attr.ib(type=int)
     total = attr.ib(type=int)
     total_including_tax = attr.ib(type=int)
     display_name = attr.ib(type=str)
@@ -580,6 +581,7 @@ class CreateCustomerPrototype:
         new_customer_prototype = models.CustomerPrototype(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.customer_prototype_id,
             total=self.total,
             total_including_tax=self.total_including_tax,
             display_name=self.display_name,

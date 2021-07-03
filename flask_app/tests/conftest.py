@@ -227,6 +227,7 @@ def customer_type_rate_factory(
 @pytest.fixture
 def customer_prototype_factory():
     return model_services.CreateCustomerPrototype(
+        customer_prototype_id=randint(1, 10_000_000),
         total=10, total_including_tax=10, display_name="foo", note="bar"
     ).run
 
