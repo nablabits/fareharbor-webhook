@@ -174,6 +174,27 @@ class ProcessJSONResponse:
             cancellation_type=c_data["type"]
         ).run()
 
+    def _save_customer_type(self, ct_data):
+        """
+        Save the customer type information contained in the data.
+
+        In the json we can find customer types under bookings__customers and
+        under booking__availability__customer_type_rates arrays so we should
+        iterate through to get all of them.
+        """
+        cp = models.CustomerType.get_object_or_none(ct_data["pk"])
+        if cp:
+            service = model_services.UpdateCustomerType
+        else:
+            service = model_services.CreateCustomerType
+
+        return service(
+            customer_type_id=ct_data["pk"],
+            note=ct_data["note"],
+            singular=ct_data["singular"],
+            plural=ct_data["plural"]
+        ).run()
+
     def run(self):
         item = self._save_item()
         av = self._save_availability(item.id)
@@ -181,3 +202,15 @@ class ProcessJSONResponse:
         self._save_contact(booking.id)
         self._save_company(booking.id)
         self._save_cancellation_policy(booking.id)
+
+        booking = self.data["booking"]
+        customers = booking["customers"]
+        for customer in customers:
+            ct_data = customer["customer_type_rate"]["customer_type"]
+            ct = self._save_customer_type(ct_data)
+
+        customer_type_rates = booking["availability"]["customer_type_rates"]
+        for ctr in customer_type_rates:
+            ct_data = ctr["customer_type"]
+            ct = self._save_customer_type(ct_data)
+
