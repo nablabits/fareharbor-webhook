@@ -119,9 +119,6 @@ class ProcessJSONResponse:
     def _save_contact(self, booking_id):
         """
         Save the contact information contained in the data.
-
-        Contacts have no id so we will use the booking_id as is a 1:1
-        relationship.
         """
         c_data = self.data["booking"]["contact"]
         contact = models.Contact.get_object_or_none(booking_id)
@@ -141,8 +138,27 @@ class ProcessJSONResponse:
             is_subscribed_for_email_updates=opt_in,
         ).run()
 
+    def _save_company(self, booking_id):
+        """
+        Save company information contained in the data.
+        """
+        c_data = self.data["booking"]["company"]
+        company = models.Company.get_object_or_none(booking_id)
+        if company:
+            service = model_services.UpdateCompany
+        else:
+            service = model_services.CreateCompany
+
+        return service(
+            booking_id=booking_id,
+            name=c_data["name"],
+            short_name=c_data["shortname"],
+            currency=c_data["currency"]
+        ).run()
+
     def run(self):
         item = self._save_item()
         av = self._save_availability(item.id)
         booking = self._save_booking(av.id)
         self._save_contact(booking.id)
+        self._save_company(booking.id)

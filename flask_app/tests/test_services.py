@@ -93,3 +93,19 @@ def test_populate_db_creates_contact(database, app):
     assert contact.phone == "44444"
     assert contact.email == "foo@bar.baz"
 
+
+def test_populate_db_creates_company(database, app):
+    """
+    Although the first test actually saves all the data contained in
+    sample_data, we split the tests into manageable chunks for readability.
+    This comes with the trade off of speed as to avoid unique field exceptions,
+    the scope of the database has to be set to function and therefore an empty
+    database is used per test that increases the running time.
+    """
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    company = models.Company.get(75125154)
+    assert company.name == "Tourne"
+    assert company.short_name == "tournebilbao"
+    assert company.currency == "eur"
