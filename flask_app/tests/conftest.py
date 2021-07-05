@@ -152,6 +152,7 @@ def cancellation_factory(booking_factory):
 def custom_field_factory():
 
     return model_services.CreateCustomField(
+        custom_field_id=randint(1, 10_000_000),
         title="foo",
         name="bar",
         modifier_kind="baz",

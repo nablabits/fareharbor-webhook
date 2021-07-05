@@ -684,6 +684,7 @@ class DeleteCustomerType:
 
 @attr.s
 class CreateCustomField:
+    custom_field_id = attr.ib(type=int)
     title = attr.ib(type=str)
     name = attr.ib(type=str)
     modifier_kind = attr.ib(type=str)
@@ -709,6 +710,7 @@ class CreateCustomField:
         new_custom_field = models.CustomField(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.custom_field_id,
             title=self.title,
             name=self.name,
             modifier_kind=self.modifier_kind,

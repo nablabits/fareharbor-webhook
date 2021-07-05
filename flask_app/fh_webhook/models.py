@@ -242,11 +242,11 @@ class CustomField(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    title = db.Column(db.String(64), nullable=False)
+    title = db.Column(db.String(64))
     name = db.Column(db.String(64), nullable=False)
     modifier_kind = db.Column(db.String(64), nullable=False)
     modifier_type = db.Column(db.String(64), nullable=False)
-    field_type = db.Column(db.String(64), nullable=False)
+    field_type = db.Column(db.String(64))
     offset = db.Column(db.Integer)
     percentage = db.Column(db.Integer)
 
@@ -257,9 +257,9 @@ class CustomField(db.Model, BaseMixin):
     booking_notes_safe_html = db.Column(db.Text)
 
     # bool fields
-    is_required = db.Column(db.Boolean, nullable=False)
-    is_taxable = db.Column(db.Boolean, nullable=False)
-    is_always_per_customer = db.Column(db.Boolean, nullable=False)
+    is_required = db.Column(db.Boolean)
+    is_taxable = db.Column(db.Boolean)
+    is_always_per_customer = db.Column(db.Boolean)
 
     extended_options = db.Column(
         db.BigInteger, db.ForeignKey("custom_field.id"), nullable=True
