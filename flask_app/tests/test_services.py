@@ -163,3 +163,29 @@ def test_populate_db_creates_customer(database, app):
     customer = models.Customer.get(224262373)
     assert customer.checkin_url == "https://fhchk.co/faYT3"
     assert customer.checkin_status is None
+
+
+def test_populate_db_creates_custom_field(database, app):
+    """There were 22 custom fields attempted to save."""
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    custom_field_ids = (
+        922177, 922178, 637022, 6160114, 6160113, 6160118, 6999966, 6160120,
+        922180, 910098, 910095, 908052, )
+    for cf_id in custom_field_ids:
+        cf = models.CustomField.get(cf_id)
+    assert cf.is_required is False
+    assert cf.description == ""
+    assert cf.title == "Pago con bono"
+    assert cf.booking_notes_safe_html == ""
+    assert cf.is_taxable
+    assert cf.modifier_kind == "offset"
+    assert cf.description_safe_html == ""
+    assert cf.booking_notes == ""
+    assert cf.offset == 100
+    assert cf.percentage == 0
+    assert cf.modifier_type == "none"
+    assert cf.field_type == "yes-no"
+    assert cf.is_always_per_customer is False
+    assert cf.name == "Pago Bono"
