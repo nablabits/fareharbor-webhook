@@ -346,14 +346,17 @@ class ProcessJSONResponse:
             extended_options=parent_id,
         ).run()
 
-# Location of custom fields
-# booking__customers[]__custom_field_values[]__custom_field__extended_options[]
-# booking__custom_field_values[]__custom_field__extended_options[]
-# booking__availability[]__customer_type_rates[]__custom_field_instances[]__custom_field__extended_options[]
-# booking__availability[]__custom_field_instances[]__custom_field__extended_options[]
 
     def _save_custom_field_group(self):
-        """Save the custom fields contained in the data."""
+        """
+        Save the custom fields contained in the data.
+
+        Location of custom fields inside booking
+        customers[]__custom_field_values[]__custom_field__extended_options[]
+        custom_field_values[]__custom_field__extended_options[]
+        availability[]__customer_type_rates[]__custom_field_instances[]__custom_field__extended_options[]
+        availability[]__custom_field_instances[]__custom_field__extended_options[]
+        """
         bookings = self.data["booking"]
         customers = bookings["customers"]
         for c_data in customers:
@@ -376,13 +379,16 @@ class ProcessJSONResponse:
             self._save_custom_field_family(cf_family_data)
 
     def _save_custom_field_family(self, cf_family_data):
-        # before saving extended options parent custom field should be
-        # saved as extended options will take the parent_id
+        """
+        A custom field family is a custom field with its descendants, the
+        extended options, that are a reduced instance of the parent object.
+        """
         cf = self._save_custom_field(cf_family_data)
         try:
             for extended_options_data in cf_family_data["extended_options"]:
                 self._save_custom_field(extended_options_data, cf.id)
         except KeyError:
+            # It can happen that some parents have no children
             pass
 
 
