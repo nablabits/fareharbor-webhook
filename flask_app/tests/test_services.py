@@ -189,3 +189,19 @@ def test_populate_db_creates_custom_field(database, app):
     assert cf.field_type == "yes-no"
     assert cf.is_always_per_customer is False
     assert cf.name == "Pago Bono"
+
+
+def test_populate_db_creates_custom_field_instance(database, app):
+    """
+    There are only 2 custom fields instances in the sample data, one belongs to
+    a customer type rate and the other to the availability.
+    """
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    custom_field_instance_ids = (
+        4050488, 4050489, 2379541, 4050530, 3963212, 4050531, 3950663, )
+    for cfi_id in custom_field_instance_ids:
+        models.CustomFieldInstance.get(cfi_id)
+    saved_instances = len(models.CustomFieldInstance.query.all())
+    assert saved_instances == len(custom_field_instance_ids)

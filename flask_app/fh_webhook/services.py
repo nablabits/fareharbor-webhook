@@ -297,6 +297,57 @@ class ProcessJSONResponse:
             )
             self._save_customer(c_data, ctr.id, booking_id)
 
+    def _save_custom_field_group(self, availability_id):
+        """
+        Save the custom fields contained in the data.
+
+        Location of custom fields inside booking
+        customers[]__custom_field_values[]__custom_field__extended_options[]
+        custom_field_values[]__custom_field__extended_options[]
+        availability[]__customer_type_rates[]__custom_field_instances[]__custom_field__extended_options[]
+        availability[]__custom_field_instances[]__custom_field__extended_options[]
+        """
+        bookings = self.data["booking"]
+        customers = bookings["customers"]
+        for c_data in customers:
+            for cfv in c_data["custom_field_values"]:
+                cf_family_data = cfv["custom_field"]
+                self._save_custom_field_family(cf_family_data)
+
+        for cfv in bookings["custom_field_values"]:
+            cf_family_data = cfv["custom_field"]
+            self._save_custom_field_family(cf_family_data)
+
+        customer_type_rates = bookings["availability"]["customer_type_rates"]
+        for ctr_data in customer_type_rates:
+            for cfi_data in ctr_data["custom_field_instances"]:
+                cf_family_data = cfi_data["custom_field"]
+                cf = self._save_custom_field_family(cf_family_data)
+                self._save_custom_field_instance(
+                    cfi_data, cf.id, customer_type_rate_id=ctr_data["pk"])
+
+        for cfi_data in bookings["availability"]["custom_field_instances"]:
+            cf_family_data = cfi_data["custom_field"]
+            cf = self._save_custom_field_family(cf_family_data)
+            print(cfi_data["pk"])
+            self._save_custom_field_instance(
+                cfi_data, cf.id, customer_type_rate_id=None,
+                availability_id=availability_id)
+
+    def _save_custom_field_family(self, cf_family_data):
+        """
+        A custom field family is a custom field with its descendants, the
+        extended options, that are a reduced instance of the parent object.
+        """
+        cf = self._save_custom_field(cf_family_data)
+        try:
+            for extended_options_data in cf_family_data["extended_options"]:
+                self._save_custom_field(extended_options_data, cf.id)
+        except KeyError:
+            # It can happen that some parents have no children
+            pass
+        return cf
+
     @staticmethod
     def _save_custom_field(custom_field_data, parent_id=None):
         """Save the custom fields contained in the data.
@@ -346,51 +397,24 @@ class ProcessJSONResponse:
             extended_options=parent_id,
         ).run()
 
+    @staticmethod
+    def _save_custom_field_instance(
+        cfi_data, custom_field_id, customer_type_rate_id=None,
+        availability_id=None
+    ):
+        custom_field_instance = models.CustomFieldInstance.get_object_or_none(
+            cfi_data["pk"])
+        if custom_field_instance:
+            service = model_services.UpdateCustomFieldInstance
+        else:
+            service = model_services.CreateCustomFieldInstance
 
-    def _save_custom_field_group(self):
-        """
-        Save the custom fields contained in the data.
-
-        Location of custom fields inside booking
-        customers[]__custom_field_values[]__custom_field__extended_options[]
-        custom_field_values[]__custom_field__extended_options[]
-        availability[]__customer_type_rates[]__custom_field_instances[]__custom_field__extended_options[]
-        availability[]__custom_field_instances[]__custom_field__extended_options[]
-        """
-        bookings = self.data["booking"]
-        customers = bookings["customers"]
-        for c_data in customers:
-            for cfv in c_data["custom_field_values"]:
-                cf_family_data = cfv["custom_field"]
-                self._save_custom_field_family(cf_family_data)
-
-        for cfv in bookings["custom_field_values"]:
-            cf_family_data = cfv["custom_field"]
-            self._save_custom_field_family(cf_family_data)
-
-        customer_type_rates = bookings["availability"]["customer_type_rates"]
-        for ctr_data in customer_type_rates:
-            for cfi in ctr_data["custom_field_instances"]:
-                cf_family_data = cfi["custom_field"]
-                self._save_custom_field_family(cf_family_data)
-
-        for cfi in bookings["availability"]["custom_field_instances"]:
-            cf_family_data = cfi["custom_field"]
-            self._save_custom_field_family(cf_family_data)
-
-    def _save_custom_field_family(self, cf_family_data):
-        """
-        A custom field family is a custom field with its descendants, the
-        extended options, that are a reduced instance of the parent object.
-        """
-        cf = self._save_custom_field(cf_family_data)
-        try:
-            for extended_options_data in cf_family_data["extended_options"]:
-                self._save_custom_field(extended_options_data, cf.id)
-        except KeyError:
-            # It can happen that some parents have no children
-            pass
-
+        return service(
+            custom_field_instance_id=cfi_data["pk"],
+            custom_field_id=custom_field_id,
+            availability_id=availability_id,
+            customer_type_rate_id=customer_type_rate_id
+        ).run()
 
     def run(self):
         item = self._save_item()
@@ -400,6 +424,6 @@ class ProcessJSONResponse:
         self._save_company(b.id)
         self._save_cancellation_policy(b.id)
         self._save_customer_group(b.id, av.id)
-        self._save_custom_field_group()
+        self._save_custom_field_group(av.id)
 
 
