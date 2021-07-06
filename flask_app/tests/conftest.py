@@ -179,7 +179,8 @@ def custom_field_instance_factory(database, custom_field_factory, availability_f
     return model_services.CreateCustomFieldInstance(
         custom_field_instance_id=randint(1, 10_000_000),
         custom_field_id=cf.id,
-        availability_id=av.id
+        availability_id=av.id,
+        customer_type_rate_id=None
     ).run
 
 
@@ -216,7 +217,9 @@ def customer_type_rate_factory(
     customer_type_factory,
     customer_prototype_factory,
 ):
-    av = availability_factory.run()
+    s = availability_factory
+    s.availability_id = randint(1, 10_000_000),
+    av = s.run()
     return model_services.CreateCustomerTypeRate(
         ctr_id=randint(1, 10_000_000),
         capacity=4,

@@ -372,18 +372,63 @@ def test_delete_custom_field(database, custom_field_factory):
 
 
 def test_create_custom_field_instances(
-    database, custom_field_factory, availability_factory
+    database, custom_field_factory, availability_factory,
+    customer_type_rate_factory
 ):
-    cf, av = custom_field_factory(), availability_factory.run()
+    cf = custom_field_factory()
+    s = availability_factory
+    s.availability_id = randint(1, 10_000_000),
+    av = s.run()
     cfi = model_services.CreateCustomFieldInstance(
         custom_field_instance_id=randint(1, 10_000_000),
         custom_field_id=cf.id,
-        availability_id=av.id
+        availability_id=av.id,
+        customer_type_rate_id=None
     ).run()
 
     cfi = models.CustomFieldInstance.get(cfi.id)
     assert cfi.custom_field_id == cf.id
     assert cfi.availability_id == av.id
+
+
+def test_create_custom_field_instances_raises_error_with_av_and_ctr(
+    database, custom_field_factory, availability_factory,
+    customer_type_rate_factory
+):
+    cf = custom_field_factory()
+    s = availability_factory
+    s.availability_id = randint(1, 10_000_000),
+    av = s.run()
+    ctr = customer_type_rate_factory()
+    with pytest.raises(ValueError) as e:
+        model_services.CreateCustomFieldInstance(
+            custom_field_instance_id=randint(1, 10_000_000),
+            custom_field_id=cf.id,
+            availability_id=av.id,
+            customer_type_rate_id=ctr.id
+        ).run()
+    assert e.match(
+        "Availability and customer type rate can't have value at the same time"
+    )
+
+
+def test_create_custom_field_instances_raises_error_without_av_and_ctr(
+    database, custom_field_factory, availability_factory,
+    customer_type_rate_factory
+):
+    cf = custom_field_factory()
+    s = availability_factory
+    s.availability_id = randint(1, 10_000_000),
+    with pytest.raises(ValueError) as e:
+        model_services.CreateCustomFieldInstance(
+            custom_field_instance_id=randint(1, 10_000_000),
+            custom_field_id=cf.id,
+            availability_id=None,
+            customer_type_rate_id=None
+        ).run()
+    assert e.match(
+        "Custom field instance needs either availability or customer type rate"
+    )
 
 
 def test_update_custom_field_instances(
@@ -399,6 +444,7 @@ def test_update_custom_field_instances(
         custom_field_instance_id=old_cfi.id,
         custom_field_id=old_cfi.custom_field_id,
         availability_id=av.id,
+        customer_type_rate_id=None
     ).run()
     new_cfi = models.CustomFieldInstance.get(new_cfi.id)
     assert new_cfi.created_at == old_cfi.created_at

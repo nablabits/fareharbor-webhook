@@ -794,6 +794,7 @@ class CreateCustomFieldInstance:
     custom_field_instance_id = attr.ib(type=int)
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
+    customer_type_rate_id = attr.ib(type=int)
 
     def run(self):
         new_custom_field_instance = models.CustomFieldInstance(
@@ -802,7 +803,9 @@ class CreateCustomFieldInstance:
             id=self.custom_field_instance_id,
             custom_field_id=self.custom_field_id,
             availability_id=self.availability_id,
+            customer_type_rate_id=self.customer_type_rate_id,
         )
+        new_custom_field_instance.clean()
         db.session.add(new_custom_field_instance)
         db.session.commit()
         return new_custom_field_instance
@@ -813,6 +816,7 @@ class UpdateCustomFieldInstance:
     custom_field_instance_id = attr.ib(type=int)
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
+    customer_type_rate_id = attr.ib(type=int)
 
     def run(self):
         custom_field_instance = models.CustomFieldInstance.get(
@@ -821,6 +825,7 @@ class UpdateCustomFieldInstance:
         custom_field_instance.updated_at = (datetime.utcnow(),)
         custom_field_instance.custom_field_id = (self.custom_field_id,)
         custom_field_instance.availability_id = self.availability_id
+        custom_field_instance.customer_type_rate_id = self.customer_type_rate_id,
         db.session.commit()
         return custom_field_instance
 

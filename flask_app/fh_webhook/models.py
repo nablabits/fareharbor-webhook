@@ -203,15 +203,41 @@ class CustomFieldInstance(db.Model, BaseMixin):
     """Make the M2M between Availability and Custom field models.
 
     An availability can have several custom fields defined and the same custom
-    field can appear in different availabilities.
+    field can appear in different availabilities. Likewise, each type rate can
+    have several custom field and the same custom field can appear in different
+    customer type rates. It should always point to a custom field object but
+    can either point to an availability or to a customer type rate.
     """
 
     __table_name__ = "custom_field_instance"
     id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    custom_field_id = db.Column(db.BigInteger, db.ForeignKey("custom_field.id"))
-    availability_id = db.Column(db.BigInteger, db.ForeignKey("availability.id"))
+    custom_field_id = db.Column(
+        db.BigInteger, db.ForeignKey("custom_field.id"), nullable=False
+    )
+    availability_id = db.Column(
+        db.BigInteger, db.ForeignKey("availability.id"))
+    customer_type_rate_id = db.Column(
+        db.BigInteger, db.ForeignKey("customer_type_rate.id")
+    )
+
+    def clean(self):
+        """
+        Ensure either availability or customer type rate have value but not
+        both at the same time.
+        """
+        if self.availability_id is None and self.customer_type_rate_id is None:
+            raise ValueError(
+                "Custom field instance needs either availability or " +
+                "customer type rate"
+            )
+
+        if self.availability_id and self.customer_type_rate_id:
+            raise ValueError(
+                "Availability and customer type rate can't have value at the" +
+                " same time."
+            )
 
 
 class CustomFieldValue(db.Model, BaseMixin):
