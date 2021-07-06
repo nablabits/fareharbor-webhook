@@ -374,9 +374,11 @@ def test_delete_custom_field(database, custom_field_factory):
 def test_create_custom_field_instances(
     database, custom_field_factory, availability_factory
 ):
-    cf, av = custom_field_factory(), availability_factory()
+    cf, av = custom_field_factory(), availability_factory.run()
     cfi = model_services.CreateCustomFieldInstance(
-        custom_field_id=cf.id, availability_id=av.id
+        custom_field_instance_id=randint(1, 10_000_000),
+        custom_field_id=cf.id,
+        availability_id=av.id
     ).run()
 
     cfi = models.CustomFieldInstance.get(cfi.id)
@@ -387,9 +389,11 @@ def test_create_custom_field_instances(
 def test_update_custom_field_instances(
     database, custom_field_instance_factory, availability_factory
 ):
-    av = availability_factory()
 
     old_cfi = custom_field_instance_factory()
+    s = availability_factory
+    s.availability_id = randint(1, 10_000_000),
+    av = s.run()
     old_av_id = old_cfi.availability_id
     new_cfi = model_services.UpdateCustomFieldInstance(
         custom_field_instance_id=old_cfi.id,

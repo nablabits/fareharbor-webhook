@@ -172,9 +172,14 @@ def custom_field_factory():
 
 @pytest.fixture
 def custom_field_instance_factory(database, custom_field_factory, availability_factory):
-    cf, av = custom_field_factory(), availability_factory()
+    cf = custom_field_factory()
+    s = availability_factory
+    s.availability_id = randint(1, 10_000_000),
+    av = s.run()
     return model_services.CreateCustomFieldInstance(
-        custom_field_id=cf.id, availability_id=av.id
+        custom_field_instance_id=randint(1, 10_000_000),
+        custom_field_id=cf.id,
+        availability_id=av.id
     ).run
 
 

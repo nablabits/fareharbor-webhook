@@ -791,6 +791,7 @@ class DeleteCustomField:
 
 @attr.s
 class CreateCustomFieldInstance:
+    custom_field_instance_id = attr.ib(type=int)
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
 
@@ -798,6 +799,7 @@ class CreateCustomFieldInstance:
         new_custom_field_instance = models.CustomFieldInstance(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.custom_field_instance_id,
             custom_field_id=self.custom_field_id,
             availability_id=self.availability_id,
         )
