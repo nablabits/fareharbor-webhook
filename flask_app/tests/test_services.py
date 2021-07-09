@@ -192,10 +192,6 @@ def test_populate_db_creates_custom_field(database, app):
 
 
 def test_populate_db_creates_custom_field_instance(database, app):
-    """
-    There are only 2 custom fields instances in the sample data, one belongs to
-    a customer type rate and the other to the availability.
-    """
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
@@ -205,3 +201,22 @@ def test_populate_db_creates_custom_field_instance(database, app):
         models.CustomFieldInstance.get(cfi_id)
     saved_instances = len(models.CustomFieldInstance.query.all())
     assert saved_instances == len(custom_field_instance_ids)
+
+
+def test_populate_db_creates_custom_field_values(database, app):
+    """In the sample all the custom field values are under bookings."""
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    custom_field_values_ids = (
+        347938962, 347938963, 347938964, 347938965, 347938966,)
+    for cfv_id in custom_field_values_ids:
+        cfv = models.CustomFieldValue.get(cfv_id)
+    saved_instances = len(models.CustomFieldValue.query.all())
+    assert saved_instances == len(custom_field_values_ids)
+    assert cfv.id == 347938966
+    assert cfv.name == "Pago Bono"
+    assert cfv.value == ""
+    assert cfv.display_value == "No"
+    assert cfv.custom_field_id == 908052
+

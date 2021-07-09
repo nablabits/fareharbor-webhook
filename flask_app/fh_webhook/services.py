@@ -309,30 +309,35 @@ class ProcessJSONResponse:
         """
         bookings = self.data["booking"]
         customers = bookings["customers"]
-        for c_data in customers:
-            for cfv in c_data["custom_field_values"]:
-                cf_family_data = cfv["custom_field"]
-                self._save_custom_field_family(cf_family_data)
-
-        for cfv in bookings["custom_field_values"]:
-            cf_family_data = cfv["custom_field"]
-            self._save_custom_field_family(cf_family_data)
-
         customer_type_rates = bookings["availability"]["customer_type_rates"]
         for ctr_data in customer_type_rates:
             for cfi_data in ctr_data["custom_field_instances"]:
                 cf_family_data = cfi_data["custom_field"]
                 cf = self._save_custom_field_family(cf_family_data)
                 self._save_custom_field_instance(
-                    cfi_data, cf.id, customer_type_rate_id=ctr_data["pk"])
+                    cfi_data, cf.id, customer_type_rate_id=ctr_data["pk"],
+                    availability_id=None)
 
         for cfi_data in bookings["availability"]["custom_field_instances"]:
             cf_family_data = cfi_data["custom_field"]
             cf = self._save_custom_field_family(cf_family_data)
-            print(cfi_data["pk"])
             self._save_custom_field_instance(
                 cfi_data, cf.id, customer_type_rate_id=None,
                 availability_id=availability_id)
+
+        for cfv_data in bookings["custom_field_values"]:
+            cf_family_data = cfv_data["custom_field"]
+            cf = self._save_custom_field_family(cf_family_data)
+            self._save_custom_field_value(cfv_data, cf.id, booking_id=bookings["pk"])
+
+        for c_data in customers:
+            for cfv_data in c_data["custom_field_values"]:
+                cf_family_data = cfv_data["custom_field"]
+                cf = self._save_custom_field_family(cf_family_data)
+                self._save_custom_field_value(
+                    cfv_data, cf.id, customer_id=c_data["pk"])
+
+
 
     def _save_custom_field_family(self, cf_family_data):
         """
@@ -414,6 +419,27 @@ class ProcessJSONResponse:
             custom_field_id=custom_field_id,
             availability_id=availability_id,
             customer_type_rate_id=customer_type_rate_id
+        ).run()
+
+    @staticmethod
+    def _save_custom_field_value(
+        cfv_data, custom_field_id, customer_id=None, booking_id=None
+    ):
+        custom_field_value = models.CustomFieldValue.get_object_or_none(
+            cfv_data["pk"])
+        if custom_field_value:
+            service = model_services.UpdateCustomFieldValue
+        else:
+            service = model_services.CreateCustomFieldValue
+
+        return service(
+            custom_field_value_id=cfv_data["pk"],
+            name=cfv_data["name"],
+            value=cfv_data["value"],
+            display_value=cfv_data["display_value"],
+            custom_field_id=custom_field_id,
+            booking_id=booking_id,
+            customer_id=customer_id
         ).run()
 
     def run(self):
