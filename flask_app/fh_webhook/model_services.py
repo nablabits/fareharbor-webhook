@@ -9,11 +9,21 @@ from .exceptions import DoesNotExist
 
 @attr.s
 class CreateItem:
+    """
+    Create items in the database.
+
+    Instead of generating a auto increment here we will use the unique id
+    identifier provided by fareharbor.
+    """
+    item_id = attr.ib(type=int)
     name = attr.ib()
 
     def run(self):
         new_item = models.Item(
-            created_at=datetime.utcnow(), updated_at=datetime.utcnow(), name=self.name
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            id=self.item_id,
+            name=self.name
         )
         db.session.add(new_item)
         db.session.commit()
@@ -48,6 +58,7 @@ class DeleteItem:
 
 @attr.s
 class CreateAvailability:
+    availability_id = attr.ib(type=int)
     capacity = attr.ib(type=int)
     minimum_party_size = attr.ib(type=int)
     maximum_party_size = attr.ib(type=int)
@@ -59,6 +70,7 @@ class CreateAvailability:
         new_availability = models.Availability(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.availability_id,
             capacity=self.capacity,
             minimum_party_size=self.minimum_party_size,
             maximum_party_size=self.maximum_party_size,
@@ -110,6 +122,7 @@ class DeleteAvailability:
 
 @attr.s
 class CreateBooking:
+    booking_id = attr.ib(type=int)
     voucher_number = attr.ib(type=str)
     display_id = attr.ib(type=str)
     note_safe_html = attr.ib(type=str)
@@ -127,7 +140,7 @@ class CreateBooking:
     availability_id = attr.ib(type=int)
 
     # price fields
-    receipt_subtotals = attr.ib(type=int)
+    receipt_subtotal = attr.ib(type=int)
     receipt_taxes = attr.ib(type=int)
     receipt_total = attr.ib(type=int)
     amount_paid = attr.ib(type=int)
@@ -152,6 +165,7 @@ class CreateBooking:
         new_booking = models.Booking(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.booking_id,
             voucher_number=self.voucher_number,
             display_id=self.display_id,
             note_safe_html=self.note_safe_html,
@@ -165,7 +179,7 @@ class CreateBooking:
             pickup=self.pickup,
             status=self.status,
             availability_id=self.availability_id,
-            receipt_subtotals=self.receipt_subtotals,
+            receipt_subtotal=self.receipt_subtotal,
             receipt_taxes=self.receipt_taxes,
             receipt_total=self.receipt_total,
             amount_paid=self.amount_paid,
@@ -204,7 +218,7 @@ class UpdateBooking:
     pickup = attr.ib(type=str)
     status = attr.ib(type=str)
     availability_id = attr.ib(type=int)
-    receipt_subtotals = attr.ib(type=int)
+    receipt_subtotal = attr.ib(type=int)
     receipt_taxes = attr.ib(type=int)
     receipt_total = attr.ib(type=int)
     amount_paid = attr.ib(type=int)
@@ -238,7 +252,7 @@ class UpdateBooking:
         booking.pickup = self.pickup
         booking.status = self.status
         booking.availability_id = self.availability_id
-        booking.receipt_subtotals = self.receipt_subtotals
+        booking.receipt_subtotal = self.receipt_subtotal
         booking.receipt_taxes = self.receipt_taxes
         booking.receipt_total = self.receipt_total
         booking.amount_paid = self.amount_paid
@@ -274,17 +288,18 @@ class DeleteBooking:
 
 @attr.s
 class CreateContact:
+    id = attr.ib(type=int)
     name = attr.ib(type=str)
     email = attr.ib(type=str)
     phone_country = attr.ib(type=str)
     phone = attr.ib(type=str)
     normalized_phone = attr.ib(type=str)
     is_subscribed_for_email_updates = attr.ib(type=bool)
-    booking_id = attr.ib(type=int)
 
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
         new_contact = models.Contact(
+            id=self.id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             name=self.name,
@@ -293,7 +308,6 @@ class CreateContact:
             phone=self.phone,
             normalized_phone=self.normalized_phone,
             is_subscribed_for_email_updates=opt_in,
-            booking_id=self.booking_id,
         )
         db.session.add(new_contact)
         db.session.commit()
@@ -302,7 +316,7 @@ class CreateContact:
 
 @attr.s
 class UpdateContact:
-    contact_id = attr.ib(type=int)
+    id = attr.ib(type=int)
     name = attr.ib(type=str)
     email = attr.ib(type=str)
     phone_country = attr.ib(type=str)
@@ -312,7 +326,7 @@ class UpdateContact:
 
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
-        contact = models.Contact.get(self.contact_id)
+        contact = models.Contact.get(self.id)
         contact.updated_at = (datetime.utcnow(),)
         contact.name = (self.name,)
         contact.email = (self.email,)
@@ -326,10 +340,10 @@ class UpdateContact:
 
 @attr.s
 class DeleteContact:
-    contact_id = attr.ib(type=int)
+    id = attr.ib(type=int)
 
     def run(self):
-        contact = models.Contact.get(self.contact_id)
+        contact = models.Contact.get(self.id)
         db.session.delete(contact)
         db.session.commit()
 
@@ -339,19 +353,19 @@ class DeleteContact:
 
 @attr.s
 class CreateCompany:
+    company_id = attr.ib(type=int)
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
-    booking_id = attr.ib(type=int)
 
     def run(self):
         new_company = models.Company(
+            id=self.company_id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             name=self.name,
             short_name=self.short_name,
             currency=self.currency,
-            booking_id=self.booking_id,
         )
         db.session.add(new_company)
         db.session.commit()
@@ -364,9 +378,6 @@ class UpdateCompany:
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
-    # booking_id = attr.ib(type=int)
-    # as companies are a 1:1 to bookings we can't update right away the booking_id. We
-    # leave aside this action and we will implement it if neccessary
 
     def run(self):
         company = models.Company.get(self.company_id)
@@ -394,17 +405,17 @@ class DeleteCompany:
 
 @attr.s
 class CreateCancellationPolicy:
+    cp_id = attr.ib(type=int)
     cutoff = attr.ib(type=datetime)
     cancellation_type = attr.ib(type=str)
-    booking_id = attr.ib(type=int)
 
     def run(self):
         new_cp = models.EffectiveCancellationPolicy(
+            id=self.cp_id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             cutoff=self.cutoff,
             cancellation_type=self.cancellation_type,
-            booking_id=self.booking_id,
         )
         db.session.add(new_cp)
         db.session.commit()
@@ -416,9 +427,6 @@ class UpdateCancellationPolicy:
     cp_id = attr.ib(type=int)
     cutoff = attr.ib(type=datetime)
     cancellation_type = attr.ib(type=str)
-    # booking_id = attr.ib(type=int)
-    # as cancellations are a 1:1 to bookings we can't update right away the booking_id. We
-    # leave aside this action and we will implement it if neccessary
 
     def run(self):
         cp = models.EffectiveCancellationPolicy.get(self.cp_id)
@@ -451,8 +459,9 @@ class CreateCustomer:
     just in case that for some strange reason they differ.
     """
 
+    customer_id = attr.ib(type=int)
     checkin_url = attr.ib(type=str)
-    checking_status = attr.ib(type=str)
+    checkin_status = attr.ib(type=str)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
 
@@ -460,8 +469,9 @@ class CreateCustomer:
         new_customer = models.Customer(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.customer_id,
             checkin_url=self.checkin_url,
-            checking_status=self.checking_status,
+            checkin_status=self.checkin_status,
             customer_type_rate_id=self.customer_type_rate_id,
             booking_id=self.booking_id,
         )
@@ -474,7 +484,7 @@ class CreateCustomer:
 class UpdateCustomer:
     customer_id = attr.ib(type=int)
     checkin_url = attr.ib(type=str)
-    checking_status = attr.ib(type=str)
+    checkin_status = attr.ib(type=str)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
 
@@ -482,7 +492,7 @@ class UpdateCustomer:
         customer = models.Customer.get(self.customer_id)
         customer.updated_at = (datetime.utcnow(),)
         customer.checkin_url = (self.checkin_url,)
-        customer.checking_status = (self.checking_status,)
+        customer.checkin_status = (self.checkin_status,)
         customer.customer_type_rate_id = (self.customer_type_rate_id,)
         customer.booking_id = self.booking_id
         db.session.commit()
@@ -501,22 +511,26 @@ class DeleteCustomer:
 
 @attr.s
 class CreateCustomerTypeRate:
+    ctr_id = attr.ib(type=int)
     capacity = attr.ib(type=int)
     minimum_party_size = attr.ib(type=int)
     maximum_party_size = attr.ib(type=int)
-    booking_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
     customer_prototype_id = attr.ib(type=int)
     customer_type_id = attr.ib(type=int)
+    total = attr.ib(type=int)
+    total_including_tax = attr.ib(type=int)
 
     def run(self):
         new_customer_type_rate = models.CustomerTypeRate(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.ctr_id,
             capacity=self.capacity,
             minimum_party_size=self.minimum_party_size,
             maximum_party_size=self.maximum_party_size,
-            booking_id=self.booking_id,
+            total=self.total,
+            total_including_tax=self.total_including_tax,
             availability_id=self.availability_id,
             customer_prototype_id=self.customer_prototype_id,
             customer_type_id=self.customer_type_id,
@@ -532,21 +546,23 @@ class UpdateCustomerTypeRate:
     capacity = attr.ib(type=int)
     minimum_party_size = attr.ib(type=int)
     maximum_party_size = attr.ib(type=int)
-    booking_id = attr.ib(type=int)
+    total = attr.ib(type=int)
+    total_including_tax = attr.ib(type=int)
     availability_id = attr.ib(type=int)
     customer_prototype_id = attr.ib(type=int)
     customer_type_id = attr.ib(type=int)
 
     def run(self):
         ctr = models.CustomerTypeRate.get(self.ctr_id)
-        ctr.updated_at = (datetime.utcnow(),)
-        ctr.capacity = (self.capacity,)
-        ctr.minimum_party_size = (self.minimum_party_size,)
-        ctr.maximum_party_size = (self.maximum_party_size,)
-        ctr.booking_id = (self.booking_id,)
-        ctr.availability_id = (self.availability_id,)
-        ctr.customer_prototype_id = (self.customer_prototype_id,)
-        ctr.customer_type_id = (self.customer_type_id,)
+        ctr.updated_at = datetime.utcnow()
+        ctr.capacity = self.capacity
+        ctr.minimum_party_size = self.minimum_party_size
+        ctr.maximum_party_size = self.maximum_party_size
+        ctr.total = self.total
+        ctr.total_including_tax = self.total_including_tax
+        ctr.availability_id = self.availability_id
+        ctr.customer_prototype_id = self.customer_prototype_id
+        ctr.customer_type_id = self.customer_type_id
         db.session.commit()
         return ctr
 
@@ -563,6 +579,7 @@ class DeleteCustomerTypeRate:
 
 @attr.s
 class CreateCustomerPrototype:
+    customer_prototype_id = attr.ib(type=int)
     total = attr.ib(type=int)
     total_including_tax = attr.ib(type=int)
     display_name = attr.ib(type=str)
@@ -572,6 +589,7 @@ class CreateCustomerPrototype:
         new_customer_prototype = models.CustomerPrototype(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.customer_prototype_id,
             total=self.total,
             total_including_tax=self.total_including_tax,
             display_name=self.display_name,
@@ -614,6 +632,7 @@ class DeleteCustomerPrototype:
 
 @attr.s
 class CreateCustomerType:
+    customer_type_id = attr.ib(type=int)
     note = attr.ib(type=str)
     singular = attr.ib(type=str)
     plural = attr.ib(type=str)
@@ -622,6 +641,7 @@ class CreateCustomerType:
         new_customer_type = models.CustomerType(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.customer_type_id,
             note=self.note,
             singular=self.singular,
             plural=self.plural,
@@ -664,6 +684,7 @@ class DeleteCustomerType:
 
 @attr.s
 class CreateCustomField:
+    custom_field_id = attr.ib(type=int)
     title = attr.ib(type=str)
     name = attr.ib(type=str)
     modifier_kind = attr.ib(type=str)
@@ -689,6 +710,7 @@ class CreateCustomField:
         new_custom_field = models.CustomField(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.custom_field_id,
             title=self.title,
             name=self.name,
             modifier_kind=self.modifier_kind,
@@ -769,16 +791,21 @@ class DeleteCustomField:
 
 @attr.s
 class CreateCustomFieldInstance:
+    custom_field_instance_id = attr.ib(type=int)
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
+    customer_type_rate_id = attr.ib(type=int)
 
     def run(self):
         new_custom_field_instance = models.CustomFieldInstance(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.custom_field_instance_id,
             custom_field_id=self.custom_field_id,
             availability_id=self.availability_id,
+            customer_type_rate_id=self.customer_type_rate_id,
         )
+        new_custom_field_instance.clean()
         db.session.add(new_custom_field_instance)
         db.session.commit()
         return new_custom_field_instance
@@ -789,14 +816,17 @@ class UpdateCustomFieldInstance:
     custom_field_instance_id = attr.ib(type=int)
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
+    customer_type_rate_id = attr.ib(type=int)
 
     def run(self):
         custom_field_instance = models.CustomFieldInstance.get(
             self.custom_field_instance_id
         )
-        custom_field_instance.updated_at = (datetime.utcnow(),)
-        custom_field_instance.custom_field_id = (self.custom_field_id,)
+        custom_field_instance.updated_at = datetime.utcnow(),
+        custom_field_instance.custom_field_id = self.custom_field_id
         custom_field_instance.availability_id = self.availability_id
+        custom_field_instance.customer_type_rate_id = self.customer_type_rate_id
+        custom_field_instance.clean()
         db.session.commit()
         return custom_field_instance
 
@@ -813,6 +843,7 @@ class DeleteCustomFieldInstance:
 
 @attr.s
 class CreateCustomFieldValue:
+    custom_field_value_id = attr.ib(type=int)
     name = attr.ib(type=str)
     value = attr.ib(type=str)
     display_value = attr.ib(type=str)
@@ -824,6 +855,7 @@ class CreateCustomFieldValue:
         new_custom_field_value = models.CustomFieldValue(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.custom_field_value_id,
             name=self.name,
             value=self.value,
             display_value=self.display_value,
@@ -831,6 +863,7 @@ class CreateCustomFieldValue:
             booking_id=self.booking_id,
             customer_id=self.customer_id,
         )
+        new_custom_field_value.clean()
         db.session.add(new_custom_field_value)
         db.session.commit()
         return new_custom_field_value
@@ -848,13 +881,14 @@ class UpdateCustomFieldValue:
 
     def run(self):
         cfv = models.CustomFieldValue.get(self.custom_field_value_id)
-        cfv.updated_at = (datetime.utcnow(),)
-        cfv.name = (self.name,)
-        cfv.value = (self.value,)
-        cfv.display_value = (self.display_value,)
-        cfv.custom_field_id = (self.custom_field_id,)
-        cfv.booking_id = (self.booking_id,)
-        cfv.customer_id = (self.customer_id,)
+        cfv.updated_at = datetime.utcnow()
+        cfv.name = self.name
+        cfv.value = self.value
+        cfv.display_value = self.display_value
+        cfv.custom_field_id = self.custom_field_id
+        cfv.booking_id = self.booking_id
+        cfv.customer_id = self.customer_id
+        cfv.clean()
         db.session.commit()
         return cfv
 
