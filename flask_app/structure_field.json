@@ -1,0 +1,50 @@
+{
+  "booking": {
+    "customers": [
+      {
+        "custom_field_values": [
+          {
+            "custom_field": {
+              "extended_options": [{}]
+            }
+          }
+        ],
+        "customer_type_rate": {
+          "customer_prototype": {},
+          "customer_type": {}
+        }
+      }
+    ],
+    "availability": {
+      "customer_type_rates": [
+        {
+          "customer_prototype": {},
+          "custom_field_instances": [
+            {
+              "custom_field": {}
+            }
+          ],
+          "customer_type": {}
+        }
+      ],
+      "custom_field_instances": [
+        {
+          "custom_field": {
+            "extended_options": [{}]
+          }
+        }
+      ],
+      "item": {}
+    },
+    "company": {},
+    "custom_field_values": [
+      {
+        "custom_field": {
+          "extended_options": [{}]
+        }
+      }
+    ],
+    "effective_cancellation_policy": {},
+    "contact": {}
+  }
+}
