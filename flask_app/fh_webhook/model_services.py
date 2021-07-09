@@ -842,6 +842,7 @@ class DeleteCustomFieldInstance:
 
 @attr.s
 class CreateCustomFieldValue:
+    custom_field_value_id = attr.ib(type=int)
     name = attr.ib(type=str)
     value = attr.ib(type=str)
     display_value = attr.ib(type=str)

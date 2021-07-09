@@ -186,8 +186,11 @@ def custom_field_instance_factory(database, custom_field_factory, availability_f
 
 @pytest.fixture
 def custom_field_value_factory(database, custom_field_factory, customer_factory):
-    c = customer_factory()
+    s = customer_factory
+    s.customer_id = randint(1, 10_000_000)
+    c = s.run()
     return model_services.CreateCustomFieldValue(
+        custom_field_value_id=randint(1, 10_000_000),
         name="foo",
         value="bar",
         display_value="baz",
@@ -208,7 +211,7 @@ def customer_factory(customer_type_rate_factory, booking_factory):
         checkin_status="checked_in",
         customer_type_rate_id=customer_type_rate_factory().id,
         booking_id=b.id,
-    ).run
+    )
 
 
 @pytest.fixture

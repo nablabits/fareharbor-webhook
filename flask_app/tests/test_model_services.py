@@ -459,8 +459,9 @@ def test_delete_custom_field_instances(database, custom_field_instance_factory):
 
 
 def test_create_custom_field_value(database, custom_field_factory, customer_factory):
-    c = customer_factory()
+    c = customer_factory.run()
     cfv = model_services.CreateCustomFieldValue(
+        custom_field_value_id=randint(1, 10_000_000),
         name="foo",
         value="bar",
         display_value="baz",
@@ -480,7 +481,9 @@ def test_update_custom_field_value(
     database, custom_field_value_factory, customer_factory
 ):
     old_cfv = custom_field_value_factory()
-    c = customer_factory()
+    s = customer_factory
+    s.customer_id = randint(1, 10_000_000)
+    c = s.run()
     cfv = model_services.UpdateCustomFieldValue(
         custom_field_value_id=old_cfv.id,
         name="goo",
@@ -522,7 +525,9 @@ def test_create_customer(
 
 
 def test_update_customer(database, customer_factory):
-    old_customer = customer_factory()
+    s = customer_factory
+    s.customer_id = randint(1, 10_000_000)
+    old_customer = s.run()
     model_services.UpdateCustomer(
         customer_id=old_customer.id,
         checkin_url="https://bar.baz",
@@ -536,7 +541,7 @@ def test_update_customer(database, customer_factory):
 
 
 def test_delete_customer(database, customer_factory):
-    ct = customer_factory()
+    ct = customer_factory.run()
 
     model_services.DeleteCustomer(ct.id).run()
 
