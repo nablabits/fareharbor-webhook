@@ -554,15 +554,15 @@ class UpdateCustomerTypeRate:
 
     def run(self):
         ctr = models.CustomerTypeRate.get(self.ctr_id)
-        ctr.updated_at = (datetime.utcnow(),)
-        ctr.capacity = (self.capacity,)
-        ctr.minimum_party_size = (self.minimum_party_size,)
-        ctr.maximum_party_size = (self.maximum_party_size,)
+        ctr.updated_at = datetime.utcnow()
+        ctr.capacity = self.capacity
+        ctr.minimum_party_size = self.minimum_party_size
+        ctr.maximum_party_size = self.maximum_party_size
         ctr.total = self.total
         ctr.total_including_tax = self.total_including_tax
-        ctr.availability_id = (self.availability_id,)
-        ctr.customer_prototype_id = (self.customer_prototype_id,)
-        ctr.customer_type_id = (self.customer_type_id,)
+        ctr.availability_id = self.availability_id
+        ctr.customer_prototype_id = self.customer_prototype_id
+        ctr.customer_type_id = self.customer_type_id
         db.session.commit()
         return ctr
 
@@ -822,10 +822,11 @@ class UpdateCustomFieldInstance:
         custom_field_instance = models.CustomFieldInstance.get(
             self.custom_field_instance_id
         )
-        custom_field_instance.updated_at = (datetime.utcnow(),)
-        custom_field_instance.custom_field_id = (self.custom_field_id,)
+        custom_field_instance.updated_at = datetime.utcnow(),
+        custom_field_instance.custom_field_id = self.custom_field_id
         custom_field_instance.availability_id = self.availability_id
-        custom_field_instance.customer_type_rate_id = self.customer_type_rate_id,
+        custom_field_instance.customer_type_rate_id = self.customer_type_rate_id
+        custom_field_instance.clean()
         db.session.commit()
         return custom_field_instance
 
@@ -854,6 +855,7 @@ class CreateCustomFieldValue:
         new_custom_field_value = models.CustomFieldValue(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
+            id=self.custom_field_value_id,
             name=self.name,
             value=self.value,
             display_value=self.display_value,
@@ -861,6 +863,7 @@ class CreateCustomFieldValue:
             booking_id=self.booking_id,
             customer_id=self.customer_id,
         )
+        new_custom_field_value.clean()
         db.session.add(new_custom_field_value)
         db.session.commit()
         return new_custom_field_value
@@ -878,13 +881,14 @@ class UpdateCustomFieldValue:
 
     def run(self):
         cfv = models.CustomFieldValue.get(self.custom_field_value_id)
-        cfv.updated_at = (datetime.utcnow(),)
-        cfv.name = (self.name,)
-        cfv.value = (self.value,)
-        cfv.display_value = (self.display_value,)
-        cfv.custom_field_id = (self.custom_field_id,)
-        cfv.booking_id = (self.booking_id,)
-        cfv.customer_id = (self.customer_id,)
+        cfv.updated_at = datetime.utcnow()
+        cfv.name = self.name
+        cfv.value = self.value
+        cfv.display_value = self.display_value
+        cfv.custom_field_id = self.custom_field_id
+        cfv.booking_id = self.booking_id
+        cfv.customer_id = self.customer_id
+        cfv.clean()
         db.session.commit()
         return cfv
 

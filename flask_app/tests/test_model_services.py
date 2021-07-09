@@ -466,15 +466,54 @@ def test_create_custom_field_value(database, custom_field_factory, customer_fact
         value="bar",
         display_value="baz",
         custom_field_id=custom_field_factory().id,
-        booking_id=c.booking_id,
+        booking_id=None,
         customer_id=c.id,
     ).run()
     cfv = models.CustomFieldValue.get(cfv.id)
     assert cfv.name == "foo"
     assert cfv.value == "bar"
     assert cfv.display_value == "baz"
-    assert cfv.booking_id == c.booking_id
+    assert cfv.booking_id is None
     assert cfv.customer_id == c.id
+
+
+def test_create_custom_field_value_raises_error_if_booking_and_customer(
+        database, custom_field_factory, customer_factory
+):
+    cfv = model_services.CreateCustomFieldValue(
+        custom_field_value_id=randint(1, 10_000_000),
+        name="foo",
+        value="bar",
+        display_value="baz",
+        custom_field_id=custom_field_factory().id,
+        booking_id=10,
+        customer_id=20,
+    )
+    with pytest.raises(ValueError) as e:
+        cfv.run()
+
+    assert len(models.CustomFieldValue.query.all()) == 0
+    assert e.match("Booking and customer can't have value at the same time.")
+
+
+def test_create_custom_field_value_raises_error_if_no_booking_and_no_customer(
+        database, custom_field_factory, customer_factory
+):
+    cfv = model_services.CreateCustomFieldValue(
+        custom_field_value_id=randint(1, 10_000_000),
+        name="foo",
+        value="bar",
+        display_value="baz",
+        custom_field_id=custom_field_factory().id,
+        booking_id=None,
+        customer_id=None,
+    )
+    with pytest.raises(ValueError) as e:
+        cfv.run()
+
+    assert len(models.CustomFieldValue.query.all()) == 0
+    assert e.match(
+        "Custom field value needs either booking or customer instances")
 
 
 def test_update_custom_field_value(
@@ -490,14 +529,14 @@ def test_update_custom_field_value(
         value="zar",
         display_value="zaz",
         custom_field_id=old_cfv.custom_field_id,
-        booking_id=c.booking_id,
+        booking_id=None,
         customer_id=c.id,
     ).run()
     cfv = models.CustomFieldValue.get(cfv.id)
     assert cfv.name == "goo"
     assert cfv.value == "zar"
     assert cfv.display_value == "zaz"
-    assert cfv.booking_id == c.booking_id
+    assert cfv.booking_id is None
     assert cfv.customer_id == c.id
 
 

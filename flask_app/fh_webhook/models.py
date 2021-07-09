@@ -255,10 +255,26 @@ class CustomFieldValue(db.Model, BaseMixin):
     display_value = db.Column(db.String(2048))
 
     # Foreign key fields
-    custom_field_id = db.Column(db.BigInteger, db.ForeignKey("custom_field.id"))
+    custom_field_id = db.Column(
+        db.BigInteger, db.ForeignKey("custom_field.id"))
     # M2M to booking and customer
-    booking_id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
-    customer_id = db.Column(db.BigInteger, db.ForeignKey("customer.id"), nullable=False)
+    booking_id = db.Column(db.BigInteger, db.ForeignKey("booking.id"))
+    customer_id = db.Column(db.BigInteger, db.ForeignKey("customer.id"))
+
+    def clean(self):
+        """
+        Ensure either booking or customer have value but not both at the same
+        time.
+        """
+        if self.booking_id is None and self.customer_id is None:
+            raise ValueError(
+                "Custom field value needs either booking or customer instances"
+            )
+
+        if self.booking_id and self.customer_id:
+            raise ValueError(
+                "Booking and customer can't have value at the same time."
+            )
 
 
 class CustomField(db.Model, BaseMixin):

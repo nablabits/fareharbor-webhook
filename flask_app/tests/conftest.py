@@ -195,7 +195,7 @@ def custom_field_value_factory(database, custom_field_factory, customer_factory)
         value="bar",
         display_value="baz",
         custom_field_id=custom_field_factory().id,
-        booking_id=c.booking_id,
+        booking_id=None,
         customer_id=c.id,
     ).run
 
