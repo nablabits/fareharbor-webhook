@@ -29,6 +29,7 @@ class PopulateDB:
                 with open(filename, "r") as response:
                     data = json.load(response)
                     ProcessJSONResponse(data).run()
+                n += 1
             else:
                 print(f"Non json file found ({f}) in the dir, skipping...")
         print(f"located {n} JSON files")
@@ -74,7 +75,7 @@ class ProcessJSONResponse:
             item_id=item_id
         ).run()
 
-    def _save_booking(self, av_id):
+    def _save_booking(self, av_id, company_id, affiliate_company_id):
         """Save the booking information contained in the data."""
         b_data = self.data["booking"]
         booking = models.Booking.get_object_or_none(b_data["pk"])
@@ -90,13 +91,14 @@ class ProcessJSONResponse:
             agent=b_data["agent"],
             confirmation_url=b_data["confirmation_url"],
             customer_count=b_data["customer_count"],
-            affiliate_company=b_data["affiliate_company"],
             uuid=b_data["uuid"],
             dashboard_url=b_data["dashboard_url"],
             note=b_data["note"],
             pickup=b_data["pickup"],
             status=b_data["status"],
             availability_id=av_id,
+            company_id=company_id,
+            affiliate_company_id=affiliate_company_id,
             receipt_subtotal=b_data["receipt_subtotal"],
             receipt_taxes=b_data["receipt_taxes"],
             receipt_total=b_data["receipt_total"],
@@ -138,21 +140,44 @@ class ProcessJSONResponse:
             is_subscribed_for_email_updates=opt_in,
         ).run()
 
-    def _save_company(self, booking_id):
+    def _save_company_group(self):
         """
-        Save company information contained in the data.
+        Save all the company information contained in the data.
+
+        There are two fields in bookings that point to the company model, one
+        stands for the owner company and the other stands for the affiliate
+        one.
         """
-        c_data = self.data["booking"]["company"]
-        company = models.Company.get_object_or_none(booking_id)
+        company_data = self.data["booking"]["company"]
+        affiliate_company_data = self.data["booking"]["affiliate_company"]
+
+        return (
+            self._save_company(company_data),
+            self._save_company(affiliate_company_data)
+        )
+
+    @staticmethod
+    def _save_company(c_data):
+        """Save one company instance."""
+        # Sometimes there's no affiliate company in which case we have to
+        # return None right away
+        if not c_data:
+            return None
+
+        # FH friends were a bit sloopy here
+        short_name = c_data.get("shortname") or c_data.get("short_name")
+
+        company = models.Company.get_object_or_none(
+            short_name
+        )
         if company:
             service = model_services.UpdateCompany
         else:
             service = model_services.CreateCompany
 
         return service(
-            company_id=booking_id,
             name=c_data["name"],
-            short_name=c_data["shortname"],
+            short_name=short_name,
             currency=c_data["currency"]
         ).run()
 
@@ -338,7 +363,6 @@ class ProcessJSONResponse:
                     cfv_data, cf.id, customer_id=c_data["pk"])
 
 
-
     def _save_custom_field_family(self, cf_family_data):
         """
         A custom field family is a custom field with its descendants, the
@@ -445,9 +469,9 @@ class ProcessJSONResponse:
     def run(self):
         item = self._save_item()
         av = self._save_availability(item.id)
-        b = self._save_booking(av.id)
+        company, affiliate_company = self._save_company_group()
+        b = self._save_booking(av.id, company.id, affiliate_company.id)
         self._save_contact(b.id)
-        self._save_company(b.id)
         self._save_cancellation_policy(b.id)
         self._save_customer_group(b.id, av.id)
         self._save_custom_field_group(av.id)

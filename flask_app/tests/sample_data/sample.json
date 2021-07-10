@@ -38,7 +38,11 @@
     "agent": null,
     "confirmation_url": "https://fareharbor.com/embeds/book/tournebilbao/items/159068/booking/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/",
     "customer_count": 1,
-    "affiliate_company": null,
+    "affiliate_company": {
+        "currency": "eur",
+        "short_name": "civitatiseuro",
+        "name": "Civitatis - EUR"
+    },
     "availability": {
       "capacity": 49,
       "minimum_party_size": 1,

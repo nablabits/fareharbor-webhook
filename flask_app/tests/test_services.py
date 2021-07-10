@@ -12,6 +12,18 @@ def test_populate_db_creates_item(database, app):
     assert item.name == "Alquiler Urbana"
 
 
+def test_populate_db_creates_companies(database, app):
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+    company, affiliate_company = models.Company.query.all()
+    assert company.name == "Tourne"
+    assert company.short_name == "tournebilbao"
+    assert company.currency == "eur"
+    assert affiliate_company.name == "Civitatis - EUR"
+    assert affiliate_company.short_name == "civitatiseuro"
+    assert affiliate_company.currency == "eur"
+
+
 def test_populate_db_creates_availability(database, app, item_factory):
     """
     Although the first test actually saves all the data contained in
@@ -34,6 +46,8 @@ def test_populate_db_creates_booking(database, app, item_factory):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
     b = models.Booking.get(75125154)
+    company = models.Company.get("tournebilbao")
+    affiliate_company = models.Company.get("civitatiseuro")
     assert b.id == 75125154
     assert b.voucher_number == ""
     assert b.display_id == "#75125154"
@@ -41,13 +55,14 @@ def test_populate_db_creates_booking(database, app, item_factory):
     assert b.agent is None
     assert b.confirmation_url == "https://fareharbor.com/embeds/book/tournebilbao/items/159068/booking/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
     assert b.customer_count == 1
-    assert b.affiliate_company is None
     assert b.uuid == "c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e"
     assert b.dashboard_url == "https://fareharbor.com/tournebilbao/dashboard/?overlay=/contacts/64015149/bookings/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
     assert b.note == ""
     assert b.pickup is None
     assert b.status == "booked"
     assert b.availability_id == 619118440
+    assert b.company_id == company.id
+    assert b.affiliate_company_id == affiliate_company.id
     assert b.receipt_subtotal == 1240
     assert b.receipt_taxes == 260
     assert b.receipt_total == 1500
@@ -78,16 +93,6 @@ def test_populate_db_creates_contact(database, app):
     assert contact.normalized_phone == "+34444"
     assert contact.phone == "44444"
     assert contact.email == "foo@bar.baz"
-
-
-def test_populate_db_creates_company(database, app):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
-    services.PopulateDB(app).run()
-
-    company = models.Company.get(75125154)
-    assert company.name == "Tourne"
-    assert company.short_name == "tournebilbao"
-    assert company.currency == "eur"
 
 
 def test_populate_db_creates_cancellation_policy(database, app):
