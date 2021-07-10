@@ -7,6 +7,8 @@ import pytest
 from fh_webhook import models, model_services
 from fh_webhook.exceptions import DoesNotExist
 
+from sqlalchemy.exc import IntegrityError
+
 
 def test_create_item(database):
     random_id = randint(1, 10_000_000)
@@ -71,8 +73,12 @@ def test_delete_availabilty(database, availability_factory):
         models.Availability.get(av.id)
 
 
-def test_create_booking(database, availability_factory):
+def test_create_booking(database, availability_factory, company_factory):
     av = availability_factory.run()
+    company = company_factory.run()
+    s_affiliate_company = company_factory
+    s_affiliate_company.short_name = uuid4().hex[:30]
+    affiliate_company = s_affiliate_company.run()
     b = model_services.CreateBooking(
         booking_id=randint(1, 10_000_000),
         voucher_number="foo",
@@ -81,13 +87,14 @@ def test_create_booking(database, availability_factory):
         agent="goo",
         confirmation_url="kar",
         customer_count=5,
-        affiliate_company="roo",
         uuid=uuid4().hex,
         dashboard_url="taz",
         note="moo",
         pickup="mar",
         status="maz",
         availability_id=av.id,
+        company_id=company.id,
+        affiliate_company_id=affiliate_company.id,
         receipt_subtotal=10,
         receipt_taxes=11,
         receipt_total=12,
@@ -109,6 +116,8 @@ def test_create_booking(database, availability_factory):
     b = models.Booking.get(b.id)
     assert b.voucher_number == "foo"
     assert b.availability_id == av.id
+    assert b.company_id == company.id
+    assert b.affiliate_company_id == affiliate_company.id
 
 
 def test_update_booking(database, booking_factory, availability_factory):
@@ -123,13 +132,14 @@ def test_update_booking(database, booking_factory, availability_factory):
         agent="goo",
         confirmation_url="kar",
         customer_count=5,
-        affiliate_company="roo",
         uuid=uuid4().hex,
         dashboard_url="taz",
         note="moo",
         pickup="mar",
         status="maz",
         availability_id=old_booking.availability_id,
+        company_id=old_booking.company_id,
+        affiliate_company_id=old_booking.affiliate_company_id,
         receipt_subtotal=10,
         receipt_taxes=11,
         receipt_total=12,
@@ -151,10 +161,11 @@ def test_update_booking(database, booking_factory, availability_factory):
     b = models.Booking.get(old_booking.id)
     assert b.voucher_number == "roo"
     assert b.availability_id == old_booking.availability_id
+    assert b.company_id == old_booking.company_id
+    assert b.affiliate_company_id == old_booking.affiliate_company_id
 
 
-def test_update_booking_raises_error(database, availability_factory):
-    av = availability_factory.run()
+def test_update_booking_raises_error(database):
     with pytest.raises(DoesNotExist):
         model_services.UpdateBooking(
             booking_id=1000000,
@@ -164,13 +175,14 @@ def test_update_booking_raises_error(database, availability_factory):
             agent="goo",
             confirmation_url="kar",
             customer_count=5,
-            affiliate_company="roo",
             uuid=uuid4().hex,
             dashboard_url="taz",
             note="moo",
             pickup="mar",
             status="maz",
-            availability_id=av.id,
+            availability_id=1,
+            company_id=1,
+            affiliate_company_id=1,
             receipt_subtotal=10,
             receipt_taxes=11,
             receipt_total=12,
@@ -245,36 +257,50 @@ def test_delete_contact(database, contact_factory):
         models.Contact.get(c.id)
 
 
-def test_create_company(database, booking_factory):
-    s = booking_factory
-    s.uuid = uuid4().hex
-    b = s.run()
+def test_create_company(database):
     c = model_services.CreateCompany(
-        name="foo", short_name="bar", currency="eur", company_id=b.id
+        name="foo", short_name="baz", currency="eur"
     ).run()
-    c = models.Company.get(c.id)
+    c = models.Company.get("baz")
     assert c.name == "foo"
-    assert c.id == b.id
+
+
+def test_create_company_raises_unique_exception(database):
+    model_services.CreateCompany(
+        name="foo", short_name="baz", currency="eur"
+    ).run()
+    with pytest.raises(IntegrityError) as e:
+        model_services.CreateCompany(
+            name="foo", short_name="baz", currency="eur"
+        ).run()
+    assert e.match("foo")
+
+    # We have to rollback because we caught the exception and when flushing
+    # the database after the test it will throw an error as the change is still
+    # there.
+    database.session.rollback()
 
 
 def test_update_company(database, company_factory):
-    old_company = company_factory()
+    old_company = company_factory.run()
+    old_name = old_company.name
     new_company = model_services.UpdateCompany(
-        company_id=old_company.id,
-        name="baz",
-        short_name="bar",
+        name="some different name we came up with",
+        short_name=old_company.short_name,
         currency="eur",
     ).run()
+
     # reload from db
-    new_company = models.Company.get(new_company.id)
-    assert new_company.name == "baz"
+    new_company = models.Company.get(old_company.short_name)
+    assert new_company.name == "some different name we came up with"
+    assert new_company.name != old_name
 
 
 def test_delete_company(database, company_factory):
-    company = company_factory()
-    model_services.DeleteCompany(company.id).run()
+    company = company_factory.run()
+    model_services.DeleteCompany(company.short_name).run()
     with pytest.raises(DoesNotExist):
-        models.Company.get(company.id)
+        models.Company.get(company.short_name)
 
 
 def test_create_cancellation_policy(database, booking_factory):

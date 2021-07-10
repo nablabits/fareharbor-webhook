@@ -129,7 +129,6 @@ class CreateBooking:
     agent = attr.ib(type=str)
     confirmation_url = attr.ib(type=str)
     customer_count = attr.ib(type=int)
-    affiliate_company = attr.ib(type=str)
     uuid = attr.ib(type=str)
     dashboard_url = attr.ib(type=str)
     note = attr.ib(type=str)
@@ -138,6 +137,8 @@ class CreateBooking:
 
     # Foreign key fields
     availability_id = attr.ib(type=int)
+    company_id = attr.ib(type=int)
+    affiliate_company_id = attr.ib(type=int)
 
     # price fields
     receipt_subtotal = attr.ib(type=int)
@@ -172,13 +173,14 @@ class CreateBooking:
             agent=self.agent,
             confirmation_url=self.confirmation_url,
             customer_count=self.customer_count,
-            affiliate_company=self.affiliate_company,
             uuid=self.uuid,
             dashboard_url=self.dashboard_url,
             note=self.note,
             pickup=self.pickup,
             status=self.status,
             availability_id=self.availability_id,
+            company_id=self.company_id,
+            affiliate_company_id=self.affiliate_company_id,
             receipt_subtotal=self.receipt_subtotal,
             receipt_taxes=self.receipt_taxes,
             receipt_total=self.receipt_total,
@@ -211,13 +213,14 @@ class UpdateBooking:
     agent = attr.ib(type=str)
     confirmation_url = attr.ib(type=str)
     customer_count = attr.ib(type=int)
-    affiliate_company = attr.ib(type=str)
     uuid = attr.ib(type=str)
     dashboard_url = attr.ib(type=str)
     note = attr.ib(type=str)
     pickup = attr.ib(type=str)
     status = attr.ib(type=str)
     availability_id = attr.ib(type=int)
+    company_id = attr.ib(type=int)
+    affiliate_company_id = attr.ib(type=int)
     receipt_subtotal = attr.ib(type=int)
     receipt_taxes = attr.ib(type=int)
     receipt_total = attr.ib(type=int)
@@ -245,13 +248,14 @@ class UpdateBooking:
         booking.agent = self.agent
         booking.confirmation_url = self.confirmation_url
         booking.customer_count = self.customer_count
-        booking.affiliate_company = self.affiliate_company
         booking.uuid = self.uuid
         booking.dashboard_url = self.dashboard_url
         booking.note = self.note
         booking.pickup = self.pickup
         booking.status = self.status
         booking.availability_id = self.availability_id
+        booking.company_id = self.company_id
+        booking.affiliate_company_id = self.affiliate_company_id
         booking.receipt_subtotal = self.receipt_subtotal
         booking.receipt_taxes = self.receipt_taxes
         booking.receipt_total = self.receipt_total
@@ -353,14 +357,18 @@ class DeleteContact:
 
 @attr.s
 class CreateCompany:
-    company_id = attr.ib(type=int)
+    """
+    Create company instances.
+
+    Note that as opposed to the other models FH, is not providing pk for
+    companies so we have to add ours.
+    """
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
 
     def run(self):
         new_company = models.Company(
-            id=self.company_id,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             name=self.name,
@@ -374,16 +382,20 @@ class CreateCompany:
 
 @attr.s
 class UpdateCompany:
-    company_id = attr.ib(type=int)
+    """
+    Update company instances.
+
+    As FH is not providing a pk for this instances we should rely on the short
+    name to retrieve existing instances.
+    """
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
 
     def run(self):
-        company = models.Company.get(self.company_id)
+        company = models.Company.get(self.short_name)
         company.updated_at = datetime.utcnow()
         company.name = self.name
-        company.short_name = self.short_name
         company.currency = self.currency
 
         db.session.commit()
@@ -392,10 +404,10 @@ class UpdateCompany:
 
 @attr.s
 class DeleteCompany:
-    company_id = attr.ib(type=int)
+    company_short_name = attr.ib(type=int)
 
     def run(self):
-        company = models.Company.get(self.company_id)
+        company = models.Company.get(self.company_short_name)
         db.session.delete(company)
         db.session.commit()
 
