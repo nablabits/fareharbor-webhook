@@ -378,5 +378,5 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    cutoff = db.Column(db.DateTime(timezone=True), nullable=False)
+    cutoff = db.Column(db.DateTime(timezone=True) )
     cancellation_type = db.Column(db.String(64), nullable=False)
