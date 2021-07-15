@@ -9,7 +9,8 @@
     "external_id, order",
     "customers": [
       {
-        "checkin_url, pk, checkin_status, ",
+        "checkin_url, pk",
+        "checkin_status"{"pk, type, name"},
         "custom_field_values": [
             {
               "pk",

@@ -2,6 +2,7 @@
   "booking": {
     "customers": [
       {
+        "checkin_status": {},
         "custom_field_values": [
           {
             "custom_field": {

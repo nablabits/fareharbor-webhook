@@ -11,7 +11,11 @@
         "checkin_url": "https://fhchk.co/faYT3",
         "pk": 224262373,
         "custom_field_values": [],
-        "checkin_status": null,
+        "checkin_status": {
+            "pk": 83803,
+            "type": "checked-in",
+            "name": "checked in"
+        },
         "customer_type_rate": {
           "customer_prototype": {
             "note": "Todas las edades",
