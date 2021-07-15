@@ -461,6 +461,50 @@ class DeleteCancellationPolicy:
 
 # Customers' services
 
+@attr.s
+class CreateCheckinStatus:
+    checkin_status_id = attr.ib(type=int)
+    checkin_status_type = attr.ib(type=str)
+    name = attr.ib(type=str)
+
+    def run(self):
+        new_checkin_status = models.CheckinStatus(
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            id=self.checkin_status_id,
+            checkin_status_type=self.checkin_status_type,
+            name=self.name
+        )
+        db.session.add(new_checkin_status)
+        db.session.commit()
+        return new_checkin_status
+
+
+@attr.s
+class UpdateCheckinStatus:
+    checkin_status_id = attr.ib(type=int)
+    checkin_status_type = attr.ib(type=str)
+    name = attr.ib(type=str)
+
+    def run(self):
+        checkin_status = models.CheckinStatus.get(self.checkin_status_id)
+        checkin_status.updated_at = datetime.utcnow()
+        checkin_status.checkin_status_type = self.checkin_status_type
+        checkin_status.name = self.name
+
+        db.session.commit()
+        return checkin_status
+
+
+@attr.s
+class DeleteCheckinStatus:
+    checkin_status_id = attr.ib(type=int)
+
+    def run(self):
+        checkin_status = models.CheckinStatus.get(self.checkin_status_id)
+        db.session.delete(checkin_status)
+        db.session.commit()
+
 
 @attr.s
 class CreateCustomer:
@@ -473,7 +517,7 @@ class CreateCustomer:
 
     customer_id = attr.ib(type=int)
     checkin_url = attr.ib(type=str)
-    checkin_status = attr.ib(type=str)
+    checkin_status_id = attr.ib(type=int)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
 
@@ -483,7 +527,7 @@ class CreateCustomer:
             updated_at=datetime.utcnow(),
             id=self.customer_id,
             checkin_url=self.checkin_url,
-            checkin_status=self.checkin_status,
+            checkin_status_id=self.checkin_status_id,
             customer_type_rate_id=self.customer_type_rate_id,
             booking_id=self.booking_id,
         )
@@ -496,16 +540,16 @@ class CreateCustomer:
 class UpdateCustomer:
     customer_id = attr.ib(type=int)
     checkin_url = attr.ib(type=str)
-    checkin_status = attr.ib(type=str)
+    checkin_status_id = attr.ib(type=int)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
 
     def run(self):
         customer = models.Customer.get(self.customer_id)
-        customer.updated_at = (datetime.utcnow(),)
-        customer.checkin_url = (self.checkin_url,)
-        customer.checkin_status = (self.checkin_status,)
-        customer.customer_type_rate_id = (self.customer_type_rate_id,)
+        customer.updated_at = datetime.utcnow()
+        customer.checkin_url = self.checkin_url
+        customer.checkin_status_id = self.checkin_status_id
+        customer.customer_type_rate_id = self.customer_type_rate_id
         customer.booking_id = self.booking_id
         db.session.commit()
         return customer

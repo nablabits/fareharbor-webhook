@@ -161,13 +161,22 @@ def test_populate_db_creates_customer_type_rates(database, app):
     assert ctp.total == 1240
 
 
+def test_populate_db_creates_checkin_status(database, app):
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+
+    checkin_status = models.CheckinStatus.get(83803)
+    assert checkin_status.checkin_status_type == "checked-in"
+    assert checkin_status.name == "checked in"
+
+
 def test_populate_db_creates_customer(database, app):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
     customer = models.Customer.get(224262373)
     assert customer.checkin_url == "https://fhchk.co/faYT3"
-    assert customer.checkin_status is None
+    assert customer.checkin_status_id == 83803
 
 
 def test_populate_db_creates_custom_field(database, app):

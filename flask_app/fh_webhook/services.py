@@ -274,7 +274,7 @@ class ProcessJSONResponse:
         ).run()
 
     @staticmethod
-    def _save_customer(c_data, ctr_id, booking_id):
+    def _save_customer(c_data, ctr_id, booking_id, checkin_status_id):
         """
         Save the customer information contained in the data.
         """
@@ -287,10 +287,28 @@ class ProcessJSONResponse:
         return service(
             customer_id=c_data["pk"],
             checkin_url=c_data["checkin_url"],
-            checkin_status=c_data["checkin_status"],
+            checkin_status_id=checkin_status_id,
             customer_type_rate_id=ctr_id,
             booking_id=booking_id,
         ).run()
+
+    @staticmethod
+    def _save_checkin_status(cs_data):
+        """
+        Save the checkin status contained in the data.
+        """
+        checkin_status = models.CheckinStatus.get_object_or_none(cs_data["pk"])
+        if checkin_status:
+            service = model_services.UpdateCheckinStatus
+        else:
+            service = model_services.CreateCheckinStatus
+
+        return service(
+            checkin_status_id=cs_data["pk"],
+            checkin_status_type=cs_data["type"],
+            name=cs_data["name"]
+        ).run()
+
 
     def _save_customer_group(self, booking_id, availability_id):
         """
@@ -320,7 +338,9 @@ class ProcessJSONResponse:
                 ctr_data, availability_id, customer_prototype_id,
                 customer_type_id
             )
-            self._save_customer(c_data, ctr.id, booking_id)
+            cs_data = c_data["checkin_status"]
+            checkin_status_id = self._save_checkin_status(cs_data).id
+            self._save_customer(c_data, ctr.id, booking_id, checkin_status_id)
 
     def _save_custom_field_group(self, availability_id):
         """
@@ -470,7 +490,9 @@ class ProcessJSONResponse:
         item = self._save_item()
         av = self._save_availability(item.id)
         company, affiliate_company = self._save_company_group()
-        b = self._save_booking(av.id, company.id, affiliate_company.id)
+        affiliate_company_id = (
+            affiliate_company.id if hasattr(affiliate_company, "id") else None)
+        b = self._save_booking(av.id, company.id, affiliate_company_id)
         self._save_contact(b.id)
         self._save_cancellation_policy(b.id)
         self._save_customer_group(b.id, av.id)
