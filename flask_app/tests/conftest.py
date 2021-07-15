@@ -203,14 +203,25 @@ def custom_field_value_factory(database, custom_field_factory, customer_factory)
 
 
 @pytest.fixture
-def customer_factory(customer_type_rate_factory, booking_factory):
+def checkin_status_factory():
+    return model_services.CreateCheckinStatus(
+        checkin_status_id=randint(1, 10_000_000),
+        checkin_status_type="checked-in",
+        name="checked in"
+    )
+
+
+@pytest.fixture
+def customer_factory(
+        customer_type_rate_factory, booking_factory, checkin_status_factory
+):
     s = booking_factory
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCustomer(
         customer_id=randint(1, 10_000_000),
         checkin_url="https://foo.bar",
-        checkin_status="checked_in",
+        checkin_status_id=checkin_status_factory.run().id,
         customer_type_rate_id=customer_type_rate_factory().id,
         booking_id=b.id,
     )

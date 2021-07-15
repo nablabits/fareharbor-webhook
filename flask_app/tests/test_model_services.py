@@ -573,8 +573,39 @@ def test_delete_custom_field_value(database, custom_field_value_factory):
         models.CustomFieldValue.get(cfv.id)
 
 
+def test_create_checkin_status(database):
+    ct = model_services.CreateCheckinStatus(
+        checkin_status_id=randint(1, 10_000_000),
+        checkin_status_type="checked-in",
+        name="checked in"
+    ).run()
+    assert models.CheckinStatus.get(ct.id)
+
+
+def test_update_checkin_status(database, checkin_status_factory):
+    old_cs = checkin_status_factory.run()
+    cs = model_services.UpdateCheckinStatus(
+        checkin_status_id=old_cs.id,
+        checkin_status_type="checked-out",
+        name="checked out"
+    ).run()
+    assert cs.checkin_status_type == "checked-out"
+    assert cs.name == "checked out"
+    assert cs.created_at == old_cs.created_at
+
+
+def test_delete_checkin_status(database, checkin_status_factory):
+    cs = checkin_status_factory.run()
+
+    model_services.DeleteCheckinStatus(cs.id).run()
+
+    with pytest.raises(DoesNotExist):
+        models.CheckinStatus.get(cs.id)
+
+
 def test_create_customer(
-    database, customer_type_rate_factory, booking_factory, availability_factory
+    database, customer_type_rate_factory, booking_factory,
+    availability_factory, checkin_status_factory
 ):
     s = booking_factory
     s.uuid = uuid4().hex
@@ -582,27 +613,27 @@ def test_create_customer(
     ct = model_services.CreateCustomer(
         customer_id=randint(1, 10_000_000),
         checkin_url="https://foo.bar",
-        checkin_status="checked_in",
+        checkin_status_id=checkin_status_factory.run().id,
         customer_type_rate_id=customer_type_rate_factory().id,
         booking_id=b.id,
     ).run()
     assert models.Customer.get(ct.id)
 
 
-def test_update_customer(database, customer_factory):
+def test_update_customer(database, customer_factory, checkin_status_factory):
     s = customer_factory
     s.customer_id = randint(1, 10_000_000)
     old_customer = s.run()
     model_services.UpdateCustomer(
         customer_id=old_customer.id,
         checkin_url="https://bar.baz",
-        checkin_status="checked_out",
+        checkin_status_id=None,
         customer_type_rate_id=old_customer.customer_type_rate_id,
         booking_id=old_customer.booking_id,
     ).run()
     ct = models.Customer.get(old_customer.id)
     assert ct.checkin_url == "https://bar.baz"
-    assert ct.checkin_status == "checked_out"
+    assert ct.checkin_status_id is None
 
 
 def test_delete_customer(database, customer_factory):

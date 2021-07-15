@@ -116,6 +116,15 @@ class Item(db.Model, BaseMixin):
     name = db.Column(db.String(200))
 
 
+class CheckinStatus(db.Model, BaseMixin):
+    __table_name__ = "checkin_status"
+    id = db.Column(db.BigInteger, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
+    checkin_status_type = db.Column(db.String(64))
+    name = db.Column(db.String(64))
+
+
 class Customer(db.Model, BaseMixin):
     """Store the customer chosen by the booking.
 
@@ -130,12 +139,13 @@ class Customer(db.Model, BaseMixin):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     checkin_url = db.Column(db.String(264))
-    checkin_status = db.Column(db.String(64))
 
     # Foreign Key fields
     customer_type_rate_id = db.Column(
         db.BigInteger, db.ForeignKey("customer_type_rate.id"), nullable=False
     )
+    checkin_status_id = db.Column(
+        db.BigInteger, db.ForeignKey("checkin_status.id"))
     # M2M to booking
     booking_id = db.Column(
         db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
