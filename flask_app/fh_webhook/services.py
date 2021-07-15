@@ -339,7 +339,9 @@ class ProcessJSONResponse:
                 customer_type_id
             )
             cs_data = c_data["checkin_status"]
-            checkin_status_id = self._save_checkin_status(cs_data).id
+            checkin_status_id = None
+            if cs_data:
+                checkin_status_id = self._save_checkin_status(cs_data).id
             self._save_customer(c_data, ctr.id, booking_id, checkin_status_id)
 
     def _save_custom_field_group(self, availability_id):
