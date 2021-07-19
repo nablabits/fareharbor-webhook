@@ -2,14 +2,15 @@
   "booking": {
     "voucher_number, display_id, rebooked_to, receipt_subtotal",
     "receipt_total_display, note_safe_html, agent, confirmation_url",
-    "customer_count, affiliate_company, invoice_price_display, uuid, dashboard_url",
+    "customer_count, invoice_price_display, uuid, dashboard_url",
     "amount_paid_display, note, pickup, pk, status, receipt_total, amount_paid",
     "receipt_subtotal_display, desk, is_eligible_for_cancellation, is_subscribed_for_sms_updates",
     "receipt_taxes, arrival, invoice_price, receipt_taxes_display, rebooked_from",
     "external_id, order",
     "customers": [
       {
-        "checkin_url, pk, checkin_status, ",
+        "checkin_url, pk",
+        "checkin_status"{"pk, type, name"},
         "custom_field_values": [
             {
               "pk",
@@ -73,6 +74,7 @@
       ],
       "item": {}
     },
+    "affiliate_company": {"currency, shortname, name, "},
     "company": {"currency, shortname, name, "},
     "custom_field_values": [
         {

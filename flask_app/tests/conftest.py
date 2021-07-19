@@ -72,10 +72,14 @@ def availability_factory(item_factory):
 
 
 @pytest.fixture
-def booking_factory(availability_factory):
+def booking_factory(availability_factory, company_factory):
     s = availability_factory
     s.availability_id = randint(1, 10_000_000),
     av = s.run()
+    company = company_factory.run()
+    s_affiliate_company = company_factory
+    s_affiliate_company.short_name = uuid4().hex[:30]
+    affiliate_company = s_affiliate_company.run()
     return model_services.CreateBooking(
         booking_id=randint(1, 10_000_000),
         voucher_number="foo",
@@ -84,13 +88,14 @@ def booking_factory(availability_factory):
         agent="goo",
         confirmation_url="kar",
         customer_count=5,
-        affiliate_company="roo",
         uuid=uuid4().hex,
         dashboard_url="taz",
         note="moo",
         pickup="mar",
         status="maz",
         availability_id=av.id,
+        company_id=company.id,
+        affiliate_company_id=affiliate_company.id,
         receipt_subtotal=10,
         receipt_taxes=11,
         receipt_total=12,
@@ -107,7 +112,7 @@ def booking_factory(availability_factory):
         rebooked_to="saz",
         rebooked_from="woo",
         external_id="war",
-        order="waz",
+        order={"waz": "raz"},
     )
 
 
@@ -128,13 +133,10 @@ def contact_factory(booking_factory):
 
 
 @pytest.fixture
-def company_factory(booking_factory):
-    s = booking_factory
-    s.uuid = uuid4().hex
-    b = s.run()
+def company_factory():
     return model_services.CreateCompany(
-        name="foo", short_name="bar", currency="eur", company_id=b.id
-    ).run
+        name="foo", short_name=uuid4().hex[:30], currency="eur"
+    )
 
 
 @pytest.fixture
@@ -201,14 +203,25 @@ def custom_field_value_factory(database, custom_field_factory, customer_factory)
 
 
 @pytest.fixture
-def customer_factory(customer_type_rate_factory, booking_factory):
+def checkin_status_factory():
+    return model_services.CreateCheckinStatus(
+        checkin_status_id=randint(1, 10_000_000),
+        checkin_status_type="checked-in",
+        name="checked in"
+    )
+
+
+@pytest.fixture
+def customer_factory(
+        customer_type_rate_factory, booking_factory, checkin_status_factory
+):
     s = booking_factory
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCustomer(
         customer_id=randint(1, 10_000_000),
         checkin_url="https://foo.bar",
-        checkin_status="checked_in",
+        checkin_status_id=checkin_status_factory.run().id,
         customer_type_rate_id=customer_type_rate_factory().id,
         booking_id=b.id,
     )

@@ -1,6 +1,8 @@
 """Define the models in the database."""
+from sqlalchemy_json import mutable_json_type
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from sqlalchemy.dialects.postgresql import JSONB
 from .exceptions import DoesNotExist
 
 metadata = MetaData()
@@ -46,7 +48,6 @@ class Booking(db.Model, BaseMixin):
     agent = db.Column(db.String(64))
     confirmation_url = db.Column(db.String(255))
     customer_count = db.Column(db.SmallInteger, nullable=False)
-    affiliate_company = db.Column(db.String(64))
     uuid = db.Column(db.String(40), nullable=False, unique=True)
     dashboard_url = db.Column(db.String(264))
     note = db.Column(db.Text)
@@ -56,6 +57,12 @@ class Booking(db.Model, BaseMixin):
     # Foreign key fields
     availability_id = db.Column(
         db.BigInteger, db.ForeignKey("availability.id"), nullable=False
+    )
+    company_id = db.Column(
+        db.BigInteger, db.ForeignKey("company.id"), nullable=False
+    )
+    affiliate_company_id = db.Column(
+        db.BigInteger, db.ForeignKey("company.id")
     )
 
     # price fields
@@ -78,7 +85,10 @@ class Booking(db.Model, BaseMixin):
     rebooked_to = db.Column(db.String(64))
     rebooked_from = db.Column(db.String(64))
     external_id = db.Column(db.String(64))
-    order = db.Column(db.String(64))
+
+    # implement Postgres' JSONB field
+    MutableJson = mutable_json_type(dbtype=JSONB, nested=False)
+    order = db.Column(MutableJson)
 
 
 class Availability(db.Model, BaseMixin):
@@ -91,7 +101,7 @@ class Availability(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    capacity = db.Column(db.SmallInteger, nullable=False)
+    capacity = db.Column(db.Integer, nullable=False)
     minimum_party_size = db.Column(db.SmallInteger)
     maximum_party_size = db.Column(db.SmallInteger)
     start_at = db.Column(db.DateTime(timezone=True), nullable=False)
@@ -111,6 +121,15 @@ class Item(db.Model, BaseMixin):
     name = db.Column(db.String(200))
 
 
+class CheckinStatus(db.Model, BaseMixin):
+    __table_name__ = "checkin_status"
+    id = db.Column(db.BigInteger, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
+    checkin_status_type = db.Column(db.String(64))
+    name = db.Column(db.String(64))
+
+
 class Customer(db.Model, BaseMixin):
     """Store the customer chosen by the booking.
 
@@ -125,12 +144,13 @@ class Customer(db.Model, BaseMixin):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     checkin_url = db.Column(db.String(264))
-    checkin_status = db.Column(db.String(64))
 
     # Foreign Key fields
     customer_type_rate_id = db.Column(
         db.BigInteger, db.ForeignKey("customer_type_rate.id"), nullable=False
     )
+    checkin_status_id = db.Column(
+        db.BigInteger, db.ForeignKey("checkin_status.id"))
     # M2M to booking
     booking_id = db.Column(
         db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
@@ -148,7 +168,7 @@ class CustomerTypeRate(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    capacity = db.Column(db.SmallInteger)
+    capacity = db.Column(db.Integer)
     minimum_party_size = db.Column(db.SmallInteger)
     maximum_party_size = db.Column(db.SmallInteger)
     total = db.Column(db.Integer)
@@ -327,18 +347,40 @@ class Contact(db.Model, BaseMixin):
 
 
 class Company(db.Model, BaseMixin):
-    """Store the company details for the booking.
+    """Store the company details.
 
-    Is a 1:1 on bookings.
+    It turns out that each booking has two FK to this model, one for the owner
+    company (company) and another for the affiliate company (affiliate_company)
+
+    FH does not provide pk for this model like it does for the others, which
+    means that we have to rely on short_name to retrieve existing instances.
     """
 
     __table_name__ = "company"
-    id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
-    short_name = db.Column(db.String(30), nullable=False)
+    short_name = db.Column(db.String(30), nullable=False, unique=True)
     currency = db.Column(db.String(10), nullable=False)
+
+    @classmethod
+    def get(cls, short_name):
+        """Override the default get method so we retrieve by short_name."""
+        instance = cls.query.filter_by(short_name=short_name).first()
+        if instance:
+            return instance
+        else:
+            raise DoesNotExist(cls.__table_name__)
+
+    @classmethod
+    def get_object_or_none(cls, short_name):
+        """
+        Get the object or none.
+
+        This method is a wrapper of query.get() that is less readable.
+        """
+        return cls.query.filter_by(short_name=short_name).first()
 
 
 class EffectiveCancellationPolicy(db.Model, BaseMixin):
@@ -351,5 +393,5 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=False)
-    cutoff = db.Column(db.DateTime(timezone=True), nullable=False)
+    cutoff = db.Column(db.DateTime(timezone=True) )
     cancellation_type = db.Column(db.String(64), nullable=False)
