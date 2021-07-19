@@ -79,7 +79,7 @@ def test_populate_db_creates_booking(database, app, item_factory):
     assert b.rebooked_to is None
     assert b.rebooked_from is None
     assert b.external_id == ""
-    assert b.order is None
+    assert b.order["display_id"] == "BBVBQV"
 
 
 def test_populate_db_creates_contact(database, app):

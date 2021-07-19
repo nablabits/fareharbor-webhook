@@ -636,6 +636,6 @@
     "receipt_taxes_display": "2,60\\u00a0",
     "rebooked_from": null,
     "external_id": "",
-    "order": null
+    "order": {"display_id": "BBVBQV"}
   }
 }
