@@ -1,6 +1,8 @@
 """Define the models in the database."""
+from sqlalchemy_json import mutable_json_type
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from sqlalchemy.dialects.postgresql import JSONB
 from .exceptions import DoesNotExist
 
 metadata = MetaData()
@@ -83,7 +85,10 @@ class Booking(db.Model, BaseMixin):
     rebooked_to = db.Column(db.String(64))
     rebooked_from = db.Column(db.String(64))
     external_id = db.Column(db.String(64))
-    order = db.Column(db.String(64))
+
+    # implement Postgres' JSONB field
+    MutableJson = mutable_json_type(dbtype=JSONB, nested=False)
+    order = db.Column(MutableJson)
 
 
 class Availability(db.Model, BaseMixin):

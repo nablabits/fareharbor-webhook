@@ -112,7 +112,7 @@ def booking_factory(availability_factory, company_factory):
         rebooked_to="saz",
         rebooked_from="woo",
         external_id="war",
-        order="waz",
+        order={"waz": "raz"},
     )
 
 

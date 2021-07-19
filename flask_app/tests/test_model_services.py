@@ -111,10 +111,11 @@ def test_create_booking(database, availability_factory, company_factory):
         rebooked_to="saz",
         rebooked_from="woo",
         external_id="war",
-        order="waz",
+        order={"waz": "raz"},
     ).run()
     b = models.Booking.get(b.id)
     assert b.voucher_number == "foo"
+    assert b.order == {"waz": "raz"}
     assert b.availability_id == av.id
     assert b.company_id == company.id
     assert b.affiliate_company_id == affiliate_company.id
@@ -156,13 +157,14 @@ def test_update_booking(database, booking_factory, availability_factory):
         rebooked_to="saz",
         rebooked_from="woo",
         external_id="war",
-        order="waz",
+        order={"waz": "updated_raz"},
     ).run()
     b = models.Booking.get(old_booking.id)
     assert b.voucher_number == "roo"
     assert b.availability_id == old_booking.availability_id
     assert b.company_id == old_booking.company_id
     assert b.affiliate_company_id == old_booking.affiliate_company_id
+    assert b.order["waz"] == "updated_raz"
 
 
 def test_update_booking_raises_error(database):
