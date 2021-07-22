@@ -11,6 +11,9 @@ db = SQLAlchemy(metadata=metadata)
 
 class BaseMixin:
     """Provide common methods for models."""
+    # add a timestamp to all models
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False)
 
     @classmethod
     def get(cls, id):
@@ -39,8 +42,6 @@ class Booking(db.Model, BaseMixin):
     """Store the information about the booking."""
 
     __table_name__ = "booking"
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     id = db.Column(db.BigInteger, primary_key=True)
     voucher_number = db.Column(db.String(64))
     display_id = db.Column(db.String(64), nullable=False)
@@ -99,8 +100,6 @@ class Availability(db.Model, BaseMixin):
 
     __table_name__ = "availability"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     capacity = db.Column(db.Integer, nullable=False)
     minimum_party_size = db.Column(db.SmallInteger)
     maximum_party_size = db.Column(db.SmallInteger)
@@ -116,16 +115,12 @@ class Item(db.Model, BaseMixin):
 
     __table_name__ = "item"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(200))
 
 
 class CheckinStatus(db.Model, BaseMixin):
     __table_name__ = "checkin_status"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     checkin_status_type = db.Column(db.String(64))
     name = db.Column(db.String(64))
 
@@ -141,8 +136,6 @@ class Customer(db.Model, BaseMixin):
 
     __table_name__ = "customer"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     checkin_url = db.Column(db.String(264))
 
     # Foreign Key fields
@@ -166,8 +159,6 @@ class CustomerTypeRate(db.Model, BaseMixin):
 
     __table_name__ = "customer_type_rate"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     capacity = db.Column(db.Integer)
     minimum_party_size = db.Column(db.SmallInteger)
     maximum_party_size = db.Column(db.SmallInteger)
@@ -195,8 +186,6 @@ class CustomerPrototype(db.Model, BaseMixin):
 
     __table_name__ = "customer_prototype"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     total = db.Column(db.Integer)
     total_including_tax = db.Column(db.Integer)
     display_name = db.Column(db.String(64), nullable=False)
@@ -212,8 +201,6 @@ class CustomerType(db.Model, BaseMixin):
 
     __table_name__ = "customer_type"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     note = db.Column(db.Text)
     singular = db.Column(db.String(64), nullable=False)
     plural = db.Column(db.String(64), nullable=False)
@@ -231,8 +218,6 @@ class CustomFieldInstance(db.Model, BaseMixin):
 
     __table_name__ = "custom_field_instance"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     custom_field_id = db.Column(
         db.BigInteger, db.ForeignKey("custom_field.id"), nullable=False
     )
@@ -268,8 +253,6 @@ class CustomFieldValue(db.Model, BaseMixin):
 
     __table_name__ = "custom_field_values"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(64), nullable=False)
     value = db.Column(db.String(2048))
     display_value = db.Column(db.String(2048))
@@ -302,8 +285,6 @@ class CustomField(db.Model, BaseMixin):
 
     __table_name__ = "custom_field"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     title = db.Column(db.String(64))
     name = db.Column(db.String(64), nullable=False)
     modifier_kind = db.Column(db.String(64), nullable=False)
@@ -336,8 +317,6 @@ class Contact(db.Model, BaseMixin):
 
     __table_name__ = "contact"
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
     email = db.Column(db.String(256))
     phone_country = db.Column(db.String(10))
@@ -358,8 +337,6 @@ class Company(db.Model, BaseMixin):
 
     __table_name__ = "company"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(256), nullable=False)
     short_name = db.Column(db.String(30), nullable=False, unique=True)
     currency = db.Column(db.String(10), nullable=False)
@@ -391,7 +368,5 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
 
     __table_name__ = "effective_cancellation_policy"
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
     cutoff = db.Column(db.DateTime(timezone=True) )
     cancellation_type = db.Column(db.String(64), nullable=False)

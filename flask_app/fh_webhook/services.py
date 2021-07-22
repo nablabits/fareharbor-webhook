@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timezone
 from . import models, model_services
 
 import attr
@@ -25,10 +26,14 @@ class PopulateDB:
         n = 0
         for f in os.listdir(self.path):
             if f.endswith(".json"):
+                unix_timestamp = float(f.replace(".json", ""))
+                timestamp = datetime.fromtimestamp(
+                    unix_timestamp, tz=timezone.utc
+                )
                 filename = os.path.join(self.path, f)
                 with open(filename, "r") as response:
                     data = json.load(response)
-                    ProcessJSONResponse(data).run()
+                    ProcessJSONResponse(data, timestamp).run()
                 n += 1
             else:
                 print(f"Non json file found ({f}) in the dir, skipping...")
@@ -45,6 +50,7 @@ class ProcessJSONResponse:
     """
 
     data = attr.ib(type=dict)
+    timestamp = attr.ib(type=datetime, default=datetime.now(timezone.utc))
 
     def _save_item(self):
         """Save the item contained in the data."""
@@ -54,7 +60,11 @@ class ProcessJSONResponse:
             service = model_services.UpdateItem
         else:
             service = model_services.CreateItem
-        return service(item_id=item_data["pk"], name=item_data["name"]).run()
+        return service(
+            timestamp=self.timestamp,
+            item_id=item_data["pk"],
+            name=item_data["name"]
+        ).run()
 
     def _save_availability(self, item_id):
         """Save the availability contained in the data."""
@@ -67,6 +77,7 @@ class ProcessJSONResponse:
 
         return service(
             availability_id=av_data["pk"],
+            timestamp=self.timestamp,
             capacity=av_data["capacity"],
             minimum_party_size=av_data["minimum_party_size"],
             maximum_party_size=av_data["maximum_party_size"],
@@ -96,6 +107,7 @@ class ProcessJSONResponse:
             note=b_data["note"],
             pickup=b_data["pickup"],
             status=b_data["status"],
+            timestamp=self.timestamp,
             availability_id=av_id,
             company_id=company_id,
             affiliate_company_id=affiliate_company_id,
@@ -132,6 +144,7 @@ class ProcessJSONResponse:
         opt_in = c_data["is_subscribed_for_email_updates"]
         return service(
             id=booking_id,
+            timestamp=self.timestamp,
             name=c_data["name"],
             email=c_data["email"],
             phone_country=c_data["phone_country"],
@@ -156,8 +169,7 @@ class ProcessJSONResponse:
             self._save_company(affiliate_company_data)
         )
 
-    @staticmethod
-    def _save_company(c_data):
+    def _save_company(self, c_data):
         """Save one company instance."""
         # Sometimes there's no affiliate company in which case we have to
         # return None right away
@@ -178,7 +190,8 @@ class ProcessJSONResponse:
         return service(
             name=c_data["name"],
             short_name=short_name,
-            currency=c_data["currency"]
+            currency=c_data["currency"],
+            timestamp=self.timestamp,
         ).run()
 
     def _save_cancellation_policy(self, booking_id):
@@ -196,11 +209,11 @@ class ProcessJSONResponse:
         return service(
             cp_id=booking_id,
             cutoff=c_data["cutoff"],
-            cancellation_type=c_data["type"]
+            cancellation_type=c_data["type"],
+            timestamp=self.timestamp,
         ).run()
 
-    @staticmethod
-    def _save_customer_type(ct_data):
+    def _save_customer_type(self, ct_data):
         """
         Save the customer type information contained in the data.
 
@@ -218,11 +231,11 @@ class ProcessJSONResponse:
             customer_type_id=ct_data["pk"],
             note=ct_data["note"],
             singular=ct_data["singular"],
-            plural=ct_data["plural"]
+            plural=ct_data["plural"],
+            timestamp=self.timestamp,
         ).run()
 
-    @staticmethod
-    def _save_customer_prototype(ct_data):
+    def _save_customer_prototype(self, ct_data):
         """
         Save the customer prototype information contained in the data.
 
@@ -241,12 +254,13 @@ class ProcessJSONResponse:
             note=ct_data["note"],
             total=ct_data["total"],
             total_including_tax=ct_data["total_including_tax"],
-            display_name=ct_data["display_name"]
+            display_name=ct_data["display_name"],
+            timestamp=self.timestamp,
         ).run()
 
-    @staticmethod
     def _save_customer_type_rate(
-        ctr_data, availability_id, customer_prototype_id, customer_type_id
+        self, ctr_data, availability_id, customer_prototype_id,
+        customer_type_id
     ):
         """
         Save the customer type rate information contained in the data.
@@ -271,10 +285,10 @@ class ProcessJSONResponse:
             availability_id=availability_id,
             customer_prototype_id=customer_prototype_id,
             customer_type_id=customer_type_id,
+            timestamp=self.timestamp,
         ).run()
 
-    @staticmethod
-    def _save_customer(c_data, ctr_id, booking_id, checkin_status_id):
+    def _save_customer(self, c_data, ctr_id, booking_id, checkin_status_id):
         """
         Save the customer information contained in the data.
         """
@@ -290,10 +304,10 @@ class ProcessJSONResponse:
             checkin_status_id=checkin_status_id,
             customer_type_rate_id=ctr_id,
             booking_id=booking_id,
+            timestamp=self.timestamp,
         ).run()
 
-    @staticmethod
-    def _save_checkin_status(cs_data):
+    def _save_checkin_status(self, cs_data):
         """
         Save the checkin status contained in the data.
         """
@@ -306,9 +320,9 @@ class ProcessJSONResponse:
         return service(
             checkin_status_id=cs_data["pk"],
             checkin_status_type=cs_data["type"],
-            name=cs_data["name"]
+            name=cs_data["name"],
+            timestamp=self.timestamp,
         ).run()
-
 
     def _save_customer_group(self, booking_id, availability_id):
         """
@@ -384,7 +398,6 @@ class ProcessJSONResponse:
                 self._save_custom_field_value(
                     cfv_data, cf.id, customer_id=c_data["pk"])
 
-
     def _save_custom_field_family(self, cf_family_data):
         """
         A custom field family is a custom field with its descendants, the
@@ -399,8 +412,7 @@ class ProcessJSONResponse:
             pass
         return cf
 
-    @staticmethod
-    def _save_custom_field(custom_field_data, parent_id=None):
+    def _save_custom_field(self, custom_field_data, parent_id=None):
         """Save the custom fields contained in the data.
 
         If we are saving extended options we should pass the parent custom
@@ -431,6 +443,7 @@ class ProcessJSONResponse:
 
         return service(
             custom_field_id=custom_field_data["pk"],
+            timestamp=self.timestamp,
             title=title,
             name=custom_field_data["name"],
             modifier_kind=custom_field_data["modifier_kind"],
@@ -448,9 +461,8 @@ class ProcessJSONResponse:
             extended_options=parent_id,
         ).run()
 
-    @staticmethod
     def _save_custom_field_instance(
-        cfi_data, custom_field_id, customer_type_rate_id=None,
+        self, cfi_data, custom_field_id, customer_type_rate_id=None,
         availability_id=None
     ):
         custom_field_instance = models.CustomFieldInstance.get_object_or_none(
@@ -462,14 +474,14 @@ class ProcessJSONResponse:
 
         return service(
             custom_field_instance_id=cfi_data["pk"],
+            timestamp=self.timestamp,
             custom_field_id=custom_field_id,
             availability_id=availability_id,
             customer_type_rate_id=customer_type_rate_id
         ).run()
 
-    @staticmethod
     def _save_custom_field_value(
-        cfv_data, custom_field_id, customer_id=None, booking_id=None
+        self, cfv_data, custom_field_id, customer_id=None, booking_id=None
     ):
         custom_field_value = models.CustomFieldValue.get_object_or_none(
             cfv_data["pk"])
@@ -480,6 +492,7 @@ class ProcessJSONResponse:
 
         return service(
             custom_field_value_id=cfv_data["pk"],
+            timestamp=self.timestamp,
             name=cfv_data["name"],
             value=cfv_data["value"],
             display_value=cfv_data["display_value"],

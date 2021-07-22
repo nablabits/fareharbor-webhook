@@ -17,11 +17,12 @@ class CreateItem:
     """
     item_id = attr.ib(type=int)
     name = attr.ib()
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_item = models.Item(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             id=self.item_id,
             name=self.name
         )
@@ -34,11 +35,12 @@ class CreateItem:
 class UpdateItem:
     item_id = attr.ib(type=int)
     name = attr.ib()
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         item = models.Item.get(self.item_id)
         item.name = self.name
-        item.updated_at = datetime.utcnow()
+        item.updated_at = self.timestamp
         db.session.commit()
         return item
 
@@ -65,11 +67,12 @@ class CreateAvailability:
     start_at = attr.ib(type=datetime)
     end_at = attr.ib(type=datetime)
     item_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_availability = models.Availability(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             id=self.availability_id,
             capacity=self.capacity,
             minimum_party_size=self.minimum_party_size,
@@ -92,10 +95,11 @@ class UpdateAvailability:
     start_at = attr.ib(type=datetime)
     end_at = attr.ib(type=datetime)
     item_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         availability = models.Availability.get(self.availability_id)
-        availability.updated_at = datetime.utcnow()
+        availability.updated_at = self.timestamp
         availability.capacity = self.capacity
         availability.minimum_party_size = self.minimum_party_size
         availability.maximum_party_size = self.maximum_party_size
@@ -134,6 +138,7 @@ class CreateBooking:
     note = attr.ib(type=str)
     pickup = attr.ib(type=str)
     status = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     # Foreign key fields
     availability_id = attr.ib(type=int)
@@ -164,8 +169,8 @@ class CreateBooking:
 
     def run(self):
         new_booking = models.Booking(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             id=self.booking_id,
             voucher_number=self.voucher_number,
             display_id=self.display_id,
@@ -218,6 +223,7 @@ class UpdateBooking:
     note = attr.ib(type=str)
     pickup = attr.ib(type=str)
     status = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
     availability_id = attr.ib(type=int)
     company_id = attr.ib(type=int)
     affiliate_company_id = attr.ib(type=int)
@@ -241,7 +247,7 @@ class UpdateBooking:
 
     def run(self):
         booking = models.Booking.get(self.booking_id)
-        booking.updated_at = datetime.utcnow()
+        booking.updated_at = self.timestamp
         booking.voucher_number = self.voucher_number
         booking.display_id = self.display_id
         booking.note_safe_html = self.note_safe_html
@@ -293,6 +299,7 @@ class DeleteBooking:
 @attr.s
 class CreateContact:
     id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
     name = attr.ib(type=str)
     email = attr.ib(type=str)
     phone_country = attr.ib(type=str)
@@ -304,8 +311,8 @@ class CreateContact:
         opt_in = self.is_subscribed_for_email_updates
         new_contact = models.Contact(
             id=self.id,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             name=self.name,
             email=self.email,
             phone_country=self.phone_country,
@@ -321,6 +328,7 @@ class CreateContact:
 @attr.s
 class UpdateContact:
     id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
     name = attr.ib(type=str)
     email = attr.ib(type=str)
     phone_country = attr.ib(type=str)
@@ -331,12 +339,12 @@ class UpdateContact:
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
         contact = models.Contact.get(self.id)
-        contact.updated_at = (datetime.utcnow(),)
-        contact.name = (self.name,)
-        contact.email = (self.email,)
-        contact.phone_country = (self.phone_country,)
-        contact.phone = (self.phone,)
-        contact.normalized_phone = (self.normalized_phone,)
+        contact.updated_at = self.timestamp
+        contact.name = self.name
+        contact.email = self.email
+        contact.phone_country = self.phone_country
+        contact.phone = self.phone
+        contact.normalized_phone = self.normalized_phone
         contact.is_subscribed_for_email_updates = opt_in
         db.session.commit()
         return contact
@@ -366,11 +374,12 @@ class CreateCompany:
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_company = models.Company(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             name=self.name,
             short_name=self.short_name,
             currency=self.currency,
@@ -391,10 +400,11 @@ class UpdateCompany:
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         company = models.Company.get(self.short_name)
-        company.updated_at = datetime.utcnow()
+        company.updated_at = self.timestamp
         company.name = self.name
         company.currency = self.currency
 
@@ -420,12 +430,13 @@ class CreateCancellationPolicy:
     cp_id = attr.ib(type=int)
     cutoff = attr.ib(type=datetime)
     cancellation_type = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_cp = models.EffectiveCancellationPolicy(
             id=self.cp_id,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             cutoff=self.cutoff,
             cancellation_type=self.cancellation_type,
         )
@@ -439,11 +450,13 @@ class UpdateCancellationPolicy:
     cp_id = attr.ib(type=int)
     cutoff = attr.ib(type=datetime)
     cancellation_type = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         cp = models.EffectiveCancellationPolicy.get(self.cp_id)
         cp.cutoff = self.cutoff
         cp.cancellation_type = self.cancellation_type
+        cp.updated_at = self.timestamp
 
         db.session.commit()
         return cp
@@ -466,12 +479,13 @@ class CreateCheckinStatus:
     checkin_status_id = attr.ib(type=int)
     checkin_status_type = attr.ib(type=str)
     name = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_checkin_status = models.CheckinStatus(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
             id=self.checkin_status_id,
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             checkin_status_type=self.checkin_status_type,
             name=self.name
         )
@@ -485,10 +499,11 @@ class UpdateCheckinStatus:
     checkin_status_id = attr.ib(type=int)
     checkin_status_type = attr.ib(type=str)
     name = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         checkin_status = models.CheckinStatus.get(self.checkin_status_id)
-        checkin_status.updated_at = datetime.utcnow()
+        checkin_status.updated_at = self.timestamp
         checkin_status.checkin_status_type = self.checkin_status_type
         checkin_status.name = self.name
 
@@ -520,12 +535,13 @@ class CreateCustomer:
     checkin_status_id = attr.ib(type=int)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_customer = models.Customer(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
             id=self.customer_id,
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             checkin_url=self.checkin_url,
             checkin_status_id=self.checkin_status_id,
             customer_type_rate_id=self.customer_type_rate_id,
@@ -543,10 +559,11 @@ class UpdateCustomer:
     checkin_status_id = attr.ib(type=int)
     customer_type_rate_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         customer = models.Customer.get(self.customer_id)
-        customer.updated_at = datetime.utcnow()
+        customer.updated_at = self.timestamp
         customer.checkin_url = self.checkin_url
         customer.checkin_status_id = self.checkin_status_id
         customer.customer_type_rate_id = self.customer_type_rate_id
@@ -576,11 +593,12 @@ class CreateCustomerTypeRate:
     customer_type_id = attr.ib(type=int)
     total = attr.ib(type=int)
     total_including_tax = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_customer_type_rate = models.CustomerTypeRate(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             id=self.ctr_id,
             capacity=self.capacity,
             minimum_party_size=self.minimum_party_size,
@@ -607,10 +625,11 @@ class UpdateCustomerTypeRate:
     availability_id = attr.ib(type=int)
     customer_prototype_id = attr.ib(type=int)
     customer_type_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         ctr = models.CustomerTypeRate.get(self.ctr_id)
-        ctr.updated_at = datetime.utcnow()
+        ctr.updated_at = self.timestamp
         ctr.capacity = self.capacity
         ctr.minimum_party_size = self.minimum_party_size
         ctr.maximum_party_size = self.maximum_party_size
@@ -640,11 +659,12 @@ class CreateCustomerPrototype:
     total_including_tax = attr.ib(type=int)
     display_name = attr.ib(type=str)
     note = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_customer_prototype = models.CustomerPrototype(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             id=self.customer_prototype_id,
             total=self.total,
             total_including_tax=self.total_including_tax,
@@ -663,10 +683,11 @@ class UpdateCustomerPrototype:
     total_including_tax = attr.ib(type=int)
     display_name = attr.ib(type=str)
     note = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         customer_prototype = models.CustomerPrototype.get(self.customer_prototype_id)
-        customer_prototype.updated_at = datetime.utcnow()
+        customer_prototype.updated_at = self.timestamp
         customer_prototype.total = self.total
         customer_prototype.total_including_tax = self.total_including_tax
         customer_prototype.display_name = self.display_name
@@ -692,12 +713,13 @@ class CreateCustomerType:
     note = attr.ib(type=str)
     singular = attr.ib(type=str)
     plural = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_customer_type = models.CustomerType(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
             id=self.customer_type_id,
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             note=self.note,
             singular=self.singular,
             plural=self.plural,
@@ -713,10 +735,11 @@ class UpdateCustomerType:
     note = attr.ib(type=str)
     singular = attr.ib(type=str)
     plural = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         customer_type = models.CustomerType.get(self.customer_type_id)
-        customer_type.updated_at = datetime.utcnow()
+        customer_type.updated_at = self.timestamp
         customer_type.note = self.note
         customer_type.singular = self.singular
         customer_type.plural = self.plural
@@ -760,13 +783,14 @@ class CreateCustomField:
     is_taxable = attr.ib(type=bool)
     is_always_per_customer = attr.ib(type=bool)
 
+    timestamp = attr.ib(type=datetime)
     extended_options = attr.ib(type=int, default=None)
 
     def run(self):
         new_custom_field = models.CustomField(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
             id=self.custom_field_id,
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             title=self.title,
             name=self.name,
             modifier_kind=self.modifier_kind,
@@ -810,11 +834,12 @@ class UpdateCustomField:
     is_taxable = attr.ib(type=bool)
     is_always_per_customer = attr.ib(type=bool)
 
+    timestamp = attr.ib(type=datetime)
     extended_options = attr.ib(type=int, default=None)
 
     def run(self):
         cf = models.CustomField.get(self.custom_field_id)
-        cf.updated_at = datetime.utcnow()
+        cf.updated_at = self.timestamp
         cf.title = self.title
         cf.name = self.name
         cf.modifier_kind = self.modifier_kind
@@ -851,12 +876,13 @@ class CreateCustomFieldInstance:
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
     customer_type_rate_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_custom_field_instance = models.CustomFieldInstance(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
             id=self.custom_field_instance_id,
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             custom_field_id=self.custom_field_id,
             availability_id=self.availability_id,
             customer_type_rate_id=self.customer_type_rate_id,
@@ -873,12 +899,13 @@ class UpdateCustomFieldInstance:
     custom_field_id = attr.ib(type=int)
     availability_id = attr.ib(type=int)
     customer_type_rate_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         custom_field_instance = models.CustomFieldInstance.get(
             self.custom_field_instance_id
         )
-        custom_field_instance.updated_at = datetime.utcnow(),
+        custom_field_instance.updated_at = self.timestamp
         custom_field_instance.custom_field_id = self.custom_field_id
         custom_field_instance.availability_id = self.availability_id
         custom_field_instance.customer_type_rate_id = self.customer_type_rate_id
@@ -906,12 +933,13 @@ class CreateCustomFieldValue:
     custom_field_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
     customer_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         new_custom_field_value = models.CustomFieldValue(
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
             id=self.custom_field_value_id,
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
             name=self.name,
             value=self.value,
             display_value=self.display_value,
@@ -934,10 +962,11 @@ class UpdateCustomFieldValue:
     custom_field_id = attr.ib(type=int)
     booking_id = attr.ib(type=int)
     customer_id = attr.ib(type=int)
+    timestamp = attr.ib(type=datetime)
 
     def run(self):
         cfv = models.CustomFieldValue.get(self.custom_field_value_id)
-        cfv.updated_at = datetime.utcnow()
+        cfv.updated_at = self.timestamp
         cfv.name = self.name
         cfv.value = self.value
         cfv.display_value = self.display_value

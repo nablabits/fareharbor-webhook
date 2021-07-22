@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from uuid import uuid4
 from random import randint
 import pytest
@@ -51,24 +51,34 @@ def database(request):
 @pytest.fixture
 def item_factory():
     random_id = randint(1, 10_000_000)
-    return model_services.CreateItem(item_id=random_id, name="foo")
-
+    return model_services.CreateItem(
+        item_id=random_id,
+        name="foo",
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
+    )
 
 @pytest.fixture
 def availability_factory(item_factory):
     s = item_factory
     s.item_id = randint(1, 10_000)
     item = s.run()
+    timestamp = datetime.now(timezone.utc) - timedelta(days=1)
 
     return model_services.CreateAvailability(
         availability_id=randint(1, 10_000_000),
+        timestamp=timestamp,
         capacity=10,
         minimum_party_size=11,
         maximum_party_size=12,
-        start_at=datetime.now(),
-        end_at=datetime.now(),
+        start_at=timestamp,
+        end_at=timestamp,
         item_id=item.id,
     )
+
+@pytest.fixture
+def file_timestamp():
+    """Return the datetime object represented by the sample filename."""
+    return datetime(2021, 7, 21, 4, 38, 50, 51856, tzinfo=timezone.utc)
 
 
 @pytest.fixture
@@ -82,6 +92,7 @@ def booking_factory(availability_factory, company_factory):
     affiliate_company = s_affiliate_company.run()
     return model_services.CreateBooking(
         booking_id=randint(1, 10_000_000),
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
         voucher_number="foo",
         display_id="bar",
         note_safe_html="baz",
@@ -129,13 +140,17 @@ def contact_factory(booking_factory):
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
 
 
 @pytest.fixture
 def company_factory():
     return model_services.CreateCompany(
-        name="foo", short_name=uuid4().hex[:30], currency="eur"
+        name="foo",
+        short_name=uuid4().hex[:30],
+        currency="eur",
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     )
 
 
@@ -146,7 +161,10 @@ def cancellation_factory(booking_factory):
     s.uuid = uuid4().hex
     b = s.run()
     return model_services.CreateCancellationPolicy(
-        cutoff=datetime.utcnow(), cancellation_type="foo", cp_id=b.id
+        cutoff=datetime.utcnow(),
+        cancellation_type="foo",
+        cp_id=b.id,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
 
 
@@ -169,11 +187,14 @@ def custom_field_factory():
         is_required=True,
         is_taxable=False,
         is_always_per_customer=False,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
 
 
 @pytest.fixture
-def custom_field_instance_factory(database, custom_field_factory, availability_factory):
+def custom_field_instance_factory(
+        database, custom_field_factory, availability_factory
+):
     cf = custom_field_factory()
     s = availability_factory
     s.availability_id = randint(1, 10_000_000),
@@ -182,7 +203,8 @@ def custom_field_instance_factory(database, custom_field_factory, availability_f
         custom_field_instance_id=randint(1, 10_000_000),
         custom_field_id=cf.id,
         availability_id=av.id,
-        customer_type_rate_id=None
+        customer_type_rate_id=None,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
 
 
@@ -199,6 +221,7 @@ def custom_field_value_factory(database, custom_field_factory, customer_factory)
         custom_field_id=custom_field_factory().id,
         booking_id=None,
         customer_id=c.id,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
 
 
@@ -207,7 +230,8 @@ def checkin_status_factory():
     return model_services.CreateCheckinStatus(
         checkin_status_id=randint(1, 10_000_000),
         checkin_status_type="checked-in",
-        name="checked in"
+        name="checked in",
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     )
 
 
@@ -224,6 +248,7 @@ def customer_factory(
         checkin_status_id=checkin_status_factory.run().id,
         customer_type_rate_id=customer_type_rate_factory().id,
         booking_id=b.id,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     )
 
 
@@ -246,6 +271,7 @@ def customer_type_rate_factory(
         total_including_tax=10,
         customer_prototype_id=customer_prototype_factory().id,
         customer_type_id=customer_type_factory().id,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
 
 
@@ -253,7 +279,11 @@ def customer_type_rate_factory(
 def customer_prototype_factory():
     return model_services.CreateCustomerPrototype(
         customer_prototype_id=randint(1, 10_000_000),
-        total=10, total_including_tax=10, display_name="foo", note="bar"
+        total=10,
+        total_including_tax=10,
+        display_name="foo",
+        note="bar",
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
 
 
@@ -264,4 +294,5 @@ def customer_type_factory():
         note="foo",
         singular="bar",
         plural="baz",
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
