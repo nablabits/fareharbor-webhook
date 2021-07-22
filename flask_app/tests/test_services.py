@@ -1,18 +1,20 @@
 import json
-from datetime import date
+from datetime import date, datetime, timezone
 import pytest
 
 from fh_webhook import services, models
 
 
-def test_populate_db_creates_item(database, app):
+def test_populate_db_creates_item(database, app, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
     item = models.Item.get(159068)
     assert item.name == "Alquiler Urbana"
+    assert item.created_at == item.updated_at
+    assert item.updated_at == file_timestamp
 
 
-def test_populate_db_creates_companies(database, app):
+def test_populate_db_creates_companies(database, app, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
     company, affiliate_company = models.Company.query.all()
@@ -22,9 +24,13 @@ def test_populate_db_creates_companies(database, app):
     assert affiliate_company.name == "Civitatis - EUR"
     assert affiliate_company.short_name == "civitatiseuro"
     assert affiliate_company.currency == "eur"
+    assert affiliate_company.created_at == affiliate_company.updated_at
+    assert affiliate_company.updated_at == file_timestamp
 
 
-def test_populate_db_creates_availability(database, app, item_factory):
+def test_populate_db_creates_availability(
+        database, app, item_factory, file_timestamp
+):
     """
     Although the first test actually saves all the data contained in
     sample_data, we split the tests into manageable chunks for readability.
@@ -40,9 +46,13 @@ def test_populate_db_creates_availability(database, app, item_factory):
     assert av.maximum_party_size is None
     assert av.start_at.isoformat() == "2021-04-05T12:30:00+02:00"
     assert av.end_at.isoformat() == "2021-04-05T13:00:00+02:00"
+    assert av.created_at == av.updated_at
+    assert av.updated_at == file_timestamp
 
 
-def test_populate_db_creates_booking(database, app, item_factory):
+def test_populate_db_creates_booking(
+    database, app, item_factory, file_timestamp
+):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
     b = models.Booking.get(75125154)
@@ -60,6 +70,8 @@ def test_populate_db_creates_booking(database, app, item_factory):
     assert b.note == ""
     assert b.pickup is None
     assert b.status == "booked"
+    assert b.created_at == b.updated_at
+    assert b.updated_at == file_timestamp
     assert b.availability_id == 619118440
     assert b.company_id == company.id
     assert b.affiliate_company_id == affiliate_company.id
@@ -82,7 +94,7 @@ def test_populate_db_creates_booking(database, app, item_factory):
     assert b.order["display_id"] == "BBVBQV"
 
 
-def test_populate_db_creates_contact(database, app):
+def test_populate_db_creates_contact(database, app, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
@@ -93,18 +105,24 @@ def test_populate_db_creates_contact(database, app):
     assert contact.normalized_phone == "+34444"
     assert contact.phone == "44444"
     assert contact.email == "foo@bar.baz"
+    assert contact.created_at == contact.updated_at
+    assert contact.updated_at == file_timestamp
 
 
-def test_populate_db_creates_cancellation_policy(database, app):
+def test_populate_db_creates_cancellation_policy(
+    database, app, file_timestamp
+):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
     cp = models.EffectiveCancellationPolicy.get(75125154)
     assert cp.cutoff.isoformat() == "2021-04-03T12:30:00+02:00"
     assert cp.cancellation_type == "hours-before-start"
+    assert cp.created_at == cp.updated_at
+    assert cp.updated_at == file_timestamp
 
 
-def test_populate_db_creates_customer_types(database, app):
+def test_populate_db_creates_customer_types(database, app, file_timestamp):
     """
     Note that, 314999 is duplicated as it's the chosen one among availability
     possible customer types.
@@ -119,9 +137,13 @@ def test_populate_db_creates_customer_types(database, app):
     assert ct.note == "Todas las edades"
     assert ct.singular == "D\\u00eda extra"
     assert ct.plural == "D\\u00edas extras"
+    assert ct.created_at == ct.updated_at
+    assert ct.updated_at == file_timestamp
 
 
-def test_populate_db_creates_customer_prototypes(database, app):
+def test_populate_db_creates_customer_prototypes(
+    database, app, file_timestamp
+):
     """
     As with customer types, note that 655990 is duplicated as it's the chosen
     one among availability possible customer prototypes.
@@ -137,9 +159,13 @@ def test_populate_db_creates_customer_prototypes(database, app):
     assert ctp.total == 826
     assert ctp.total_including_tax == 1000
     assert ctp.display_name == "D\\u00eda extra"
+    assert ctp.created_at == ctp.updated_at
+    assert ctp.updated_at == file_timestamp
 
 
-def test_populate_db_creates_customer_type_rates(database, app):
+def test_populate_db_creates_customer_type_rates(
+    database, app, file_timestamp
+):
     """
     As with customer types, note that 2576873546 is duplicated as it's the
     chosen one among availability possible customer type rates.
@@ -159,27 +185,33 @@ def test_populate_db_creates_customer_type_rates(database, app):
     assert ctp.maximum_party_size is None
     assert ctp.total_including_tax == 1500
     assert ctp.total == 1240
+    assert ctp.created_at == ctp.updated_at
+    assert ctp.updated_at == file_timestamp
 
 
-def test_populate_db_creates_checkin_status(database, app):
+def test_populate_db_creates_checkin_status(database, app, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
     checkin_status = models.CheckinStatus.get(83803)
     assert checkin_status.checkin_status_type == "checked-in"
     assert checkin_status.name == "checked in"
+    assert checkin_status.created_at == checkin_status.updated_at
+    assert checkin_status.updated_at == file_timestamp
 
 
-def test_populate_db_creates_customer(database, app):
+def test_populate_db_creates_customer(database, app, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
     customer = models.Customer.get(224262373)
     assert customer.checkin_url == "https://fhchk.co/faYT3"
     assert customer.checkin_status_id == 83803
+    assert customer.created_at == customer.updated_at
+    assert customer.updated_at == file_timestamp
 
 
-def test_populate_db_creates_custom_field(database, app):
+def test_populate_db_creates_custom_field(database, app, file_timestamp):
     """There were 22 custom fields attempted to save."""
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
@@ -203,21 +235,29 @@ def test_populate_db_creates_custom_field(database, app):
     assert cf.field_type == "yes-no"
     assert cf.is_always_per_customer is False
     assert cf.name == "Pago Bono"
+    assert cf.created_at == cf.updated_at
+    assert cf.updated_at == file_timestamp
 
 
-def test_populate_db_creates_custom_field_instance(database, app):
+def test_populate_db_creates_custom_field_instance(
+    database, app, file_timestamp
+):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
     custom_field_instance_ids = (
         4050488, 4050489, 2379541, 4050530, 3963212, 4050531, 3950663, )
     for cfi_id in custom_field_instance_ids:
-        models.CustomFieldInstance.get(cfi_id)
+        cfi = models.CustomFieldInstance.get(cfi_id)
     saved_instances = len(models.CustomFieldInstance.query.all())
     assert saved_instances == len(custom_field_instance_ids)
+    assert cfi.created_at == cfi.updated_at
+    assert cfi.updated_at == file_timestamp
 
 
-def test_populate_db_creates_custom_field_values(database, app):
+def test_populate_db_creates_custom_field_values(
+    database, app, file_timestamp
+):
     """In the sample all the custom field values are under bookings."""
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
@@ -233,4 +273,6 @@ def test_populate_db_creates_custom_field_values(database, app):
     assert cfv.value == ""
     assert cfv.display_value == "No"
     assert cfv.custom_field_id == 908052
+    assert cfv.created_at == cfv.updated_at
+    assert cfv.updated_at == file_timestamp
 
