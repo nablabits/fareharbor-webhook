@@ -24,7 +24,8 @@ class PopulateDB:
 
     def run(self):
         n = 0
-        for f in os.listdir(self.path):
+        files = sorted([f for f in os.listdir(self.path)])
+        for f in files:
             if f.endswith(".json"):
                 unix_timestamp = float(f.replace(".json", ""))
                 timestamp = datetime.fromtimestamp(
