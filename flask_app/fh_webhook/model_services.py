@@ -1,10 +1,43 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import attr
 
 from . import models
 from .models import db
 from .exceptions import DoesNotExist
+
+
+@attr.s
+class CreateStoredRequest:
+    """Create a new stored request object."""
+    request_id = attr.ib(type=int)
+    filename = attr.ib(type=str)
+    body = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime, default=datetime.now(timezone.utc))
+
+    def run(self):
+        new_stored_request = models.StoredRequest(
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
+            id=self.request_id,
+            filename=self.filename,
+            body=self.body,
+        )
+        db.session.add(new_stored_request)
+        db.session.commit()
+        return new_stored_request
+
+
+@attr.s
+class CloseStoredRequest:
+    """Add the processed timestamp to a stored request."""
+    stored_request = attr.ib(type=models.StoredRequest)
+    timestamp = attr.ib(type=datetime, default=datetime.now(timezone.utc))
+
+    def run(self):
+        self.stored_request.processed_at = self.timestamp
+        db.session.commit()
+        return self.stored_request
 
 
 @attr.s
