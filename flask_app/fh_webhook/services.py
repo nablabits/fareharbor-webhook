@@ -21,24 +21,43 @@ class PopulateDB:
         We need the app instance to get the path where the files are stored.
         """
         self.path = app.config.get("RESPONSES_PATH")
+        self.processed, self.skipped = 0, 0
+
+    @staticmethod
+    def _request_exists(request_id):
+        return models.StoredRequest.get_object_or_none(request_id)
+
+    @staticmethod
+    def _get_request_id(filename):
+        return int(filename.replace(".", "").replace("json", ""))
+
+    def _process_file(self, f):
+        request_id = self._get_request_id(f)
+        if f.endswith(".json") and not self._request_exists(request_id):
+            unix_timestamp = float(f.replace(".json", ""))
+            timestamp = datetime.fromtimestamp(
+                unix_timestamp, tz=timezone.utc
+            )
+            filename = os.path.join(self.path, f)
+            with open(filename, "r") as response:
+                data = json.load(response)
+            stored_request = model_services.CreateStoredRequest(
+                request_id=request_id,
+                filename=f,
+                body=json.dumps(data),
+                timestamp=timestamp,
+            ).run()
+            ProcessJSONResponse(data, timestamp).run()
+            model_services.CloseStoredRequest(stored_request).run()
+            self.processed += 1
+        else:
+            self.skipped += 1
 
     def run(self):
-        n = 0
         files = sorted([f for f in os.listdir(self.path)])
         for f in files:
-            if f.endswith(".json"):
-                unix_timestamp = float(f.replace(".json", ""))
-                timestamp = datetime.fromtimestamp(
-                    unix_timestamp, tz=timezone.utc
-                )
-                filename = os.path.join(self.path, f)
-                with open(filename, "r") as response:
-                    data = json.load(response)
-                    ProcessJSONResponse(data, timestamp).run()
-                n += 1
-            else:
-                print(f"Non json file found ({f}) in the dir, skipping...")
-        print(f"located {n} JSON files")
+            self._process_file(f)
+        print(f"Processed {self.processed} JSON files ({self.skipped} skipped)")
 
 
 @attr.s
@@ -513,5 +532,4 @@ class ProcessJSONResponse:
         self._save_cancellation_policy(b.id)
         self._save_customer_group(b.id, av.id)
         self._save_custom_field_group(av.id)
-
 
