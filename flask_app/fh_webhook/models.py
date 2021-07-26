@@ -38,6 +38,22 @@ class BaseMixin:
         return cls.query.get(id)
 
 
+class StoredRequest(db.Model, BaseMixin):
+    """
+    Store the raw content of the requests made by FH.
+
+    The target of this model is to spot files that are not correctly processed
+    as they will show created_at field but not processed_at one. Also we might
+    want to avoid processing a file twice when populating the database.
+    """
+
+    __table_name__ = "stored_request"
+    id = db.Column(db.BigInteger, primary_key=True)
+    processed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    filename = db.Column(db.String(64))
+    body = db.Column(db.Text)
+
+
 class Booking(db.Model, BaseMixin):
     """Store the information about the booking."""
 
