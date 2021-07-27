@@ -6,6 +6,11 @@ from . import models, model_services
 import attr
 
 
+def get_request_id(filename):
+    """Get a unique id out of a filename."""
+    return int(filename.replace(".", "").replace("json", ""))
+
+
 class PopulateDB:
     """
     Populate the database using json files.
@@ -27,12 +32,8 @@ class PopulateDB:
     def _request_exists(request_id):
         return models.StoredRequest.get_object_or_none(request_id)
 
-    @staticmethod
-    def _get_request_id(filename):
-        return int(filename.replace(".", "").replace("json", ""))
-
     def _process_file(self, f):
-        request_id = self._get_request_id(f)
+        request_id = get_request_id(f)
         if f.endswith(".json") and not self._request_exists(request_id):
             unix_timestamp = float(f.replace(".json", ""))
             timestamp = datetime.fromtimestamp(
@@ -533,3 +534,28 @@ class ProcessJSONResponse:
         self._save_customer_group(b.id, av.id)
         self._save_custom_field_group(av.id)
 
+
+@attr.s
+class SaveResponseAsFile:
+    """
+    Save the content of the POST method in a JSON file.
+
+    Before storing the data on the db we should know how that data looks
+    to create the tables accordingly. So we need a way to store the data
+    to inspect it.
+    """
+    json_response = attr.ib(type=dict)
+    path = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
+
+    def run(self):
+        try:
+            os.makedirs(self.path)
+        except OSError:
+            pass
+        unix_timestamp = self.timestamp.timestamp()
+        filename = str(unix_timestamp) + ".json"
+        full_path = os.path.join(self.path, filename)
+        with open(full_path, "w") as fp:
+            json.dump(self.json_response, fp)
+        return filename

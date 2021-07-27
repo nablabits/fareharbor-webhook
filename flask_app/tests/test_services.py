@@ -1,3 +1,4 @@
+import os
 import json
 from unittest.mock import patch
 from datetime import date, datetime, timezone
@@ -6,10 +7,31 @@ import pytest
 from fh_webhook import services, models
 
 
-def test_populate_db_get_request_id(app):
+def test_save_response_as_file(app):
+    json_response = dict(foo="bar", baz="gaz")
+    path = app.config.get("RESPONSES_PATH")
+    timestamp = datetime.now(timezone.utc)
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    filename = services.SaveResponseAsFile(
+        json_response, path, timestamp
+    ).run()
+
+    files_in_dir = os.listdir(path)
+    assert len(files_in_dir) == 1
+    with open(os.path.join(path, files_in_dir[0])) as json_file:
+        data = json.load(json_file)
+        assert json_response == data
+
+    assert filename == files_in_dir[0].split("/")[-1]
+
+    # purge created files
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+
+def test_get_request_id(app):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
-    service = services.PopulateDB(app)
-    assert service._get_request_id("188.12.json") == 18812
+    assert services.get_request_id("188.12.json") == 18812
 
 
 @patch("fh_webhook.services.ProcessJSONResponse.run")
