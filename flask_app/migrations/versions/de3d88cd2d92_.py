@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 4e4e836efefe
+Revision ID: de3d88cd2d92
 Revises: 
-Create Date: 2021-07-24 16:50:14.474950
+Create Date: 2021-07-26 20:14:15.363817
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '4e4e836efefe'
+revision = 'de3d88cd2d92'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,7 +31,7 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('name', sa.String(length=256), nullable=False),
-    sa.Column('short_name', sa.String(length=30), nullable=False),
+    sa.Column('short_name', sa.String(length=64), nullable=False),
     sa.Column('currency', sa.String(length=10), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('short_name')
@@ -82,6 +82,15 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('name', sa.String(length=200), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('stored_request',
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('processed_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('filename', sa.String(length=64), nullable=True),
+    sa.Column('body', sa.Text(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('availability',
@@ -230,6 +239,7 @@ def downgrade():
     op.drop_table('customer_type_rate')
     op.drop_table('booking')
     op.drop_table('availability')
+    op.drop_table('stored_request')
     op.drop_table('item')
     op.drop_table('customer_type')
     op.drop_table('customer_prototype')

@@ -354,7 +354,7 @@ class Company(db.Model, BaseMixin):
     __table_name__ = "company"
     id = db.Column(db.BigInteger, primary_key=True)
     name = db.Column(db.String(256), nullable=False)
-    short_name = db.Column(db.String(30), nullable=False, unique=True)
+    short_name = db.Column(db.String(64), nullable=False, unique=True)
     currency = db.Column(db.String(10), nullable=False)
 
     @classmethod
