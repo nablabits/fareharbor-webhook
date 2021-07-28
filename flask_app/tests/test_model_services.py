@@ -10,6 +10,37 @@ from fh_webhook.exceptions import DoesNotExist
 from sqlalchemy.exc import IntegrityError
 
 
+def test_create_stored_request(database):
+    timestamp = datetime.now(timezone.utc)
+    unix_timestamp = str(timestamp.timestamp())
+    request_id = int(unix_timestamp.replace(".", ""))
+    filename = unix_timestamp + ".json"
+    body = '{"foo": "bar", "baz": "gaz"}'
+    service = model_services.CreateStoredRequest(
+        request_id=request_id,
+        filename=filename,
+        body=body,
+        timestamp=timestamp,
+    )
+    stored_request = service.run()
+    assert stored_request.id == request_id
+    assert stored_request.created_at == timestamp
+    assert stored_request.updated_at == timestamp
+    assert stored_request.filename == filename
+    assert stored_request.body == body
+    assert stored_request.processed_at is None
+
+
+def test_close_stored_request(database, stored_request_factory):
+    open_stored_request = stored_request_factory.run()
+    assert open_stored_request.processed_at is None
+    model_services.CloseStoredRequest(open_stored_request).run()
+
+    stored_request = models.StoredRequest.get(open_stored_request.id)
+    assert stored_request.processed_at is not None
+    assert stored_request.created_at != stored_request.processed_at
+
+
 def test_create_item(database):
     random_id = randint(1, 10_000_000)
     timestamp = datetime.now(timezone.utc)

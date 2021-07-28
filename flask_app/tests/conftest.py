@@ -49,6 +49,17 @@ def database(request):
 
 
 @pytest.fixture
+def stored_request_factory():
+    timestamp = datetime.now(timezone.utc) - timedelta(minutes=1)
+    unix_timestamp = str(timestamp.timestamp())
+    return model_services.CreateStoredRequest(
+        request_id=int(unix_timestamp.replace(".", "")),
+        filename=unix_timestamp + ".json",
+        body='{"foo": "bar", "baz": "gaz"}',
+        timestamp=timestamp,
+    )
+
+@pytest.fixture
 def item_factory():
     random_id = randint(1, 10_000_000)
     return model_services.CreateItem(

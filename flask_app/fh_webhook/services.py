@@ -6,6 +6,11 @@ from . import models, model_services
 import attr
 
 
+def get_request_id(filename):
+    """Get a unique id out of a filename."""
+    return int(filename.replace(".", "").replace("json", ""))
+
+
 class PopulateDB:
     """
     Populate the database using json files.
@@ -21,23 +26,39 @@ class PopulateDB:
         We need the app instance to get the path where the files are stored.
         """
         self.path = app.config.get("RESPONSES_PATH")
+        self.processed, self.skipped = 0, 0
+
+    @staticmethod
+    def _request_exists(request_id):
+        return models.StoredRequest.get_object_or_none(request_id)
+
+    def _process_file(self, f):
+        request_id = get_request_id(f)
+        if f.endswith(".json") and not self._request_exists(request_id):
+            unix_timestamp = float(f.replace(".json", ""))
+            timestamp = datetime.fromtimestamp(
+                unix_timestamp, tz=timezone.utc
+            )
+            filename = os.path.join(self.path, f)
+            with open(filename, "r") as response:
+                data = json.load(response)
+            stored_request = model_services.CreateStoredRequest(
+                request_id=request_id,
+                filename=f,
+                body=json.dumps(data),
+                timestamp=timestamp,
+            ).run()
+            ProcessJSONResponse(data, timestamp).run()
+            model_services.CloseStoredRequest(stored_request).run()
+            self.processed += 1
+        else:
+            self.skipped += 1
 
     def run(self):
-        n = 0
-        for f in os.listdir(self.path):
-            if f.endswith(".json"):
-                unix_timestamp = float(f.replace(".json", ""))
-                timestamp = datetime.fromtimestamp(
-                    unix_timestamp, tz=timezone.utc
-                )
-                filename = os.path.join(self.path, f)
-                with open(filename, "r") as response:
-                    data = json.load(response)
-                    ProcessJSONResponse(data, timestamp).run()
-                n += 1
-            else:
-                print(f"Non json file found ({f}) in the dir, skipping...")
-        print(f"located {n} JSON files")
+        files = sorted([f for f in os.listdir(self.path)])
+        for f in files:
+            self._process_file(f)
+        print(f"Processed {self.processed} JSON files ({self.skipped} skipped)")
 
 
 @attr.s
@@ -514,3 +535,27 @@ class ProcessJSONResponse:
         self._save_custom_field_group(av.id)
 
 
+@attr.s
+class SaveResponseAsFile:
+    """
+    Save the content of the POST method in a JSON file.
+
+    Before storing the data on the db we should know how that data looks
+    to create the tables accordingly. So we need a way to store the data
+    to inspect it.
+    """
+    json_response = attr.ib(type=dict)
+    path = attr.ib(type=str)
+    timestamp = attr.ib(type=datetime)
+
+    def run(self):
+        try:
+            os.makedirs(self.path)
+        except OSError:
+            pass
+        unix_timestamp = self.timestamp.timestamp()
+        filename = str(unix_timestamp) + ".json"
+        full_path = os.path.join(self.path, filename)
+        with open(full_path, "w") as fp:
+            json.dump(self.json_response, fp)
+        return filename

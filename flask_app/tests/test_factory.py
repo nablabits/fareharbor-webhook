@@ -3,6 +3,8 @@ import os
 import base64
 import pytest
 from fh_webhook import create_app
+from fh_webhook.models import StoredRequest
+from unittest.mock import patch
 
 
 def get_headers():
@@ -12,14 +14,16 @@ def get_headers():
 
 
 def test_dummy_webhook_only_accepts_POST(client):
-    response = client.get("/test_webhook", headers=get_headers())
+    path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    response = client.get("/", headers=get_headers())
     assert response.status == "405 METHOD NOT ALLOWED"
 
-    response = client.post("/test_webhook", headers=get_headers())
+    response = client.post("/", headers=get_headers())
     assert response.status_code == 400  # Since the request was empty
 
     # purge created files
-    path = client.application.config.get("RESPONSES_PATH")
     [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
 
@@ -27,7 +31,7 @@ def test_dummy_webhook_auth_error(client):
     wrong_user = base64.b64encode(b"void:test").decode("utf-8")
     headers = {"Authorization": "Basic " + wrong_user}
     response = client.post(
-        "/test_webhook",
+        "/",
         json={
             "name": "foo",
             "age": 45,
@@ -40,7 +44,7 @@ def test_dummy_webhook_auth_error(client):
 
     headers = {"Authorization": "Basic " + wrong_user}
     response = client.post(
-        "/test_webhook",
+        "/",
         json={
             "name": "foo",
             "age": 45,
@@ -52,14 +56,16 @@ def test_dummy_webhook_auth_error(client):
     assert response.data == b"Unauthorized Access"
 
 
-def test_dummy_webhook_saves_content_to_a_file(client):
+@patch("fh_webhook.services.ProcessJSONResponse.run")
+def test_dummy_webhook_saves_content_to_a_file(service, client, database):
     path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
     data = {
         "name": "foo",
         "age": 45,
     }
     response = client.post(
-        "/test_webhook",
+        "/",
         headers=get_headers(),
         json=data,
     )
@@ -71,6 +77,9 @@ def test_dummy_webhook_saves_content_to_a_file(client):
         data = json.load(json_file)
         assert data == data
 
+    assert service.call_count == 1
+    assert len(StoredRequest.query.all()) == 1
+
     # purge created files
     [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
@@ -78,7 +87,7 @@ def test_dummy_webhook_saves_content_to_a_file(client):
 def test_dummy_webhook_trows_empty_requests_to_a_log(client):
     path = client.application.config.get("RESPONSES_PATH")
     response = client.post(
-        "/test_webhook",
+        "/",
         headers=get_headers(),
     )
 

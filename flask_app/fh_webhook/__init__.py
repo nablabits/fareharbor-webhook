@@ -1,12 +1,14 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import Flask, request, Response
 from flask_migrate import Migrate
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import db
+from .model_services import CreateStoredRequest, CloseStoredRequest
+from .services import ProcessJSONResponse, SaveResponseAsFile, get_request_id
 
 from decouple import config
 
@@ -43,48 +45,39 @@ def create_app(test_config=False):
         if user_exists and check_password_hash(users.get(username), password):
             return username
 
-    @app.route("/test_webhook", methods=["POST"])
+    @app.route("/", methods=["POST"])
     @auth.login_required
     def save_content():
-        """Save the content of the POST method in a JSON file.
-
-        If the response is empty it logs the event.
-
-        Before storing the data on the db we should know how that data looks
-        to create the tables accordingly. So we need a way to store the data
-        to inspect it.
-        """
+        """Process the requests made by FH."""
         path = app.config.get("RESPONSES_PATH")
-        try:
-            os.makedirs(path)
-        except OSError:
-            pass
-        now = datetime.now()
-        if request.json:
-            # Save the request in a json file
-            name = str(now.timestamp()) + ".json"
-            filename = os.path.join(path, name)
-            with open(filename, "w") as fp:
-                json.dump(request.json, fp)
-
-            # Here goes the process that saves on the fly the response content
-            # right in the database. For the first months we might want also to
-            # keep the file functionality just in case.
-            # request.json is a python object we can just pass to ProcessJSONResponse
-
+        json_response = request.json
+        timestamp = datetime.now(timezone.utc)
+        if json_response:
+            filename = SaveResponseAsFile(json_response, path, timestamp).run()
         else:
+            # Log this in a proper way.
             with open(os.path.join(path, "errors.log"), "a") as f:
-                f.write("{} - the request was empty\n".format(now))
+                f.write("{} - the request was empty\n".format(datetime.now()))
             return Response("The request was empty", status=400)
+
+        stored_request = CreateStoredRequest(
+            request_id=get_request_id(filename),
+            filename=filename,
+            body=json.dumps(json_response),
+            timestamp=timestamp,
+        ).run()
+        ProcessJSONResponse(json_response, timestamp).run()
+        CloseStoredRequest(stored_request).run()
 
         return Response(status=200)
 
     @app.route("/webhook", methods=["POST"])
     def respond():
         """Future official entry point."""
+
         return Response(status=200)
 
-    @app.route("/", methods=["GET"])
+    @app.route("/test", methods=["GET"])
     def index():
         """Quick check that the server is running."""
         app_name = os.getenv("APP_NAME")

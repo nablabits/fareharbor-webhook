@@ -1,8 +1,67 @@
+import os
 import json
+from unittest.mock import patch
 from datetime import date, datetime, timezone
 import pytest
 
 from fh_webhook import services, models
+
+
+def test_save_response_as_file(app):
+    json_response = dict(foo="bar", baz="gaz")
+    path = app.config.get("RESPONSES_PATH")
+    timestamp = datetime.now(timezone.utc)
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    filename = services.SaveResponseAsFile(
+        json_response, path, timestamp
+    ).run()
+
+    files_in_dir = os.listdir(path)
+    assert len(files_in_dir) == 1
+    with open(os.path.join(path, files_in_dir[0])) as json_file:
+        data = json.load(json_file)
+        assert json_response == data
+
+    assert filename == files_in_dir[0].split("/")[-1]
+
+    # purge created files
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+
+def test_get_request_id(app):
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    assert services.get_request_id("188.12.json") == 18812
+
+
+@patch("fh_webhook.services.ProcessJSONResponse.run")
+def test_process_file_skips_non_json_files(mock_service, app):
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    service = services.PopulateDB(app)
+    service._process_file("188.12")
+    assert mock_service.call_count == 0
+
+
+@patch("fh_webhook.services.ProcessJSONResponse.run")
+def test_process_file_skips_existing_files(
+    mock_service, database, app, stored_request_factory
+):
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    stored_request = stored_request_factory.run()
+    service = services.PopulateDB(app)
+    service._process_file(stored_request.filename)
+    assert mock_service.call_count == 0
+
+
+def test_populate_db_creates_stored_request(database, app, file_timestamp):
+    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    services.PopulateDB(app).run()
+    request_id = 1626842330051856
+    stored_request = models.StoredRequest.get(request_id)
+    assert stored_request.filename == "1626842330.051856.json"
+    assert stored_request.processed_at is not None
+    assert stored_request.body[:20] == '{"booking": {"vouche'
+    assert stored_request.body[-20:] == 'lay_id": "BBVBQV"}}}'
 
 
 def test_populate_db_creates_item(database, app, file_timestamp):
