@@ -31,7 +31,7 @@ def test_save_response_as_file(app):
 
 def test_get_request_id(app):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
-    assert services.get_request_id("188.12.json") == 18812
+    assert services.get_request_id_or_none("188.12.json") == 18812
 
 
 @patch("fh_webhook.services.ProcessJSONResponse.run")

@@ -6,9 +6,10 @@ from . import models, model_services
 import attr
 
 
-def get_request_id(filename):
+def get_request_id_or_none(filename):
     """Get a unique id out of a filename."""
-    return int(filename.replace(".", "").replace("json", ""))
+    if filename.endswith(".json"):
+        return int(filename.replace(".", "").replace("json", ""))
 
 
 class PopulateDB:
@@ -33,8 +34,8 @@ class PopulateDB:
         return models.StoredRequest.get_object_or_none(request_id)
 
     def _process_file(self, f):
-        request_id = get_request_id(f)
-        if f.endswith(".json") and not self._request_exists(request_id):
+        request_id = get_request_id_or_none(f)
+        if request_id and not self._request_exists(request_id):
             unix_timestamp = float(f.replace(".json", ""))
             timestamp = datetime.fromtimestamp(
                 unix_timestamp, tz=timezone.utc

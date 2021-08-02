@@ -8,7 +8,9 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import db
 from .model_services import CreateStoredRequest, CloseStoredRequest
-from .services import ProcessJSONResponse, SaveResponseAsFile, get_request_id
+from .services import (
+    ProcessJSONResponse, SaveResponseAsFile, get_request_id_or_none
+)
 
 from decouple import config
 
@@ -61,7 +63,7 @@ def create_app(test_config=False):
             return Response("The request was empty", status=400)
 
         stored_request = CreateStoredRequest(
-            request_id=get_request_id(filename),
+            request_id=get_request_id_or_none(filename),
             filename=filename,
             body=json.dumps(json_response),
             timestamp=timestamp,
