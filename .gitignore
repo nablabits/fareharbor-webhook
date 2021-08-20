@@ -21,6 +21,9 @@ htmlcov/
 # Exclude response objects
 flask_app/fh_webhook/responses
 
+# migrations seem to be machine unique
+flask_app/migrations
+
 dist/
 build/
 *.egg-info/
