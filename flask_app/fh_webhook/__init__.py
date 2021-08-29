@@ -58,7 +58,7 @@ def create_app(test_config=False):
         if json_response:
             filename = SaveResponseAsFile(json_response, path, timestamp).run()
         else:
-            # Log this in a proper way.
+            # TODO: Log this in a proper way.
             with open(os.path.join(path, "errors.log"), "a") as f:
                 f.write("{} - the request was empty\n".format(datetime.now()))
             return Response("The request was empty", status=400)
@@ -69,7 +69,20 @@ def create_app(test_config=False):
             body=json.dumps(json_response),
             timestamp=timestamp,
         ).run()
-        ProcessJSONResponse(json_response, timestamp).run()
+        try:
+            ProcessJSONResponse(json_response, timestamp).run()
+        except KeyError as e:
+            # It can happen that we got less data than expected
+            # TODO: Log this in a proper way.
+            with open(os.path.join(path, "errors.log"), "a") as f:
+                f.write(
+                    f"{datetime.now()} - the request was missing data " +
+                    f"(stored_request_id={stored_request.id}, error={e.args})"
+                )
+            return Response(
+                f"The request was missing data. ({e.args})",
+                status=400)
+
         CloseStoredRequest(stored_request).run()
 
         # Finally check for new keys that FH friends could skneakily insert.
