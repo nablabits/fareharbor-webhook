@@ -9,7 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .models import db
 from .model_services import CreateStoredRequest, CloseStoredRequest
 from .services import (
-    ProcessJSONResponse, SaveResponseAsFile, get_request_id_or_none
+    ProcessJSONResponse, SaveResponseAsFile, get_request_id_or_none,
+    CheckForNewKeys
 )
 
 from decouple import config
@@ -70,6 +71,14 @@ def create_app(test_config=False):
         ).run()
         ProcessJSONResponse(json_response, timestamp).run()
         CloseStoredRequest(stored_request).run()
+
+        # Finally check for new keys that FH friends could skneakily insert.
+        new_keys = CheckForNewKeys(json_response).run()
+        if new_keys:
+            # TODO: Log this in a proper way.
+            with open(os.path.join(path, "new_keys.log"), "a") as f:
+                for key, name in new_keys:
+                    f.write(f"{name}, {key}, {datetime.now()}")
 
         return Response(status=200)
 
