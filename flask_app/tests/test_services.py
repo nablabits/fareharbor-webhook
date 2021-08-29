@@ -335,3 +335,237 @@ def test_populate_db_creates_custom_field_values(
     assert cfv.created_at == cfv.updated_at
     assert cfv.updated_at == file_timestamp
 
+
+def test_check_for_new_keys_detects_booking_new_key():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    data["booking"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("booking", "new_key")]
+
+
+def test_check_for_new_keys_detects_customer_new_key():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    data["booking"]["customers"][0]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("customer", "new_key")]
+
+
+def test_check_for_new_keys_detects_checkin_new_key():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    customer = data["booking"]["customers"][0]
+    customer["checkin_status"] = {"new_key": "some_value"}
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("checkin status", "new_key")]
+
+
+def test_check_for_new_keys_detects_custom_field_values_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    customer = data["booking"]["customers"][0]
+    cfv = customer["custom_field_values"]
+    cfv.append({
+        "custom_field": {
+            "new_custom_field_key": "some_value",
+            "extended_options": [
+                {"new_extended_option_key": "some_value", },
+            ],
+        },
+        "new_key": "some_value",
+    })
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [
+        ("custom field values", "new_key"),
+        ("custom field", "new_custom_field_key"),
+        ("extended options", "new_extended_option_key"),
+    ]
+
+
+def test_check_for_new_keys_detects_customer_type_rates_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    customer = data["booking"]["customers"][0]
+    ctr = customer["customer_type_rate"]
+
+    ctr["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("customer type rate", "new_key")]
+
+
+def test_check_for_new_keys_detects_customer_prototype_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    ctr = data["booking"]["customers"][0]["customer_type_rate"]
+
+    ctr["customer_prototype"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("customer prototype", "new_key")]
+
+
+def test_check_for_new_keys_detects_customer_type_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    ctr = data["booking"]["customers"][0]["customer_type_rate"]
+
+    ctr["customer_type"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("customer type", "new_key")]
+
+
+def test_check_for_new_keys_detects_availability_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    data["booking"]["availability"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("availability", "new_key")]
+
+
+def test_check_for_new_keys_detects_items_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    data["booking"]["availability"]["item"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("item", "new_key")]
+
+
+def test_check_for_new_keys_detects_customer_type_rates_new_keys_under_availability():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    ctr = data["booking"]["availability"]["customer_type_rates"][0]
+    ctr["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("customer type rate", "new_key")]
+
+
+def test_check_for_new_keys_detects_customer_prototype_new_keys_under_availability():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    ctr = data["booking"]["availability"]["customer_type_rates"][0]
+    ctr["customer_prototype"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("customer prototype", "new_key")]
+
+
+def test_check_for_new_keys_detects_customer_type_new_keys_under_availability():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    ctr = data["booking"]["availability"]["customer_type_rates"][0]
+    ctr["customer_type"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("customer type", "new_key")]
+
+
+def test_check_for_new_keys_detects_custom_field_instances_new_keys_under_availability():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    ctr = data["booking"]["availability"]["customer_type_rates"][0]
+    cfi = ctr["custom_field_instances"]
+    cfi.append({
+        "custom_field": {
+            "new_custom_field_key": "some_value",
+            "extended_options": [
+                {"new_extended_option_key": "some_value", },
+            ],
+        },
+        "new_key": "some_value",
+    })
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [
+        ("custom field instance", "new_key"),
+        ("custom field", "new_custom_field_key"),
+        ("extended options", "new_extended_option_key"),
+    ]
+
+
+def test_check_for_new_keys_detects_affiliate_company_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    affiliate_company = data["booking"]["affiliate_company"]
+    affiliate_company["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("affiliate company", "new_key")]
+
+
+def test_check_for_new_keys_detects_company_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    affiliate = data["booking"]["company"]
+    affiliate["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("company", "new_key")]
+
+
+def test_check_for_new_keys_detects_custom_field_values_new_keys_under_booking():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    cfv = data["booking"]["custom_field_values"]
+
+    cfv.append({
+        "custom_field": {
+            "new_custom_field_key": "some_value",
+            "extended_options": [
+                {"new_extended_option_key": "some_value", },
+            ],
+        },
+        "new_key": "some_value",
+    })
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [
+        ("custom field value", "new_key"),
+        ("custom field", "new_custom_field_key"),
+        ("extended options", "new_extended_option_key"),
+    ]
+
+
+def test_check_for_new_keys_detects_cancellation_policy_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    data["booking"]["effective_cancellation_policy"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("effective cancellation policy", "new_key")]
+
+
+def test_check_for_new_keys_detects_contact_new_keys():
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    data["booking"]["contact"]["new_key"] = "some_value"
+
+    new_keys = services.CheckForNewKeys(data).run()
+    assert new_keys == [("contact", "new_key")]

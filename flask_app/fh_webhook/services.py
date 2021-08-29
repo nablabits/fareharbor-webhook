@@ -560,3 +560,204 @@ class SaveResponseAsFile:
         with open(full_path, "w") as fp:
             json.dump(self.json_response, fp)
         return filename
+
+
+@attr.s
+class CheckForNewKeys:
+    """Find out new keys in FH responses."""
+    BOOKING_KEYS = [
+        "voucher_number", "display_id", "rebooked_to", "receipt_subtotal",
+        "receipt_total_display", "note_safe_html", "agent", "confirmation_url",
+        "customer_count", "invoice_price_display", "uuid", "dashboard_url",
+        "amount_paid_display", "note", "pickup", "pk", "status", "desk",
+        "receipt_total", "amount_paid", "receipt_subtotal_display", "arrival",
+        "is_eligible_for_cancellation", "is_subscribed_for_sms_updates",
+        "receipt_taxes", "invoice_price", "receipt_taxes_display", "contact",
+        "external_id", "order", "availability", "affiliate_company", "company",
+        "custom_field_values", "effective_cancellation_policy", "customers",
+        "rebooked_from",
+    ]
+    # Customer is a list of customers
+    CUSTOMER_KEYS = [
+        "checkin_url", "pk", "checkin_status", "custom_field_values",
+        "customer_type_rate",
+    ]
+
+    CHECKIN_STATUS_KEYS = [
+        "pk", "type", "name",
+        # New fields discovered, however for the moment we are not going to
+        # implement them as they don't have relevant information and as of
+        # today there are only  10 entries (for three different bookings) that
+        # contain these folks.
+        "sortable_index", "company", "uri", "unicode", "is_hidden", "cls",
+    ]
+
+    CUSTOM_FIELD_VALUES_KEYS = ["pk", "custom_field", "name", "value",
+                                "display_value", "extended_options", ]
+
+    CUSTOM_FIELD_INSTANCES_KEYS = ["pk", "custom_field", ]
+
+    CUSTOM_FIELD_KEYS = [
+        "is_required", "description", "title", "booking_notes_safe_html",
+        "is_taxable", "modifier_kind", "description_safe_html", "offset",
+        "booking_notes_safe_html", "booking_notes", "pk", "percentage",
+        "modifier_type", "type", "is_always_per_customer", "name",
+        "extended_options",
+    ]
+
+    EXTENDED_OPTIONS_KEYS = [
+        "name", "is_taxable", "modifier_kind", "description_safe_html",
+        "offset", "pk", "percentage", "modifier_type",
+        "is_always_per_customer", "description",
+    ]
+
+    CUSTOMER_TYPE_RATE_KEYS = [
+        "capacity", "minimum_party_size", "total_including_tax", "total",
+        "maximum_party_size", "pk", "customer_prototype", "customer_type",
+        "custom_field_instances",
+    ]
+
+    CUSTOMER_PROTOTYPE_KEYS = [
+        "note", "pk", "total", "display_name", "total_including_tax",
+    ]
+
+    CUSTOMER_TYPE_KEYS = ["note", "pk", "plural", "singular", ]
+
+    AVAILABILITY_KEYS = [
+        "capacity", "minimum_party_size", "customer_type_rates", "item",
+        "custom_field_instances", "maximum_party_size", "end_at", "start_at",
+        "pk", "headline",
+    ]
+
+    ITEM_KEYS = ["pk", "name", ]
+
+    COMPANY_KEYS = ["currency", "shortname", "short_name", "name", ]
+    EFFECTIVE_CANCELLATION_POLICY_KEYS = ["cutoff", "type", ]
+    CONTACT_KEYS = [
+        "phone_country", "name", "is_subscribed_for_email_updates",
+        "normalized_phone", "phone", "email", "language",
+    ]
+
+    data = attr.ib(type=dict)
+
+    def __attrs_post_init__(self):
+        self.found_keys = []
+
+    def _check_keys(self, key_items, expected_keys, name):
+        """Save the keys that are not expected for later use."""
+        for key in key_items:
+            if key not in expected_keys:
+                self.found_keys.append((name, key))
+
+    def run(self):
+        booking = self.data["booking"]
+        self._check_keys(
+            booking.keys(), self.BOOKING_KEYS, "booking"
+        )
+
+        for customer in booking["customers"]:
+            self._check_keys(customer.keys(), self.CUSTOMER_KEYS, "customer")
+            if customer["checkin_status"]:
+                self._check_keys(customer["checkin_status"].keys(),
+                                 self.CHECKIN_STATUS_KEYS, "checkin status")
+            for cfv in customer["custom_field_values"]:
+                self._check_keys(
+                    cfv.keys(), self.CUSTOM_FIELD_VALUES_KEYS,
+                    "custom field values"
+                )
+                self._check_keys(
+                    cfv["custom_field"].keys(), self.CUSTOM_FIELD_KEYS,
+                    "custom field"
+                )
+                extended_options = cfv["custom_field"].get("extended_options")
+                if extended_options:
+                    for eo in extended_options:
+                        self._check_keys(eo.keys(), self.EXTENDED_OPTIONS_KEYS,
+                                         "extended options")
+            ctr = customer["customer_type_rate"]
+            self._check_keys(ctr.keys(), self.CUSTOMER_TYPE_RATE_KEYS,
+                             "customer type rate")
+            self._check_keys(ctr["customer_prototype"],
+                             self.CUSTOMER_PROTOTYPE_KEYS, "customer prototype")
+            self._check_keys(ctr["customer_type"],
+                             self.CUSTOMER_TYPE_KEYS, "customer type")
+
+        av = booking["availability"]
+        self._check_keys(av.keys(), self.AVAILABILITY_KEYS, "availability")
+        self._check_keys(av["item"].keys(), self.ITEM_KEYS, "item")
+        for ctr in av["customer_type_rates"]:
+            self._check_keys(ctr.keys(), self.CUSTOMER_TYPE_RATE_KEYS,
+                             "customer type rate")
+            self._check_keys(
+                ctr["customer_prototype"], self.CUSTOMER_PROTOTYPE_KEYS,
+                "customer prototype"
+            )
+            self._check_keys(ctr["customer_type"],
+                             self.CUSTOMER_TYPE_KEYS, "customer type")
+            for cfi in ctr["custom_field_instances"]:
+                self._check_keys(cfi.keys(), self.CUSTOM_FIELD_INSTANCES_KEYS,
+                                 "custom field instance")
+                self._check_keys(
+                    cfi["custom_field"].keys(), self.CUSTOM_FIELD_KEYS,
+                    "custom field"
+                )
+                extended_options = cfi["custom_field"].get("extended_options")
+                if extended_options:
+                    for eo in extended_options:
+                        self._check_keys(eo.keys(), self.EXTENDED_OPTIONS_KEYS,
+                                         "extended options")
+
+        ac = booking["affiliate_company"]
+        if ac:
+            self._check_keys(
+                ac.keys(), self.COMPANY_KEYS, "affiliate company"
+            )
+
+        c = booking["company"]
+        self._check_keys(
+            c.keys(), self.COMPANY_KEYS, "company"
+        )
+
+        custom_field_values = booking["custom_field_values"]
+        for cfv in custom_field_values:
+            self._check_keys(
+                cfv.keys(), self.CUSTOM_FIELD_VALUES_KEYS, "custom field value"
+            )
+            self._check_keys(
+                cfv["custom_field"].keys(), self.CUSTOM_FIELD_KEYS,
+                "custom field"
+            )
+            extended_options = cfv["custom_field"].get("extended_options")
+            if extended_options:
+                for eo in extended_options:
+                    self._check_keys(
+                        eo.keys(), self.EXTENDED_OPTIONS_KEYS,
+                        "extended options"
+                    )
+        c_policy = booking["effective_cancellation_policy"]
+        self._check_keys(
+            c_policy.keys(), self.EFFECTIVE_CANCELLATION_POLICY_KEYS,
+            "effective cancellation policy"
+        )
+        contact = booking["contact"]
+        self._check_keys(
+            contact.keys(), self.CONTACT_KEYS, "contact"
+        )
+        return self.found_keys
+
+
+def check_files(app):
+    """
+    Scan the responses to find new keys.
+
+    A convenience method to find new keys in stored requests.
+    """
+    path = app.config.get("RESPONSES_PATH")
+    files = sorted([f for f in os.listdir(path)])
+    for f in files:
+        filename = os.path.join(path, f)
+        with open(filename, "r") as response:
+            data = json.load(response)
+        found_keys = CheckForNewKeys(data).run()
+        for name, key in found_keys:
+            print(f"found {key} inside {name}")
