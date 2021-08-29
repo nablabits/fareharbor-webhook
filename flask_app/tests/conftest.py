@@ -84,6 +84,7 @@ def availability_factory(item_factory):
         start_at=timestamp,
         end_at=timestamp,
         item_id=item.id,
+        headline="Some Headline",
     )
 
 @pytest.fixture
@@ -130,6 +131,7 @@ def booking_factory(availability_factory, company_factory):
         invoice_price_display="14",
         desk="soo",
         is_eligible_for_cancellation=True,
+        is_subscribed_for_sms_updates=True,
         arrival="sar",
         rebooked_to="saz",
         rebooked_from="woo",
@@ -152,6 +154,7 @@ def contact_factory(booking_factory):
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
         timestamp=datetime.now(timezone.utc) - timedelta(days=1),
+        language="ES",
     ).run
 
 

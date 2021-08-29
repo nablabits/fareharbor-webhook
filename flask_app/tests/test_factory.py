@@ -57,13 +57,16 @@ def test_dummy_webhook_auth_error(client):
 
 
 @patch("fh_webhook.services.ProcessJSONResponse.run")
-def test_dummy_webhook_saves_content_to_a_file(service, client, database):
+@patch("fh_webhook.services.CheckForNewKeys.run", return_value=None)
+def test_dummy_webhook_saves_content_to_a_file(
+    keys_svc, process_svc, client, database
+):
     path = client.application.config.get("RESPONSES_PATH")
     [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
-    data = {
-        "name": "foo",
-        "age": 45,
-    }
+
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
     response = client.post(
         "/",
         headers=get_headers(),
@@ -74,11 +77,127 @@ def test_dummy_webhook_saves_content_to_a_file(service, client, database):
     assert response.status_code == 200
     assert len(files_in_dir) == 1
     with open(os.path.join(path, files_in_dir[0])) as json_file:
-        data = json.load(json_file)
-        assert data == data
+        written_data = json.load(json_file)
+        assert written_data == data
 
-    assert service.call_count == 1
+    assert process_svc.call_count == 1
+    assert keys_svc.call_count == 1
     assert len(StoredRequest.query.all()) == 1
+
+    # purge created files
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+
+@patch("fh_webhook.services.ProcessJSONResponse.run")
+@patch(
+    "fh_webhook.services.SaveResponseAsFile.run",
+    return_value="1626842330.051856.json"
+)
+def test_dummy_webhook_finds_new_keys(
+    save_file_svc, process_svc, client, database
+):
+    path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    # Add some extra data
+    data["booking"]["new_key"] = "new_value"
+
+    response = client.post(
+        "/",
+        headers=get_headers(),
+        json=data,
+    )
+
+    files_in_dir = os.listdir(path)
+    assert response.status_code == 200
+    assert len(files_in_dir) == 1
+    with open(os.path.join(path, files_in_dir[0])) as error_log:
+        content = error_log.readlines()
+        assert content[0].startswith("new_key, booking")
+
+    assert process_svc.call_count == 1
+    assert save_file_svc.call_count == 1
+    assert len(StoredRequest.query.all()) == 1
+
+    # purge created files
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+
+@patch("fh_webhook.services.ProcessJSONResponse.run")
+@patch(
+    "fh_webhook.services.SaveResponseAsFile.run",
+    return_value="1626842330.051856.json"
+)
+def test_dummy_webhook_does_not_find_new_keys(
+    save_file_svc, process_svc, client, database
+):
+    path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    from fh_webhook.services import CheckForNewKeys
+
+    response = client.post(
+        "/",
+        headers=get_headers(),
+        json=data,
+    )
+
+    files_in_dir = os.listdir(path)
+    assert response.status_code == 200
+    assert not files_in_dir
+    assert process_svc.call_count == 1
+    assert save_file_svc.call_count == 1
+    assert len(StoredRequest.query.all()) == 1
+
+    # purge created files
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+
+@patch("fh_webhook.services.CheckForNewKeys.run", return_value=None)
+@patch(
+    "fh_webhook.services.SaveResponseAsFile.run",
+    return_value="1626842330.051856.json"
+)
+def test_dummy_webhook_trows_requests_with_missing_data_to_a_log(
+    process_svc, file_svc, client, database
+):
+    path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    with open("tests/sample_data/1626842330.051856.json") as f:
+        data = json.load(f)
+
+    del data["booking"]["display_id"]
+
+    response = client.post(
+        "/",
+        headers=get_headers(),
+        json=data,
+    )
+
+    files_in_dir = os.listdir(path)
+
+    sr = StoredRequest.query.first()
+
+    assert response.status_code == 400
+    response_msg = "The request was missing data. (('display_id',))"
+    assert response.data.decode() == response_msg
+    assert len(files_in_dir) == 1
+    assert process_svc.call_count == 1
+    assert files_in_dir[0] == "errors.log"
+    with open(os.path.join(path, files_in_dir[0])) as error_file:
+        content = error_file.readlines()
+        msg = (
+            f"the request was missing data (stored_request_id={sr.id}, " +
+            "error=('display_id',))"
+        )
+        assert content[0].endswith(msg)
 
     # purge created files
     [os.remove(os.path.join(path, f)) for f in os.listdir(path)]

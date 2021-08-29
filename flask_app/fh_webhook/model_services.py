@@ -101,6 +101,7 @@ class CreateAvailability:
     end_at = attr.ib(type=datetime)
     item_id = attr.ib(type=int)
     timestamp = attr.ib(type=datetime)
+    headline = attr.ib(type=str)
 
     def run(self):
         new_availability = models.Availability(
@@ -113,6 +114,7 @@ class CreateAvailability:
             start_at=self.start_at,
             end_at=self.end_at,
             item_id=self.item_id,
+            headline=self.headline,
         )
         db.session.add(new_availability)
         db.session.commit()
@@ -129,6 +131,7 @@ class UpdateAvailability:
     end_at = attr.ib(type=datetime)
     item_id = attr.ib(type=int)
     timestamp = attr.ib(type=datetime)
+    headline = attr.ib(type=str)
 
     def run(self):
         availability = models.Availability.get(self.availability_id)
@@ -139,6 +142,7 @@ class UpdateAvailability:
         availability.start_at = self.start_at
         availability.end_at = self.end_at
         availability.item_id = self.item_id
+        availability.headline = self.headline
 
         db.session.commit()
         return availability
@@ -194,6 +198,7 @@ class CreateBooking:
 
     desk = attr.ib(type=str)
     is_eligible_for_cancellation = attr.ib(type=bool)
+    is_subscribed_for_sms_updates = attr.ib(type=bool)
     arrival = attr.ib(type=str)
     rebooked_to = attr.ib(type=str)
     rebooked_from = attr.ib(type=str)
@@ -231,6 +236,7 @@ class CreateBooking:
             invoice_price_display=self.invoice_price_display,
             desk=self.desk,
             is_eligible_for_cancellation=self.is_eligible_for_cancellation,
+            is_subscribed_for_sms_updates=self.is_subscribed_for_sms_updates,
             arrival=self.arrival,
             rebooked_to=self.rebooked_to,
             rebooked_from=self.rebooked_from,
@@ -272,6 +278,7 @@ class UpdateBooking:
     invoice_price_display = attr.ib(type=str)
     desk = attr.ib(type=str)
     is_eligible_for_cancellation = attr.ib(type=bool)
+    is_subscribed_for_sms_updates = attr.ib(type=bool)
     arrival = attr.ib(type=str)
     rebooked_to = attr.ib(type=str)
     rebooked_from = attr.ib(type=str)
@@ -307,6 +314,9 @@ class UpdateBooking:
         booking.invoice_price_display = self.invoice_price_display
         booking.desk = self.desk
         booking.is_eligible_for_cancellation = self.is_eligible_for_cancellation
+        booking.is_subscribed_for_sms_updates = (
+            self.is_subscribed_for_sms_updates
+        )
         booking.arrival = self.arrival
         booking.rebooked_to = self.rebooked_to
         booking.rebooked_from = self.rebooked_from
@@ -339,6 +349,7 @@ class CreateContact:
     phone = attr.ib(type=str)
     normalized_phone = attr.ib(type=str)
     is_subscribed_for_email_updates = attr.ib(type=bool)
+    language = attr.ib(type=str)
 
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
@@ -352,6 +363,7 @@ class CreateContact:
             phone=self.phone,
             normalized_phone=self.normalized_phone,
             is_subscribed_for_email_updates=opt_in,
+            language=self.language,
         )
         db.session.add(new_contact)
         db.session.commit()
@@ -368,6 +380,7 @@ class UpdateContact:
     phone = attr.ib(type=str)
     normalized_phone = attr.ib(type=str)
     is_subscribed_for_email_updates = attr.ib(type=bool)
+    language = attr.ib(type=str)
 
     def run(self):
         opt_in = self.is_subscribed_for_email_updates
@@ -379,6 +392,7 @@ class UpdateContact:
         contact.phone = self.phone
         contact.normalized_phone = self.normalized_phone
         contact.is_subscribed_for_email_updates = opt_in
+        contact.language = self.language
         db.session.commit()
         return contact
 

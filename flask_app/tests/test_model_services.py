@@ -86,6 +86,7 @@ def test_create_availability(database, item_factory):
         start_at=timestamp,
         end_at=timestamp,
         item_id=item.id,
+        headline="Some headline"
     ).run()
     availability = models.Availability.get(random_id)
     assert availability.created_at == timestamp
@@ -104,11 +105,13 @@ def test_update_availability(database, item_factory, availability_factory):
         start_at=timestamp,
         end_at=timestamp,
         item_id=av.item_id,
+        headline="Some other headline"
     ).run()
     av = models.Availability.get(av.id)
     assert av.capacity == 20
     assert av.minimum_party_size == 21
     assert av.maximum_party_size == 22
+    assert av.headline == "Some other headline"
     assert av.created_at != av.updated_at
     assert av.updated_at == timestamp
 
@@ -156,6 +159,7 @@ def test_create_booking(database, availability_factory, company_factory):
         invoice_price_display="14",
         desk="soo",
         is_eligible_for_cancellation=True,
+        is_subscribed_for_sms_updates=True,
         arrival="sar",
         rebooked_to="saz",
         rebooked_from="woo",
@@ -206,6 +210,7 @@ def test_update_booking(database, booking_factory, availability_factory):
         invoice_price_display="14",
         desk="soo",
         is_eligible_for_cancellation=True,
+        is_subscribed_for_sms_updates=True,
         arrival="sar",
         rebooked_to="saz",
         rebooked_from="woo",
@@ -253,6 +258,7 @@ def test_update_booking_raises_error(database):
             invoice_price_display="14",
             desk="soo",
             is_eligible_for_cancellation=True,
+            is_subscribed_for_sms_updates=True,
             arrival="sar",
             rebooked_to="saz",
             rebooked_from="woo",
@@ -289,6 +295,7 @@ def test_create_contact(database, booking_factory):
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
+        language="ES",
     ).run()
     c = models.Contact.get(c.id)
     assert c.name == "foo"
@@ -309,9 +316,11 @@ def test_update_contact(database, contact_factory):
         phone="00000",
         normalized_phone="00000",
         is_subscribed_for_email_updates=True,
+        language="EN",
     ).run()
     new_contact = models.Contact.get(new_contact.id)
     assert new_contact.name == "bar"
+    assert new_contact.language == "EN"
     assert new_contact.created_at == old_contact.created_at
     assert new_contact.created_at != new_contact.updated_at
     assert new_contact.updated_at == timestamp
