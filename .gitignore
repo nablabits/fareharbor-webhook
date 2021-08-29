@@ -22,6 +22,9 @@ htmlcov/
 # Exclude response objects
 flask_app/fh_webhook/responses
 
+# Exclude the schemas generated with eralchemy
+flask_app/schema.*
+
 # migrations seem to be machine unique
 flask_app/migrations
 
