@@ -105,6 +105,7 @@ class ProcessJSONResponse:
             maximum_party_size=av_data["maximum_party_size"],
             start_at=av_data["start_at"],
             end_at=av_data["end_at"],
+            headline=av_data.get("headline"),
             item_id=item_id
         ).run()
 
@@ -116,6 +117,9 @@ class ProcessJSONResponse:
             service = model_services.UpdateBooking
         else:
             service = model_services.CreateBooking
+
+        cancx = b_data["is_eligible_for_cancellation"]
+        sms_opt_in = b_data["is_subscribed_for_sms_updates"]
         return service(
             booking_id=b_data["pk"],
             voucher_number=b_data["voucher_number"],
@@ -144,7 +148,8 @@ class ProcessJSONResponse:
             amount_paid_display=b_data["amount_paid_display"],
             invoice_price_display=b_data["invoice_price_display"],
             desk=b_data["desk"],
-            is_eligible_for_cancellation=b_data["is_eligible_for_cancellation"],
+            is_eligible_for_cancellation=cancx,
+            is_subscribed_for_sms_updates=sms_opt_in,
             arrival=b_data["arrival"],
             rebooked_to=b_data["rebooked_to"],
             rebooked_from=b_data["rebooked_from"],
@@ -172,6 +177,7 @@ class ProcessJSONResponse:
             phone_country=c_data["phone_country"],
             phone=c_data["phone"],
             normalized_phone=c_data["normalized_phone"],
+            language=c_data.get("language"),
             is_subscribed_for_email_updates=opt_in,
         ).run()
 

@@ -98,6 +98,7 @@ class Booking(db.Model, BaseMixin):
 
     desk = db.Column(db.String(64))
     is_eligible_for_cancellation = db.Column(db.Boolean)
+    is_subscribed_for_sms_updates = db.Column(db.Boolean)
     arrival = db.Column(db.String(64))
     rebooked_to = db.Column(db.String(64))
     rebooked_from = db.Column(db.String(64))
@@ -121,6 +122,7 @@ class Availability(db.Model, BaseMixin):
     maximum_party_size = db.Column(db.SmallInteger)
     start_at = db.Column(db.DateTime(timezone=True), nullable=False)
     end_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    headline = db.Column(db.String(255))
 
     # foreign key fields
     item_id = db.Column(db.BigInteger, db.ForeignKey("item.id"), nullable=False)
@@ -335,6 +337,7 @@ class Contact(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     name = db.Column(db.String(256), nullable=False)
     email = db.Column(db.String(256))
+    language = db.Column(db.String(256))
     phone_country = db.Column(db.String(10))
     phone = db.Column(db.String(30))
     normalized_phone = db.Column(db.String(30))
