@@ -1,6 +1,7 @@
 # vim swap files
 *.swp
 *.vim
+tags
 
 # pycharm stuff
 .idea
