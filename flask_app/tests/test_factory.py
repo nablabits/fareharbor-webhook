@@ -4,6 +4,7 @@ import base64
 import pytest
 from fh_webhook import create_app
 from fh_webhook.models import StoredRequest
+from fh_webhook.services import CheckForNewKeys
 from unittest.mock import patch
 
 
@@ -94,11 +95,8 @@ def test_dummy_webhook_saves_content_to_a_file(
     return_value="1626842330.051856.json"
 )
 def test_dummy_webhook_finds_new_keys(
-    save_file_svc, process_svc, client, database
+    save_file_svc, process_svc, client, database, caplog
 ):
-    path = client.application.config.get("RESPONSES_PATH")
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
-
     with open("tests/sample_data/1626842330.051856.json") as f:
         data = json.load(f)
 
@@ -111,19 +109,13 @@ def test_dummy_webhook_finds_new_keys(
         json=data,
     )
 
-    files_in_dir = os.listdir(path)
     assert response.status_code == 200
-    assert len(files_in_dir) == 1
-    with open(os.path.join(path, files_in_dir[0])) as error_log:
-        content = error_log.readlines()
-        assert content[0].startswith("new_key, booking")
+    assert len(caplog.records) == 1
+    assert caplog.records[0].msg == "New key found in booking: new_key"
 
     assert process_svc.call_count == 1
     assert save_file_svc.call_count == 1
     assert len(StoredRequest.query.all()) == 1
-
-    # purge created files
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
 
 @patch("fh_webhook.services.ProcessJSONResponse.run")
@@ -132,15 +124,10 @@ def test_dummy_webhook_finds_new_keys(
     return_value="1626842330.051856.json"
 )
 def test_dummy_webhook_does_not_find_new_keys(
-    save_file_svc, process_svc, client, database
+    save_file_svc, process_svc, client, database, caplog
 ):
-    path = client.application.config.get("RESPONSES_PATH")
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
-
     with open("tests/sample_data/1626842330.051856.json") as f:
         data = json.load(f)
-
-    from fh_webhook.services import CheckForNewKeys
 
     response = client.post(
         "/",
@@ -148,15 +135,11 @@ def test_dummy_webhook_does_not_find_new_keys(
         json=data,
     )
 
-    files_in_dir = os.listdir(path)
+    assert len(caplog.records) == 0
     assert response.status_code == 200
-    assert not files_in_dir
     assert process_svc.call_count == 1
     assert save_file_svc.call_count == 1
     assert len(StoredRequest.query.all()) == 1
-
-    # purge created files
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
 
 @patch("fh_webhook.services.CheckForNewKeys.run", return_value=None)
@@ -165,10 +148,8 @@ def test_dummy_webhook_does_not_find_new_keys(
     return_value="1626842330.051856.json"
 )
 def test_dummy_webhook_trows_requests_with_missing_data_to_a_log(
-    process_svc, file_svc, client, database
+    process_svc, file_svc, client, database, caplog
 ):
-    path = client.application.config.get("RESPONSES_PATH")
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
     with open("tests/sample_data/1626842330.051856.json") as f:
         data = json.load(f)
@@ -181,58 +162,23 @@ def test_dummy_webhook_trows_requests_with_missing_data_to_a_log(
         json=data,
     )
 
-    files_in_dir = os.listdir(path)
-
     sr = StoredRequest.query.first()
 
     assert response.status_code == 400
     response_msg = "The request was missing data. (('display_id',))"
+    log_msg = (
+        f"The request was missing data (stored_request_id={sr.id}, " +
+        "error=('display_id',))"
+    )
     assert response.data.decode() == response_msg
-    assert len(files_in_dir) == 1
-    assert process_svc.call_count == 1
-    assert files_in_dir[0] == "errors.log"
-    with open(os.path.join(path, files_in_dir[0])) as error_file:
-        content = error_file.readlines()
-        msg = (
-            f"the request was missing data (stored_request_id={sr.id}, " +
-            "error=('display_id',))"
-        )
-        assert content[0].endswith(msg)
-
-    # purge created files
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+    assert caplog.records[0].msg == log_msg
 
 
-def test_dummy_webhook_trows_empty_requests_to_a_log(client):
-    path = client.application.config.get("RESPONSES_PATH")
+def test_dummy_webhook_trows_empty_requests_to_a_log(client, caplog):
     response = client.post(
         "/",
         headers=get_headers(),
     )
 
-    files_in_dir = os.listdir(path)
     assert response.status_code == 400  # Since the request was empty
-    assert len(files_in_dir) == 1
-    assert files_in_dir[0] == "errors.log"
-    with open(os.path.join(path, files_in_dir[0])) as error_file:
-        content = error_file.readlines()
-        # get the last 22 chars as the others depend on datetime.now()
-        assert content[0][-22:] == "the request was empty\n"
-
-    # purge created files
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
-
-
-def test_webhook_endpoint_only_accepts_POST(client):
-    response = client.get(
-        "/webhook",
-        headers=get_headers(),
-    )
-    assert response.status == "405 METHOD NOT ALLOWED"
-    assert response.status_code == 405
-
-    response = client.post(
-        "/webhook",
-        headers=get_headers(),
-    )
-    assert response.status == "200 OK"
+    assert caplog.records[0].msg == "The request was empty"
