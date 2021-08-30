@@ -2,6 +2,12 @@ import json
 import os
 from datetime import datetime, timezone
 from . import models, model_services
+from email.message import EmailMessage
+from email.utils import localtime
+from logging import LogRecord
+from logging.handlers import SMTPHandler
+from smtplib import SMTP_SSL
+from ssl import create_default_context
 
 import attr
 
@@ -767,3 +773,39 @@ def check_files(app):
         found_keys = CheckForNewKeys(data).run()
         for name, key in found_keys:
             print(f"found {key} inside {name}")
+
+
+class SSLSMTPHandler(SMTPHandler):
+    """
+    Handle the delivery of emails through SSL.
+
+    This is a clone from https://github.com/dycw/ssl-smtp-handler as it
+    contained some errors related to typing.
+    """
+
+    def emit(self, record: LogRecord) -> None:
+        """
+        Emit a record.
+
+        Format the record and send it to the specified addressees.
+        """
+        try:
+            msg = EmailMessage()
+            msg["From"] = self.fromaddr
+            msg["To"] = ",".join(self.toaddrs)
+            msg["Date"] = localtime()
+            msg["Subject"] = self.getSubject(record)
+            msg.set_content(self.format(record))
+            context = create_default_context()
+            with SMTP_SSL(
+                self.mailhost, self.mailport, timeout=self.timeout,
+                context=context,
+            ) as server:
+                server.login(user=self.username, password=self.password)
+                server.send_message(
+                    msg=msg, from_addr=self.fromaddr, to_addrs=self.toaddrs
+                )
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            self.handleError(record)
