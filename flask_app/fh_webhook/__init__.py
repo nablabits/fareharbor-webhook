@@ -10,7 +10,7 @@ from .models import db
 from .model_services import CreateStoredRequest, CloseStoredRequest
 from .services import (
     ProcessJSONResponse, SaveResponseAsFile, get_request_id_or_none,
-    CheckForNewKeys
+    CheckForNewKeys, SSLSMTPHandler
 )
 
 from decouple import config
@@ -23,6 +23,8 @@ def create_app(test_config=False):
         app.config.from_object("config.TestingConfig")
     else:
         app.config.from_object(config("APP_SETTINGS"))
+
+    app.logger.info("Starting flask app.")
     db.init_app(app)
     Migrate(app, db)
 
@@ -47,20 +49,21 @@ def create_app(test_config=False):
         user_exists = username in users
         if user_exists and check_password_hash(users.get(username), password):
             return username
+        else:
+            app.logger.info("Authentication failed.")
 
     @app.route("/", methods=["POST"])
     @auth.login_required
     def save_content():
         """Process the requests made by FH."""
+        app.logger.info("New FH request received.")
         path = app.config.get("RESPONSES_PATH")
         json_response = request.json
         timestamp = datetime.now(timezone.utc)
         if json_response:
             filename = SaveResponseAsFile(json_response, path, timestamp).run()
         else:
-            # TODO: Log this in a proper way.
-            with open(os.path.join(path, "errors.log"), "a") as f:
-                f.write("{} - the request was empty\n".format(datetime.now()))
+            app.logger.error("The request was empty")
             return Response("The request was empty", status=400)
 
         stored_request = CreateStoredRequest(
@@ -73,12 +76,11 @@ def create_app(test_config=False):
             ProcessJSONResponse(json_response, timestamp).run()
         except KeyError as e:
             # It can happen that we got less data than expected
-            # TODO: Log this in a proper way.
-            with open(os.path.join(path, "errors.log"), "a") as f:
-                f.write(
-                    f"{datetime.now()} - the request was missing data " +
-                    f"(stored_request_id={stored_request.id}, error={e.args})"
-                )
+            app.logger.error(
+                "The request was missing data " +
+                f"(stored_request_id={stored_request.id}, error={e.args})"
+
+            )
             return Response(
                 f"The request was missing data. ({e.args})",
                 status=400)
@@ -88,22 +90,18 @@ def create_app(test_config=False):
         # Finally check for new keys that FH friends could skneakily insert.
         new_keys = CheckForNewKeys(json_response).run()
         if new_keys:
-            # TODO: Log this in a proper way.
-            with open(os.path.join(path, "new_keys.log"), "a") as f:
-                for key, name in new_keys:
-                    f.write(f"{name}, {key}, {datetime.now()}")
+            for name, key in new_keys:
+                app.logger.warning(f"New key found in {name}: {key}")
 
-        return Response(status=200)
-
-    @app.route("/webhook", methods=["POST"])
-    def respond():
-        """Future official entry point."""
-
+        app.logger.info(
+            f"Request {stored_request.id} successfully processed."
+        )
         return Response(status=200)
 
     @app.route("/test", methods=["GET"])
     def index():
         """Quick check that the server is running."""
+        app.logger.info("New request received.")
         app_name = os.getenv("APP_NAME")
         if app_name:
             return "Hello from flask on a Docker environment"
