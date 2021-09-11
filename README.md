@@ -87,7 +87,7 @@ python -m pytest tests
 ```
 
 # Database schema
-The following charts are written in [mermaid](https://mermaidjs.github.io/) which is a very cool tool to draw diagrams using just the keyboard. Github doesn't display them out of the box and although there's a [nice addon](https://github.com/BackMarket/github-mermaid-extension) for browsers, they are not that updated to mermaid's last version. Happily, there's an [online mermaid editor](https://mermaid-js.github.io/mermaid-live-editor/) that offers after creating a url that can be used as an image. 
+The following charts are written in [mermaid](https://mermaidjs.github.io/) which is a very cool tool to draw diagrams using just the keyboard. Github doesn't display them out of the box and although there are [nice addons](https://github.com/BackMarket/github-mermaid-extension) for browsers, they are not that updated to mermaid's last version. Happily, there's an [online mermaid editor](https://mermaid-js.github.io/mermaid-live-editor/) that after creating offers a url that can be used as an image. 
 
 ## Per group
 To easily understand the underlying structure, we can split the models in groups, these are:
