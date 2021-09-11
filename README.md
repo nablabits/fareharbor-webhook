@@ -87,7 +87,7 @@ python -m pytest tests
 ```
 
 # Database schema
-The following charts are written in [mermaid](https://mermaidjs.github.io/) which is a very cool tool to draw diagrams using just the keyboard. Github doesn't display them out of the box but there's a [nice addon](https://github.com/BackMarket/github-mermaid-extension) for browsers to see them.
+The following charts are written in [mermaid](https://mermaidjs.github.io/) which is a very cool tool to draw diagrams using just the keyboard. Github doesn't display them out of the box and although there's a [nice addon](https://github.com/BackMarket/github-mermaid-extension) for browsers, they are not that updated to mermaid's last version. Happily, there's an [online mermaid editor](https://mermaid-js.github.io/mermaid-live-editor/) that offers after creating a url that can be used as an image. 
 
 ## Per group
 To easily understand the underlying structure, we can split the models in groups, these are:
@@ -97,85 +97,12 @@ It also contains the company models that is reached twice by two fields in the b
 * **Custom Field group:** stores all the information related to custom fields: Each availability has several custom field instances whereas each booking stores the selected data in the custom field values model. Both effectivelly make a m2m to predefined custom fields.
 * **Customer group:** Finally the customer group registers all the data relative to pricing for each availability and the checkin status
 
-```mermaid
-flowchart LR
-	subgraph g1
-		direction BT
-		subgraph cfg [Custom Field Group]
-			cfv[custom field values]--fk-->cf[custom field]
-			cfi[custom field instances]--fk-->cf[custom field]
-			cf[custom field instances]--extended options fk-->cf[custom field]
-		end
-		subgraph crg [Customer Group]
-			direction TB
-			c[customer]--fk-->cst[checkin status]
-			c[customer]--fk-->ctr[customer type rate]
-			ctr[customer type rate]--fk-->ctp[customer prototype]
-			ctr[customer type rate]--fk-->ctt[customer type]
-		end
-	end
-	subgraph g0
-		subgraph avg [Availability Group]
-			direction LR
-			av[availability]--fk-->it[item]
-		end
-		subgraph bg [Booking Group]
-			direction TB
-			b[booking]<--1:1-->ct[contact]
-			b[booking]<--1:1-->ecp[effective cancelation\npolicy]
-			b[booking]--fk-->cy[company]
-			b[booking]--fk-->cy[company]
-		end
-	end
-	style cfg fill:lightyellow;
-	classDef lightgrey fill:#D0DEE5;
-	classDef green fill:#B2E0D2;
-	classDef transparent fill:#fff,color:#fff,stroke:#fff;
-	class cfg,crg lightgrey;
-	class avg,bg green;
-	class g0,g1 transparent;
-```
+[![](https://mermaid.ink/img/eyJjb2RlIjoiZmxvd2NoYXJ0IExSXG5cdHN1YmdyYXBoIGcxXG5cdFx0ZGlyZWN0aW9uIEJUXG5cdFx0c3ViZ3JhcGggY2ZnIFtDdXN0b20gRmllbGQgR3JvdXBdXG5cdFx0XHRjZnZbY3VzdG9tIGZpZWxkIHZhbHVlc10tLWZrLS0-Y2ZbY3VzdG9tIGZpZWxkXVxuXHRcdFx0Y2ZpW2N1c3RvbSBmaWVsZCBpbnN0YW5jZXNdLS1may0tPmNmW2N1c3RvbSBmaWVsZF1cblx0XHRcdGNmW2N1c3RvbSBmaWVsZCBpbnN0YW5jZXNdLS1leHRlbmRlZCBvcHRpb25zIGZrLS0-Y2ZbY3VzdG9tIGZpZWxkXVxuXHRcdGVuZFxuXHRcdHN1YmdyYXBoIGNyZyBbQ3VzdG9tZXIgR3JvdXBdXG5cdFx0XHRkaXJlY3Rpb24gVEJcblx0XHRcdGNbY3VzdG9tZXJdLS1may0tPmNzdFtjaGVja2luIHN0YXR1c11cblx0XHRcdGNbY3VzdG9tZXJdLS1may0tPmN0cltjdXN0b21lciB0eXBlIHJhdGVdXG5cdFx0XHRjdHJbY3VzdG9tZXIgdHlwZSByYXRlXS0tZmstLT5jdHBbY3VzdG9tZXIgcHJvdG90eXBlXVxuXHRcdFx0Y3RyW2N1c3RvbWVyIHR5cGUgcmF0ZV0tLWZrLS0-Y3R0W2N1c3RvbWVyIHR5cGVdXG5cdFx0ZW5kXG5cdGVuZFxuXHRzdWJncmFwaCBnMFxuXHRcdHN1YmdyYXBoIGF2ZyBbQXZhaWxhYmlsaXR5IEdyb3VwXVxuXHRcdFx0ZGlyZWN0aW9uIExSXG5cdFx0XHRhdlthdmFpbGFiaWxpdHldLS1may0tPml0W2l0ZW1dXG5cdFx0ZW5kXG5cdFx0c3ViZ3JhcGggYmcgW0Jvb2tpbmcgR3JvdXBdXG5cdFx0XHRkaXJlY3Rpb24gVEJcblx0XHRcdGJbYm9va2luZ108LS0xOjEtLT5jdFtjb250YWN0XVxuXHRcdFx0Yltib29raW5nXTwtLTE6MS0tPmVjcFtlZmZlY3RpdmUgY2FuY2VsYXRpb25cXG5wb2xpY3ldXG5cdFx0XHRiW2Jvb2tpbmddLS1may0tPmN5W2NvbXBhbnldXG5cdFx0XHRiW2Jvb2tpbmddLS1may0tPmN5W2NvbXBhbnldXG5cdFx0ZW5kXG5cdGVuZFxuXHRzdHlsZSBjZmcgZmlsbDpsaWdodHllbGxvdztcblx0Y2xhc3NEZWYgbGlnaHRncmV5IGZpbGw6I0QwREVFNTtcblx0Y2xhc3NEZWYgZ3JlZW4gZmlsbDojQjJFMEQyO1xuXHRjbGFzc0RlZiB0cmFuc3BhcmVudCBmaWxsOiNmZmYsY29sb3I6I2ZmZixzdHJva2U6I2ZmZjtcblx0Y2xhc3MgY2ZnLGNyZyBsaWdodGdyZXk7XG5cdGNsYXNzIGF2ZyxiZyBncmVlbjtcblx0Y2xhc3MgZzAsZzEgdHJhbnNwYXJlbnQ7IiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZSwiYXV0b1N5bmMiOnRydWUsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/edit##eyJjb2RlIjoiZ3JhcGggVERcbiAgICBBW0NocmlzdG1hc10gLS0-fEdldCBtb25leXwgQihHbyBzaG9wcGluZylcbiAgICBCIC0tPiBDe0xldCBtZSB0aGlua31cbiAgICBDIC0tPnxPbmV8IERbTGFwdG9wXVxuICAgIEMgLS0-fFR3b3wgRVtpUGhvbmVdXG4gICAgQyAtLT58VGhyZWV8IEZbZmE6ZmEtY2FyIENhcl1cbiAgIiwibWVybWFpZCI6IntcbiAgXCJ0aGVtZVwiOiBcImRlZmF1bHRcIlxufSIsInVwZGF0ZUVkaXRvciI6ZmFsc2UsImF1dG9TeW5jIjp0cnVlLCJ1cGRhdGVEaWFncmFtIjpmYWxzZX0)
 
 ## InterGroups relationships
 At a higher level each booking can have several customers and each availability can have several bookings. There are also some connections that provide effectively m2m relationships:
 * **Custom field values** make the m2m relationship between predefined custom fields and the chosen values for and specific booking or a customer. Note that there are custom fields that are booking level and some other custom fields at customer level.
 * **Custom field:** Likewise, we have custom field instances for either availabilities or customer type rates that define which custom fields are available prior to choose a value by the contact.
 
-```mermaid
-flowchart LR
-	subgraph g1
-		direction BT
-		subgraph cfg [Custom Field Group]
-			cfv[custom field values]
-			cfi[custom field instances]
-		end
-		subgraph crg [Customer Group]
-			direction TB
-			c[customer]
-			ctr[customer type rate]
-		end
-	end
-	subgraph g0
-		subgraph avg [Availability Group]
-			direction LR
-			av[availability]
-		end
-		subgraph bg [Booking Group]
-			direction TB
-			b[booking]
-		end
-	end
-	cfi --fk--> ctr
-	cfi--fk-->av
-	b--fk-->av
-	c--fk-->b
-	cfv --> b
-	style cfg fill:lightyellow;
-	classDef lightgrey fill:#D0DEE5;
-	classDef green fill:#B2E0D2;
-	classDef transparent fill:#fff,color:#fff,stroke:#fff;
-	class cfg,crg lightgrey;
-	class avg,bg green;
-	class g0,g1 transparent;
-```
+[![](https://mermaid.ink/img/eyJjb2RlIjoiZmxvd2NoYXJ0IExSXG5cdHN1YmdyYXBoIGcxXG5cdFx0ZGlyZWN0aW9uIEJUXG5cdFx0c3ViZ3JhcGggY2ZnIFtDdXN0b20gRmllbGQgR3JvdXBdXG5cdFx0XHRjZnZbY3VzdG9tIGZpZWxkIHZhbHVlc11cblx0XHRcdGNmaVtjdXN0b20gZmllbGQgaW5zdGFuY2VzXVxuXHRcdGVuZFxuXHRcdHN1YmdyYXBoIGNyZyBbQ3VzdG9tZXIgR3JvdXBdXG5cdFx0XHRkaXJlY3Rpb24gVEJcblx0XHRcdGNbY3VzdG9tZXJdXG5cdFx0XHRjdHJbY3VzdG9tZXIgdHlwZSByYXRlXVxuXHRcdGVuZFxuXHRlbmRcblx0c3ViZ3JhcGggZzBcblx0XHRzdWJncmFwaCBhdmcgW0F2YWlsYWJpbGl0eSBHcm91cF1cblx0XHRcdGRpcmVjdGlvbiBMUlxuXHRcdFx0YXZbYXZhaWxhYmlsaXR5XVxuXHRcdGVuZFxuXHRcdHN1YmdyYXBoIGJnIFtCb29raW5nIEdyb3VwXVxuXHRcdFx0ZGlyZWN0aW9uIFRCXG5cdFx0XHRiW2Jvb2tpbmddXG5cdFx0ZW5kXG5cdGVuZFxuXHRjZmkgLS1may0tPiBjdHJcblx0Y2ZpLS1may0tPmF2XG5cdGItLWZrLS0-YXZcblx0Yy0tZmstLT5iXG5cdGNmdiAtLT4gYlxuXHRzdHlsZSBjZmcgZmlsbDpsaWdodHllbGxvdztcblx0Y2xhc3NEZWYgbGlnaHRncmV5IGZpbGw6I0QwREVFNTtcblx0Y2xhc3NEZWYgZ3JlZW4gZmlsbDojQjJFMEQyO1xuXHRjbGFzc0RlZiB0cmFuc3BhcmVudCBmaWxsOiNmZmYsY29sb3I6I2ZmZixzdHJva2U6I2ZmZjtcblx0Y2xhc3MgY2ZnLGNyZyBsaWdodGdyZXk7XG5cdGNsYXNzIGF2ZyxiZyBncmVlbjtcblx0Y2xhc3MgZzAsZzEgdHJhbnNwYXJlbnQ7IiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZSwiYXV0b1N5bmMiOnRydWUsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/edit##eyJjb2RlIjoiZmxvd2NoYXJ0IExSXG5cdHN1YmdyYXBoIGcxXG5cdFx0ZGlyZWN0aW9uIEJUXG5cdFx0c3ViZ3JhcGggY2ZnIFtDdXN0b20gRmllbGQgR3JvdXBdXG5cdFx0XHRjZnZbY3VzdG9tIGZpZWxkIHZhbHVlc11cblx0XHRcdGNmaVtjdXN0b20gZmllbGQgaW5zdGFuY2VzXVxuXHRcdGVuZFxuXHRcdHN1YmdyYXBoIGNyZyBbQ3VzdG9tZXIgR3JvdXBdXG5cdFx0XHRkaXJlY3Rpb24gVEJcblx0XHRcdGNbY3VzdG9tZXJdXG5cdFx0XHRjdHJbY3VzdG9tZXIgdHlwZSByYXRlXVxuXHRcdGVuZFxuXHRlbmRcblx0c3ViZ3JhcGggZzBcblx0XHRzdWJncmFwaCBhdmcgW0F2YWlsYWJpbGl0eSBHcm91cF1cblx0XHRcdGRpcmVjdGlvbiBMUlxuXHRcdFx0YXZbYXZhaWxhYmlsaXR5XVxuXHRcdGVuZFxuXHRcdHN1YmdyYXBoIGJnIFtCb29raW5nIEdyb3VwXVxuXHRcdFx0ZGlyZWN0aW9uIFRCXG5cdFx0XHRiW2Jvb2tpbmddXG5cdFx0ZW5kXG5cdGVuZFxuXHRjZmkgLS1may0tPiBjdHJcblx0Y2ZpLS1may0tPmF2XG5cdGItLWZrLS0-YXZcblx0Yy0tZmstLT5iXG5cdGNmdiAtLT4gYlxuXHRzdHlsZSBjZmcgZmlsbDpsaWdodHllbGxvdztcblx0Y2xhc3NEZWYgbGlnaHRncmV5IGZpbGw6I0QwREVFNTtcblx0Y2xhc3NEZWYgZ3JlZW4gZmlsbDojQjJFMEQyO1xuXHRjbGFzc0RlZiB0cmFuc3BhcmVudCBmaWxsOiNmZmYsY29sb3I6I2ZmZixzdHJva2U6I2ZmZjtcblx0Y2xhc3MgY2ZnLGNyZyBsaWdodGdyZXk7XG5cdGNsYXNzIGF2ZyxiZyBncmVlbjtcblx0Y2xhc3MgZzAsZzEgdHJhbnNwYXJlbnQ7IiwibWVybWFpZCI6IntcbiAgXCJ0aGVtZVwiOiBcImRlZmF1bHRcIlxufSIsInVwZGF0ZUVkaXRvciI6dHJ1ZSwiYXV0b1N5bmMiOnRydWUsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)
 
