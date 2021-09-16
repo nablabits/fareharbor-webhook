@@ -129,6 +129,7 @@ def test_populate_db_creates_booking(
     assert b.note == ""
     assert b.pickup is None
     assert b.status == "booked"
+    assert b.created_by == "civitatiseuro"
     assert b.created_at == b.updated_at
     assert b.updated_at == file_timestamp
     assert b.availability_id == 619118440

@@ -124,6 +124,11 @@ class ProcessJSONResponse:
         else:
             service = model_services.CreateBooking
 
+        created_by = "staff"
+        c_data = b_data["affiliate_company"]
+        if c_data:
+            created_by = c_data.get("shortname") or c_data.get("short_name")
+
         cancx = b_data["is_eligible_for_cancellation"]
         sms_opt_in = b_data["is_subscribed_for_sms_updates"]
         return service(
@@ -139,6 +144,7 @@ class ProcessJSONResponse:
             note=b_data["note"],
             pickup=b_data["pickup"],
             status=b_data["status"],
+            created_by=created_by,
             timestamp=self.timestamp,
             availability_id=av_id,
             company_id=company_id,

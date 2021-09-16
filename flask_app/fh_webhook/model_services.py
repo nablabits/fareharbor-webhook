@@ -175,6 +175,7 @@ class CreateBooking:
     note = attr.ib(type=str)
     pickup = attr.ib(type=str)
     status = attr.ib(type=str)
+    created_by = attr.ib(type=str)
     timestamp = attr.ib(type=datetime)
 
     # Foreign key fields
@@ -221,6 +222,7 @@ class CreateBooking:
             note=self.note,
             pickup=self.pickup,
             status=self.status,
+            created_by=self.created_by,
             availability_id=self.availability_id,
             company_id=self.company_id,
             affiliate_company_id=self.affiliate_company_id,
@@ -262,6 +264,7 @@ class UpdateBooking:
     note = attr.ib(type=str)
     pickup = attr.ib(type=str)
     status = attr.ib(type=str)
+    created_by = attr.ib(type=str)
     timestamp = attr.ib(type=datetime)
     availability_id = attr.ib(type=int)
     company_id = attr.ib(type=int)
@@ -299,6 +302,7 @@ class UpdateBooking:
         booking.note = self.note
         booking.pickup = self.pickup
         booking.status = self.status
+        booking.created_by = self.created_by
         booking.availability_id = self.availability_id
         booking.company_id = self.company_id
         booking.affiliate_company_id = self.affiliate_company_id
