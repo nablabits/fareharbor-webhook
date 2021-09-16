@@ -55,7 +55,12 @@ class StoredRequest(db.Model, BaseMixin):
 
 
 class Booking(db.Model, BaseMixin):
-    """Store the information about the booking."""
+    """Store the information about the booking.
+
+    Note that FH does not provide for the time being the created_by value so we
+    have to make it up out of the value we find in affiliate_company in the
+    response. Otherwise we assume it as booked by a generic staff user.
+    """
 
     __table_name__ = "booking"
     id = db.Column(db.BigInteger, primary_key=True)
@@ -70,6 +75,7 @@ class Booking(db.Model, BaseMixin):
     note = db.Column(db.Text)
     pickup = db.Column(db.String(64))
     status = db.Column(db.String(64))
+    created_by = db.Column(db.String(64), nullable=False, default="staff")
 
     # Foreign key fields
     availability_id = db.Column(

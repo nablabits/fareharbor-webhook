@@ -116,6 +116,7 @@ def booking_factory(availability_factory, company_factory):
         note="moo",
         pickup="mar",
         status="maz",
+        created_by="staff",
         availability_id=av.id,
         company_id=company.id,
         affiliate_company_id=affiliate_company.id,
