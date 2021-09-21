@@ -25,9 +25,6 @@ flask_app/fh_webhook/responses
 # Exclude the schemas generated with eralchemy
 flask_app/schema.*
 
-# migrations seem to be machine unique
-flask_app/migrations
-
 dist/
 build/
 *.egg-info/
