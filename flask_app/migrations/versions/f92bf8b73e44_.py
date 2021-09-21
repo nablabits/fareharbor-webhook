@@ -1,4 +1,5 @@
-"""empty message
+"""
+1. Initial migration with all the fields.
 
 Revision ID: f92bf8b73e44
 Revises: 

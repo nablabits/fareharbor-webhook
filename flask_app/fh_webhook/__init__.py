@@ -66,6 +66,9 @@ def create_app(test_config=False):
             app.logger.error("The request was empty")
             return Response("The request was empty", status=400)
 
+        # ensure that we have the expected data, send async wiht retries the db population
+        # and return the 200
+
         stored_request = CreateStoredRequest(
             request_id=get_request_id_or_none(filename),
             filename=filename,
