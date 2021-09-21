@@ -15,8 +15,7 @@ Pray.
 import os
 import json
 
-from fh_webhook import models, services
-
+from fh_webhook import models
 
 path = app.config.get("RESPONSES_PATH")  # app is loaded with the shell
 files = sorted([f for f in os.listdir(path)])
