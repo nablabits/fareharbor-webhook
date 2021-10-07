@@ -267,6 +267,8 @@ def test_populate_db_creates_customer(database, app, file_timestamp):
     customer = models.Customer.get(224262373)
     assert customer.checkin_url == "https://fhchk.co/faYT3"
     assert customer.checkin_status_id == 83803
+    assert customer.customer_type_rate_id == 2576873546
+    assert customer.booking_id == 75125154
     assert customer.created_at == customer.updated_at
     assert customer.updated_at == file_timestamp
 
