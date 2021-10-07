@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from datetime import datetime, timezone
 from . import models, model_services
@@ -34,6 +35,7 @@ class PopulateDB:
         """
         self.path = app.config.get("RESPONSES_PATH")
         self.processed, self.skipped = 0, 0
+        self.logger = app.logger
 
     @staticmethod
     def _request_exists(request_id):
@@ -49,23 +51,31 @@ class PopulateDB:
             filename = os.path.join(self.path, f)
             with open(filename, "r") as response:
                 data = json.load(response)
-            stored_request = model_services.CreateStoredRequest(
-                request_id=request_id,
-                filename=f,
-                body=json.dumps(data),
-                timestamp=timestamp,
-            ).run()
-            ProcessJSONResponse(data, timestamp).run()
-            model_services.CloseStoredRequest(stored_request).run()
-            self.processed += 1
+            if data.get("booking"):
+                stored_request = model_services.CreateStoredRequest(
+                    request_id=request_id,
+                    filename=f,
+                    body=json.dumps(data),
+                    timestamp=timestamp,
+                ).run()
+                ProcessJSONResponse(data, timestamp).run()
+                model_services.CloseStoredRequest(stored_request).run()
+                self.processed += 1
+            else:
+                self.skipped += 1
         else:
             self.skipped += 1
 
     def run(self):
         files = sorted([f for f in os.listdir(self.path)])
-        for f in files:
+        for n, f in enumerate(files):
+            if n % 10 == 0:
+                self.logger.info(
+                    f"Processed {self.processed} JSON files ({self.skipped} skipped)"
+                )
             self._process_file(f)
-        print(f"Processed {self.processed} JSON files ({self.skipped} skipped)")
+        self.logger.info(
+            f"Processed {self.processed} JSON files ({self.skipped} skipped)")
 
 
 @attr.s
