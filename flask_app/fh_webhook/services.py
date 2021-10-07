@@ -394,18 +394,20 @@ class ProcessJSONResponse:
             )
 
         for c_data in customers:
-            ct_data = c_data["customer_type_rate"]["customer_type"]
-            cpt_data = c_data["customer_type_rate"]["customer_prototype"]
+            ctr_data = c_data["customer_type_rate"]
+            ct_data = ctr_data["customer_type"]
+            cpt_data = ctr_data["customer_prototype"]
             customer_type_id = self._save_customer_type(ct_data).id
             customer_prototype_id = self._save_customer_prototype(cpt_data).id
-            ctr = self._save_customer_type_rate(
-                ctr_data, availability_id, customer_prototype_id,
-                customer_type_id
-            )
+
             cs_data = c_data["checkin_status"]
             checkin_status_id = None
             if cs_data:
                 checkin_status_id = self._save_checkin_status(cs_data).id
+            ctr = self._save_customer_type_rate(
+                ctr_data, availability_id, customer_prototype_id,
+                customer_type_id
+            )
             self._save_customer(c_data, ctr.id, booking_id, checkin_status_id)
 
     def _save_custom_field_group(self, availability_id):

@@ -179,6 +179,9 @@ class CustomerTypeRate(db.Model, BaseMixin):
     Every availability can have several customer type rates that are based on
     customer prototypes (the ones defined in the settings).
     It acts as a M2M between the availability and the customer prototype.
+
+    Then each customer type rate can be selected from `Customer` model to match
+    the one picked from the availability for that specific customer.
     """
 
     __table_name__ = "customer_type_rate"
