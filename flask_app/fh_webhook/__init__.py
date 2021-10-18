@@ -1,5 +1,4 @@
 import os
-import json
 from datetime import datetime, timezone
 
 from flask import Flask, request, Response
@@ -7,11 +6,9 @@ from flask_migrate import Migrate
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import db
-from .model_services import CreateStoredRequest, CloseStoredRequest
-from .services import (
-    ProcessJSONResponse, SaveResponseAsFile, get_request_id_or_none,
-    CheckForNewKeys, SSLSMTPHandler
-)
+from .services import SaveResponseAsFile, SaveRequestToDB
+from fh_webhook.schema import BookingSchema
+from marshmallow.validate import ValidationError
 
 from decouple import config
 
@@ -61,45 +58,31 @@ def create_app(test_config=False):
         json_response = request.json
         timestamp = datetime.now(timezone.utc)
         if json_response:
+            try:
+                BookingSchema().load(json_response["booking"])
+            except ValidationError as e:
+                app.logger.error(
+                    f"filename={timestamp.timestamp()}.json, error={e}"
+                )
+                return Response(str(e), status=400)
+
+            # if validation succeeds we save the response right away to keep
+            # the data
             filename = SaveResponseAsFile(json_response, path, timestamp).run()
+
         else:
             app.logger.error("The request was empty")
             return Response("The request was empty", status=400)
 
-        # ensure that we have the expected data, send async wiht retries the db population
-        # and return the 200
-
-        stored_request = CreateStoredRequest(
-            request_id=get_request_id_or_none(filename),
-            filename=filename,
-            body=json.dumps(json_response),
-            timestamp=timestamp,
+        stored_request = SaveRequestToDB(
+            json_response, timestamp, filename
         ).run()
-        try:
-            ProcessJSONResponse(json_response, timestamp).run()
-        except KeyError as e:
-            # It can happen that we got less data than expected
-            app.logger.error(
-                "The request was missing data " +
-                f"(stored_request_id={stored_request.id}, error={e.args})"
 
-            )
-            return Response(
-                f"The request was missing data. ({e.args})",
-                status=400)
-
-        CloseStoredRequest(stored_request).run()
-
-        # Finally check for new keys that FH friends could skneakily insert.
-        new_keys = CheckForNewKeys(json_response).run()
-        if new_keys:
-            for name, key in new_keys:
-                app.logger.warning(f"New key found in {name}: {key}")
-
-        app.logger.info(
-            f"Request {stored_request.id} successfully processed."
-        )
-        return Response(status=200)
+        if stored_request:
+            message = f"Request {stored_request.id} successfully processed."
+            app.logger.info(message)
+            return Response(status=200)
+        return Response(status=500)
 
     @app.route("/test", methods=["GET"])
     def index():
