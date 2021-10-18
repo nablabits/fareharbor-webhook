@@ -59,6 +59,7 @@ def stored_request_factory():
         timestamp=timestamp,
     )
 
+
 @pytest.fixture
 def item_factory():
     random_id = randint(1, 10_000_000)
@@ -67,6 +68,7 @@ def item_factory():
         name="foo",
         timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     )
+
 
 @pytest.fixture
 def availability_factory(item_factory):
@@ -86,6 +88,7 @@ def availability_factory(item_factory):
         item_id=item.id,
         headline="Some Headline",
     )
+
 
 @pytest.fixture
 def file_timestamp():
