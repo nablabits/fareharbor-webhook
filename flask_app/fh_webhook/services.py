@@ -9,8 +9,11 @@ from logging import LogRecord
 from logging.handlers import SMTPHandler
 from smtplib import SMTP_SSL
 from ssl import create_default_context
+from sqlalchemy.exc import OperationalError
 
 import attr
+
+logger = logging.getLogger(__name__)
 
 
 def get_request_id_or_none(filename):
@@ -74,8 +77,9 @@ class PopulateDB:
                     f"Processed {self.processed} JSON files ({self.skipped} skipped)"
                 )
             self._process_file(f)
-        self.logger.info(
-            f"Processed {self.processed} JSON files ({self.skipped} skipped)")
+        logger.info(
+            f"Processed {self.processed} JSON files ({self.skipped} skipped)"
+        )
 
 
 @attr.s
@@ -564,6 +568,33 @@ class ProcessJSONResponse:
         self._save_cancellation_policy(b.id)
         self._save_customer_group(b.id, av.id)
         self._save_custom_field_group(av.id)
+
+
+@attr.s
+class SaveRequestToDB:
+    """
+    Handle all the services needed for the save of responses.
+    """
+    json_response = attr.ib(type=dict)
+    timestamp = attr.ib(type=datetime)
+    filename = attr.ib(type=str)
+
+    def run(self):
+        try:
+            stored_request = model_services.CreateStoredRequest(
+                request_id=get_request_id_or_none(self.filename),
+                filename=self.filename,
+                body=json.dumps(self.json_response),
+                timestamp=self.timestamp,
+            ).run()
+            ProcessJSONResponse(self.json_response, self.timestamp).run()
+            stored_request = model_services.CloseStoredRequest(
+                stored_request
+            ).run()
+        except OperationalError as e:
+            logger.error(e)
+            return None
+        return stored_request
 
 
 @attr.s
