@@ -14,7 +14,13 @@
         "checkin_status": {
             "pk": 83803,
             "type": "checked-in",
-            "name": "checked in"
+            "name": "checked in",
+            "unicode": "null",
+            "is_hidden": true,
+            "cls": "null",
+            "company": "null",
+            "uri": "null",
+            "sortable_index": 0
         },
         "customer_type_rate": {
           "customer_prototype": {
