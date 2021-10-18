@@ -57,6 +57,7 @@ class Config:
     SECRET_KEY = config("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = config("DB_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     FH_PASSWORD = config("FH_PASSWORD")
     RESPONSES_PATH = "fh_webhook/responses/"
 
