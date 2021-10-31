@@ -22,6 +22,9 @@ htmlcov/
 # Exclude response objects
 flask_app/fh_webhook/responses
 
+# Exclude data to fix created_by
+flask_app/scripts/data
+
 # Exclude the schemas generated with eralchemy
 flask_app/schema.*
 
