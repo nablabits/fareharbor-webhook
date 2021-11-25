@@ -3,13 +3,14 @@ from datetime import datetime, timezone
 import attr
 
 from . import models
-from .models import db
 from .exceptions import DoesNotExist
+from .models import db
 
 
 @attr.s
 class CreateStoredRequest:
     """Create a new stored request object."""
+
     request_id = attr.ib(type=int)
     filename = attr.ib(type=str)
     body = attr.ib(type=str)
@@ -31,6 +32,7 @@ class CreateStoredRequest:
 @attr.s
 class CloseStoredRequest:
     """Add the processed timestamp to a stored request."""
+
     stored_request = attr.ib(type=models.StoredRequest)
     timestamp = attr.ib(type=datetime, default=datetime.now(timezone.utc))
 
@@ -48,6 +50,7 @@ class CreateItem:
     Instead of generating a auto increment here we will use the unique id
     identifier provided by fareharbor.
     """
+
     item_id = attr.ib(type=int)
     name = attr.ib()
     timestamp = attr.ib(type=datetime)
@@ -57,7 +60,7 @@ class CreateItem:
             created_at=self.timestamp,
             updated_at=self.timestamp,
             id=self.item_id,
-            name=self.name
+            name=self.name,
         )
         db.session.add(new_item)
         db.session.commit()
@@ -318,9 +321,7 @@ class UpdateBooking:
         booking.invoice_price_display = self.invoice_price_display
         booking.desk = self.desk
         booking.is_eligible_for_cancellation = self.is_eligible_for_cancellation
-        booking.is_subscribed_for_sms_updates = (
-            self.is_subscribed_for_sms_updates
-        )
+        booking.is_subscribed_for_sms_updates = self.is_subscribed_for_sms_updates
         booking.arrival = self.arrival
         booking.rebooked_to = self.rebooked_to
         booking.rebooked_from = self.rebooked_from
@@ -422,6 +423,7 @@ class CreateCompany:
     Note that as opposed to the other models FH, is not providing pk for
     companies so we have to add ours.
     """
+
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
@@ -448,6 +450,7 @@ class UpdateCompany:
     As FH is not providing a pk for this instances we should rely on the short
     name to retrieve existing instances.
     """
+
     name = attr.ib(type=str)
     short_name = attr.ib(type=str)
     currency = attr.ib(type=str)
@@ -525,6 +528,7 @@ class DeleteCancellationPolicy:
 
 # Customers' services
 
+
 @attr.s
 class CreateCheckinStatus:
     checkin_status_id = attr.ib(type=int)
@@ -538,7 +542,7 @@ class CreateCheckinStatus:
             created_at=self.timestamp,
             updated_at=self.timestamp,
             checkin_status_type=self.checkin_status_type,
-            name=self.name
+            name=self.name,
         )
         db.session.add(new_checkin_status)
         db.session.commit()

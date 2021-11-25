@@ -1,8 +1,10 @@
-from datetime import datetime, timezone, timedelta
-from uuid import uuid4
+from datetime import datetime, timedelta, timezone
 from random import randint
+from uuid import uuid4
+
 import pytest
-from fh_webhook import models, model_services, create_app
+
+from fh_webhook import create_app, model_services, models
 from fh_webhook.models import db
 
 
@@ -99,7 +101,7 @@ def file_timestamp():
 @pytest.fixture
 def booking_factory(availability_factory, company_factory):
     s = availability_factory
-    s.availability_id = randint(1, 10_000_000),
+    s.availability_id = (randint(1, 10_000_000),)
     av = s.run()
     company = company_factory.run()
     s_affiliate_company = company_factory
@@ -210,12 +212,10 @@ def custom_field_factory():
 
 
 @pytest.fixture
-def custom_field_instance_factory(
-        database, custom_field_factory, availability_factory
-):
+def custom_field_instance_factory(database, custom_field_factory, availability_factory):
     cf = custom_field_factory()
     s = availability_factory
-    s.availability_id = randint(1, 10_000_000),
+    s.availability_id = (randint(1, 10_000_000),)
     av = s.run()
     return model_services.CreateCustomFieldInstance(
         custom_field_instance_id=randint(1, 10_000_000),
@@ -255,7 +255,7 @@ def checkin_status_factory():
 
 @pytest.fixture
 def customer_factory(
-        customer_type_rate_factory, booking_factory, checkin_status_factory
+    customer_type_rate_factory, booking_factory, checkin_status_factory
 ):
     s = booking_factory
     s.uuid = uuid4().hex
@@ -277,7 +277,7 @@ def customer_type_rate_factory(
     customer_prototype_factory,
 ):
     s = availability_factory
-    s.availability_id = randint(1, 10_000_000),
+    s.availability_id = (randint(1, 10_000_000),)
     av = s.run()
     return model_services.CreateCustomerTypeRate(
         ctr_id=randint(1, 10_000_000),

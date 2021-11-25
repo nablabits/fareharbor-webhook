@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
-from uuid import uuid4
 from random import randint
+from uuid import uuid4
 
 import pytest
-
-from fh_webhook import models, model_services
-from fh_webhook.exceptions import DoesNotExist
-
 from sqlalchemy.exc import IntegrityError
+
+from fh_webhook import model_services, models
+from fh_webhook.exceptions import DoesNotExist
 
 
 def test_create_stored_request(database):
@@ -45,7 +44,8 @@ def test_create_item(database):
     random_id = randint(1, 10_000_000)
     timestamp = datetime.now(timezone.utc)
     service = model_services.CreateItem(
-        item_id=random_id, name="foo", timestamp=timestamp)
+        item_id=random_id, name="foo", timestamp=timestamp
+    )
     new_item = service.run()
     new_item = models.Item.get(new_item.id)
     assert new_item.id == random_id
@@ -57,8 +57,7 @@ def test_create_item(database):
 def test_update_item(database, item_factory):
     old_item = item_factory.run()
     timestamp = datetime.now(timezone.utc)
-    s = model_services.UpdateItem(
-        item_id=old_item.id, name="bar", timestamp=timestamp)
+    s = model_services.UpdateItem(item_id=old_item.id, name="bar", timestamp=timestamp)
     s.run()
     item = models.Item.get(old_item.id)
     assert item.name == "bar"
@@ -86,7 +85,7 @@ def test_create_availability(database, item_factory):
         start_at=timestamp,
         end_at=timestamp,
         item_id=item.id,
-        headline="Some headline"
+        headline="Some headline",
     ).run()
     availability = models.Availability.get(random_id)
     assert availability.created_at == timestamp
@@ -105,7 +104,7 @@ def test_update_availability(database, item_factory, availability_factory):
         start_at=timestamp,
         end_at=timestamp,
         item_id=av.item_id,
-        headline="Some other headline"
+        headline="Some other headline",
     ).run()
     av = models.Availability.get(av.id)
     assert av.capacity == 20
@@ -505,12 +504,11 @@ def test_delete_custom_field(database, custom_field_factory):
 
 
 def test_create_custom_field_instances(
-    database, custom_field_factory, availability_factory,
-    customer_type_rate_factory
+    database, custom_field_factory, availability_factory, customer_type_rate_factory
 ):
     cf = custom_field_factory()
     s = availability_factory
-    s.availability_id = randint(1, 10_000_000),
+    s.availability_id = (randint(1, 10_000_000),)
     av = s.run()
     timestamp = datetime.now(timezone.utc)
     cfi = model_services.CreateCustomFieldInstance(
@@ -518,7 +516,7 @@ def test_create_custom_field_instances(
         timestamp=timestamp,
         custom_field_id=cf.id,
         availability_id=av.id,
-        customer_type_rate_id=None
+        customer_type_rate_id=None,
     ).run()
 
     cfi = models.CustomFieldInstance.get(cfi.id)
@@ -529,12 +527,11 @@ def test_create_custom_field_instances(
 
 
 def test_create_custom_field_instances_raises_error_with_av_and_ctr(
-    database, custom_field_factory, availability_factory,
-    customer_type_rate_factory
+    database, custom_field_factory, availability_factory, customer_type_rate_factory
 ):
     cf = custom_field_factory()
     s = availability_factory
-    s.availability_id = randint(1, 10_000_000),
+    s.availability_id = (randint(1, 10_000_000),)
     av = s.run()
     ctr = customer_type_rate_factory()
     with pytest.raises(ValueError) as e:
@@ -543,7 +540,7 @@ def test_create_custom_field_instances_raises_error_with_av_and_ctr(
             custom_field_instance_id=randint(1, 10_000_000),
             custom_field_id=cf.id,
             availability_id=av.id,
-            customer_type_rate_id=ctr.id
+            customer_type_rate_id=ctr.id,
         ).run()
     assert e.match(
         "Availability and customer type rate can't have value at the same time"
@@ -551,19 +548,18 @@ def test_create_custom_field_instances_raises_error_with_av_and_ctr(
 
 
 def test_create_custom_field_instances_raises_error_without_av_and_ctr(
-    database, custom_field_factory, availability_factory,
-    customer_type_rate_factory
+    database, custom_field_factory, availability_factory, customer_type_rate_factory
 ):
     cf = custom_field_factory()
     s = availability_factory
-    s.availability_id = randint(1, 10_000_000),
+    s.availability_id = (randint(1, 10_000_000),)
     with pytest.raises(ValueError) as e:
         model_services.CreateCustomFieldInstance(
             custom_field_instance_id=randint(1, 10_000_000),
             timestamp=datetime.now(timezone.utc),
             custom_field_id=cf.id,
             availability_id=None,
-            customer_type_rate_id=None
+            customer_type_rate_id=None,
         ).run()
     assert e.match(
         "Custom field instance needs either availability or customer type rate"
@@ -576,7 +572,7 @@ def test_update_custom_field_instances(
 
     old_cfi = custom_field_instance_factory()
     s = availability_factory
-    s.availability_id = randint(1, 10_000_000),
+    s.availability_id = (randint(1, 10_000_000),)
     av = s.run()
     old_av_id = old_cfi.availability_id
     timestamp = datetime.now(timezone.utc)
@@ -585,7 +581,7 @@ def test_update_custom_field_instances(
         timestamp=timestamp,
         custom_field_id=old_cfi.custom_field_id,
         availability_id=av.id,
-        customer_type_rate_id=None
+        customer_type_rate_id=None,
     ).run()
     new_cfi = models.CustomFieldInstance.get(new_cfi.id)
     assert new_cfi.created_at == old_cfi.created_at
@@ -601,9 +597,7 @@ def test_delete_custom_field_instances(database, custom_field_instance_factory):
         models.CustomFieldInstance.get(cfi.id)
 
 
-def test_create_custom_field_value(
-    database, custom_field_factory, customer_factory
-):
+def test_create_custom_field_value(database, custom_field_factory, customer_factory):
     c = customer_factory.run()
     timestamp = datetime.now(timezone.utc)
     cfv = model_services.CreateCustomFieldValue(
@@ -627,7 +621,7 @@ def test_create_custom_field_value(
 
 
 def test_create_custom_field_value_raises_error_if_booking_and_customer(
-        database, custom_field_factory, customer_factory
+    database, custom_field_factory, customer_factory
 ):
     cfv = model_services.CreateCustomFieldValue(
         custom_field_value_id=randint(1, 10_000_000),
@@ -647,7 +641,7 @@ def test_create_custom_field_value_raises_error_if_booking_and_customer(
 
 
 def test_create_custom_field_value_raises_error_if_no_booking_and_no_customer(
-        database, custom_field_factory, customer_factory
+    database, custom_field_factory, customer_factory
 ):
     cfv = model_services.CreateCustomFieldValue(
         custom_field_value_id=randint(1, 10_000_000),
@@ -663,8 +657,7 @@ def test_create_custom_field_value_raises_error_if_no_booking_and_no_customer(
         cfv.run()
 
     assert len(models.CustomFieldValue.query.all()) == 0
-    assert e.match(
-        "Custom field value needs either booking or customer instances")
+    assert e.match("Custom field value needs either booking or customer instances")
 
 
 def test_update_custom_field_value(
@@ -703,22 +696,22 @@ def test_delete_custom_field_value(database, custom_field_value_factory):
         models.CustomFieldValue.get(cfv.id)
 
 
-def test_create_checkin_status(database, ):
+def test_create_checkin_status(
+    database,
+):
     timestamp = datetime.now(timezone.utc)
     ct = model_services.CreateCheckinStatus(
         checkin_status_id=randint(1, 10_000_000),
         checkin_status_type="checked-in",
         timestamp=timestamp,
-        name="checked in"
+        name="checked in",
     ).run()
     cs = models.CheckinStatus.get(ct.id)
     assert cs.created_at == cs.updated_at
     assert cs.updated_at == timestamp
 
 
-def test_update_checkin_status(
-    database, checkin_status_factory, file_timestamp
-):
+def test_update_checkin_status(database, checkin_status_factory, file_timestamp):
     old_cs = checkin_status_factory.run()
     timestamp = datetime.now(timezone.utc)
     cs = model_services.UpdateCheckinStatus(
@@ -744,8 +737,11 @@ def test_delete_checkin_status(database, checkin_status_factory):
 
 
 def test_create_customer(
-    database, customer_type_rate_factory, booking_factory,
-    availability_factory, checkin_status_factory
+    database,
+    customer_type_rate_factory,
+    booking_factory,
+    availability_factory,
+    checkin_status_factory,
 ):
     s = booking_factory
     s.uuid = uuid4().hex

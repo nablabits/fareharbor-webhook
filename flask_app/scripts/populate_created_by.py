@@ -21,11 +21,11 @@ $> flask shell < populate_created_by.py
 Pray.
 """
 
-import os
 import csv
+import os
 from collections import defaultdict
 
-from fh_webhook.models import db, Booking
+from fh_webhook.models import Booking, db
 
 path = "scripts/data/created_by.csv"
 

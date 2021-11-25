@@ -2,49 +2,50 @@ from logging.config import dictConfig
 
 from decouple import Csv, config
 
-dictConfig({
-    "version": 1,
-    "disable_existing_loggers": True,
-    "formatters": {
-        "default": {
-            "format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
+dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "formatters": {
+            "default": {
+                "format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
+            },
+            "access": {
+                "format": "%(message)s",
+            },
         },
-        "access": {
-            "format": "%(message)s",
-        }
-    },
-    "handlers": {
-        "wsgi": {
-            "class": "logging.StreamHandler",
-            "stream": "ext://flask.logging.wsgi_errors_stream",
-            "formatter": "default",
-            "level": "INFO",
+        "handlers": {
+            "wsgi": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://flask.logging.wsgi_errors_stream",
+                "formatter": "default",
+                "level": "INFO",
+            },
+            "error_file": {
+                "class": "logging.handlers.RotatingFileHandler",
+                "formatter": "default",
+                "level": "ERROR",
+                "filename": "fh_webhook/responses/log/error_responses.log",
+                "maxBytes": 10000,
+                "backupCount": 10,
+                "delay": "True",
+            },
+            "email": {
+                "class": "fh_webhook.services.SSLSMTPHandler",
+                "formatter": "default",
+                "level": "ERROR",
+                "mailhost": (config("SMTP_HOST"), config("SMTP_PORT")),
+                "fromaddr": config("EMAIL_FROM"),
+                "toaddrs": config("EMAIL_RECIPIENTS", cast=Csv()),
+                "subject": "Error Logs on FH Webhook.",
+                "credentials": (config("SMTP_USERNAME"), config("SMTP_PASSWORD")),
+            },
         },
-        "error_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "default",
-            "level": "ERROR",
-            "filename": "fh_webhook/responses/log/error_responses.log",
-            "maxBytes": 10000,
-            "backupCount": 10,
-            "delay": "True",
+        "root": {
+            "handlers": ["email", "error_file"],
         },
-        "email": {
-            "class": "fh_webhook.services.SSLSMTPHandler",
-            "formatter": "default",
-            "level": "ERROR",
-            "mailhost": (config("SMTP_HOST"), config("SMTP_PORT")),
-            "fromaddr": config("EMAIL_FROM"),
-            "toaddrs": config("EMAIL_RECIPIENTS", cast=Csv()),
-            "subject": "Error Logs on FH Webhook.",
-            "credentials": (config("SMTP_USERNAME"), config("SMTP_PASSWORD")),
-        },
-
-    },
-    "root": {
-        "handlers": ["email", "error_file"],
     }
-})
+)
 
 
 class Config:
@@ -62,9 +63,21 @@ class Config:
 
     BIKE_TRACKER_SECRET = config("BIKE_TRACKER_SECRET")
     BIKE_TRACKER_ITEMS = [
-        159053, 159055, 159056, 234853, 234990,  # Regular tours
-        159057, 159058, 159060, 159065,  # Private tours
-        159068, 159074, 159100, 159103, 235262, 265105  # Rentals
+        159053,
+        159055,
+        159056,
+        234853,
+        234990,  # Regular tours
+        159057,
+        159058,
+        159060,
+        159065,  # Private tours
+        159068,
+        159074,
+        159100,
+        159103,
+        235262,
+        265105,  # Rentals
     ]
 
 

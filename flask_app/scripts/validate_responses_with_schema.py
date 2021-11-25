@@ -4,8 +4,8 @@ marshmallow validation.
 """
 
 
-import os
 import json
+import os
 
 from fh_webhook.schema import BookingSchema
 
@@ -21,4 +21,3 @@ for n, f in enumerate(files):
     except Exception as e:
         print(n, f)
         raise e
-

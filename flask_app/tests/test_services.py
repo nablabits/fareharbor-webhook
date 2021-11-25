@@ -1,9 +1,9 @@
-import os
 import json
-from unittest.mock import patch
+import os
 from datetime import datetime, timezone
+from unittest.mock import patch
 
-from fh_webhook import services, models
+from fh_webhook import models, services
 
 
 def test_save_response_as_file(app):
@@ -12,9 +12,7 @@ def test_save_response_as_file(app):
     timestamp = datetime.now(timezone.utc)
     [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
-    filename = services.SaveResponseAsFile(
-        json_response, path, timestamp
-    ).run()
+    filename = services.SaveResponseAsFile(json_response, path, timestamp).run()
 
     files_in_dir = os.listdir(path)
     assert len(files_in_dir) == 1
@@ -86,9 +84,7 @@ def test_populate_db_creates_companies(database, app, file_timestamp):
     assert affiliate_company.updated_at == file_timestamp
 
 
-def test_populate_db_creates_availability(
-        database, app, item_factory, file_timestamp
-):
+def test_populate_db_creates_availability(database, app, item_factory, file_timestamp):
     """
     Although the first test actually saves all the data contained in
     sample_data, we split the tests into manageable chunks for readability.
@@ -108,9 +104,7 @@ def test_populate_db_creates_availability(
     assert av.updated_at == file_timestamp
 
 
-def test_populate_db_creates_booking(
-    database, app, item_factory, file_timestamp
-):
+def test_populate_db_creates_booking(database, app, item_factory, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
     b = models.Booking.get(75125154)
@@ -121,10 +115,16 @@ def test_populate_db_creates_booking(
     assert b.display_id == "#75125154"
     assert b.note_safe_html == ""
     assert b.agent is None
-    assert b.confirmation_url == "https://fareharbor.com/embeds/book/tournebilbao/items/159068/booking/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
+    assert (
+        b.confirmation_url
+        == "https://fareharbor.com/embeds/book/tournebilbao/items/159068/booking/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
+    )
     assert b.customer_count == 1
     assert b.uuid == "c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e"
-    assert b.dashboard_url == "https://fareharbor.com/tournebilbao/dashboard/?overlay=/contacts/64015149/bookings/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
+    assert (
+        b.dashboard_url
+        == "https://fareharbor.com/tournebilbao/dashboard/?overlay=/contacts/64015149/bookings/c6c1c394-3c31-4e30-bf9d-da3e1dde7d6e/"
+    )
     assert b.note == ""
     assert b.pickup is None
     assert b.status == "booked"
@@ -168,9 +168,7 @@ def test_populate_db_creates_contact(database, app, file_timestamp):
     assert contact.updated_at == file_timestamp
 
 
-def test_populate_db_creates_cancellation_policy(
-    database, app, file_timestamp
-):
+def test_populate_db_creates_cancellation_policy(database, app, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
@@ -200,9 +198,7 @@ def test_populate_db_creates_customer_types(database, app, file_timestamp):
     assert ct.updated_at == file_timestamp
 
 
-def test_populate_db_creates_customer_prototypes(
-    database, app, file_timestamp
-):
+def test_populate_db_creates_customer_prototypes(database, app, file_timestamp):
     """
     As with customer types, note that 655990 is duplicated as it's the chosen
     one among availability possible customer prototypes.
@@ -222,9 +218,7 @@ def test_populate_db_creates_customer_prototypes(
     assert ctp.updated_at == file_timestamp
 
 
-def test_populate_db_creates_customer_type_rates(
-    database, app, file_timestamp
-):
+def test_populate_db_creates_customer_type_rates(database, app, file_timestamp):
     """
     As with customer types, note that 2576873546 is duplicated as it's the
     chosen one among availability possible customer type rates.
@@ -233,8 +227,14 @@ def test_populate_db_creates_customer_type_rates(
     services.PopulateDB(app).run()
 
     ctr_ids = (
-        2576873544, 2576873545, 2576873546, 2576873547, 2576873548, 2576873549,
-        2576873550, 2576873546
+        2576873544,
+        2576873545,
+        2576873546,
+        2576873547,
+        2576873548,
+        2576873549,
+        2576873550,
+        2576873546,
     )
     for ctr_id in ctr_ids:
         ctp = models.CustomerTypeRate.get(ctr_id)
@@ -278,8 +278,19 @@ def test_populate_db_creates_custom_field(database, app, file_timestamp):
     services.PopulateDB(app).run()
 
     custom_field_ids = (
-        922177, 922178, 637022, 6160114, 6160113, 6160118, 6999966, 6160120,
-        922180, 910098, 910095, 908052, )
+        922177,
+        922178,
+        637022,
+        6160114,
+        6160113,
+        6160118,
+        6999966,
+        6160120,
+        922180,
+        910098,
+        910095,
+        908052,
+    )
     for cf_id in custom_field_ids:
         cf = models.CustomField.get(cf_id)
     assert cf.is_required is False
@@ -300,14 +311,19 @@ def test_populate_db_creates_custom_field(database, app, file_timestamp):
     assert cf.updated_at == file_timestamp
 
 
-def test_populate_db_creates_custom_field_instance(
-    database, app, file_timestamp
-):
+def test_populate_db_creates_custom_field_instance(database, app, file_timestamp):
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
     custom_field_instance_ids = (
-        4050488, 4050489, 2379541, 4050530, 3963212, 4050531, 3950663, )
+        4050488,
+        4050489,
+        2379541,
+        4050530,
+        3963212,
+        4050531,
+        3950663,
+    )
     for cfi_id in custom_field_instance_ids:
         cfi = models.CustomFieldInstance.get(cfi_id)
     saved_instances = len(models.CustomFieldInstance.query.all())
@@ -316,15 +332,18 @@ def test_populate_db_creates_custom_field_instance(
     assert cfi.updated_at == file_timestamp
 
 
-def test_populate_db_creates_custom_field_values(
-    database, app, file_timestamp
-):
+def test_populate_db_creates_custom_field_values(database, app, file_timestamp):
     """In the sample all the custom field values are under bookings."""
     app.config["RESPONSES_PATH"] = "tests/sample_data/"
     services.PopulateDB(app).run()
 
     custom_field_values_ids = (
-        347938962, 347938963, 347938964, 347938965, 347938966,)
+        347938962,
+        347938963,
+        347938964,
+        347938965,
+        347938966,
+    )
     for cfv_id in custom_field_values_ids:
         cfv = models.CustomFieldValue.get(cfv_id)
     saved_instances = len(models.CustomFieldValue.query.all())
@@ -357,18 +376,17 @@ def test_save_request_to_db(create_mock, json_mock, close_mock):
 
 @patch("fh_webhook.model_services.CloseStoredRequest.run")
 @patch("fh_webhook.model_services.CreateStoredRequest.run")
-def test_save_request_to_db_raises_error_for_process_json(
-    create_mock, close_mock
-):
+def test_save_request_to_db_raises_error_for_process_json(create_mock, close_mock):
     timestamp = datetime.now(timezone.utc)
     unix_timestamp = str(timestamp.timestamp())
     filename = unix_timestamp + ".json"
     json_response = {"foo": "bar", "baz": "gaz"}
 
     from sqlalchemy.exc import OperationalError
+
     with patch(
         "fh_webhook.services.ProcessJSONResponse.run",
-        side_effect=OperationalError("SELECT 1", None, None)
+        side_effect=OperationalError("SELECT 1", None, None),
     ) as json_mock:
         s = services.SaveRequestToDB(json_response, timestamp, filename).run()
 
@@ -389,9 +407,10 @@ def test_save_request_to_db_raises_error_for_create_stored_request(
     json_response = {"foo": "bar", "baz": "gaz"}
 
     from sqlalchemy.exc import OperationalError
+
     with patch(
         "fh_webhook.model_services.CreateStoredRequest.run",
-        side_effect=OperationalError("SELECT 1", None, None)
+        side_effect=OperationalError("SELECT 1", None, None),
     ) as create_mock:
         s = services.SaveRequestToDB(json_response, timestamp, filename).run()
 
@@ -412,9 +431,10 @@ def test_save_request_to_db_raises_error_for_close_stored_request(
     json_response = {"foo": "bar", "baz": "gaz"}
 
     from sqlalchemy.exc import OperationalError
+
     with patch(
         "fh_webhook.model_services.CloseStoredRequest.run",
-        side_effect=OperationalError("SELECT 1", None, None)
+        side_effect=OperationalError("SELECT 1", None, None),
     ) as close_mock:
         s = services.SaveRequestToDB(json_response, timestamp, filename).run()
 
@@ -423,5 +443,3 @@ def test_save_request_to_db_raises_error_for_close_stored_request(
     assert close_mock.call_count == 1
 
     assert s is None
-
-

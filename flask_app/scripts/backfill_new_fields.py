@@ -12,8 +12,8 @@ $> export FLASK_APP=run.py
 $> flask shell < backfill_new_fields.py
 Pray.
 """
-import os
 import json
+import os
 
 from fh_webhook import models
 
@@ -40,9 +40,9 @@ for n, f in enumerate(files):
 
 # get the bookings
 ids = [pk for pk in opt_in.keys()]
-bookings = models.db.session.query(models.Booking).filter(
-    models.Booking.id.in_(ids)
-).all()
+bookings = (
+    models.db.session.query(models.Booking).filter(models.Booking.id.in_(ids)).all()
+)
 
 ids = [pk for pk in headlines.keys()]
 availabilities = models.db.session.query(models.Availability).filter(
@@ -50,9 +50,7 @@ availabilities = models.db.session.query(models.Availability).filter(
 )
 
 ids = [pk for pk in languages.keys()]
-contacts = models.db.session.query(models.Contact).filter(
-    models.Contact.id.in_(ids)
-)
+contacts = models.db.session.query(models.Contact).filter(models.Contact.id.in_(ids))
 
 for booking in bookings:
     booking.is_subscribed_for_sms_updates = opt_in[booking.id]

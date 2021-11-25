@@ -1,8 +1,9 @@
 """Define the models in the database."""
-from sqlalchemy_json import mutable_json_type
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy_json import mutable_json_type
+
 from .exceptions import DoesNotExist
 
 metadata = MetaData()
@@ -11,6 +12,7 @@ db = SQLAlchemy(metadata=metadata)
 
 class BaseMixin:
     """Provide common methods for models."""
+
     # add a timestamp to all models
     created_at = db.Column(db.DateTime(timezone=True), nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), nullable=False)
@@ -81,12 +83,8 @@ class Booking(db.Model, BaseMixin):
     availability_id = db.Column(
         db.BigInteger, db.ForeignKey("availability.id"), nullable=False
     )
-    company_id = db.Column(
-        db.BigInteger, db.ForeignKey("company.id"), nullable=False
-    )
-    affiliate_company_id = db.Column(
-        db.BigInteger, db.ForeignKey("company.id")
-    )
+    company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"), nullable=False)
+    affiliate_company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"))
 
     # price fields
     receipt_subtotal = db.Column(db.Integer)
@@ -166,11 +164,9 @@ class Customer(db.Model, BaseMixin):
     customer_type_rate_id = db.Column(
         db.BigInteger, db.ForeignKey("customer_type_rate.id"), nullable=False
     )
-    checkin_status_id = db.Column(
-        db.BigInteger, db.ForeignKey("checkin_status.id"))
+    checkin_status_id = db.Column(db.BigInteger, db.ForeignKey("checkin_status.id"))
     # M2M to booking
-    booking_id = db.Column(
-        db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
+    booking_id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
 
 
 class CustomerTypeRate(db.Model, BaseMixin):
@@ -248,8 +244,7 @@ class CustomFieldInstance(db.Model, BaseMixin):
     custom_field_id = db.Column(
         db.BigInteger, db.ForeignKey("custom_field.id"), nullable=False
     )
-    availability_id = db.Column(
-        db.BigInteger, db.ForeignKey("availability.id"))
+    availability_id = db.Column(db.BigInteger, db.ForeignKey("availability.id"))
     customer_type_rate_id = db.Column(
         db.BigInteger, db.ForeignKey("customer_type_rate.id")
     )
@@ -261,14 +256,14 @@ class CustomFieldInstance(db.Model, BaseMixin):
         """
         if self.availability_id is None and self.customer_type_rate_id is None:
             raise ValueError(
-                "Custom field instance needs either availability or " +
-                "customer type rate"
+                "Custom field instance needs either availability or "
+                + "customer type rate"
             )
 
         if self.availability_id and self.customer_type_rate_id:
             raise ValueError(
-                "Availability and customer type rate can't have value at the" +
-                " same time."
+                "Availability and customer type rate can't have value at the"
+                + " same time."
             )
 
 
@@ -285,8 +280,7 @@ class CustomFieldValue(db.Model, BaseMixin):
     display_value = db.Column(db.String(2048))
 
     # Foreign key fields
-    custom_field_id = db.Column(
-        db.BigInteger, db.ForeignKey("custom_field.id"))
+    custom_field_id = db.Column(db.BigInteger, db.ForeignKey("custom_field.id"))
     # M2M to booking and customer
     booking_id = db.Column(db.BigInteger, db.ForeignKey("booking.id"))
     customer_id = db.Column(db.BigInteger, db.ForeignKey("customer.id"))
@@ -302,9 +296,7 @@ class CustomFieldValue(db.Model, BaseMixin):
             )
 
         if self.booking_id and self.customer_id:
-            raise ValueError(
-                "Booking and customer can't have value at the same time."
-            )
+            raise ValueError("Booking and customer can't have value at the same time.")
 
 
 class CustomField(db.Model, BaseMixin):
@@ -396,5 +388,5 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
 
     __table_name__ = "effective_cancellation_policy"
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
-    cutoff = db.Column(db.DateTime(timezone=True) )
+    cutoff = db.Column(db.DateTime(timezone=True))
     cancellation_type = db.Column(db.String(64), nullable=False)

@@ -2,16 +2,17 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from . import models, model_services
 from email.message import EmailMessage
 from email.utils import localtime
 from logging import LogRecord
 from logging.handlers import SMTPHandler
 from smtplib import SMTP_SSL
 from ssl import create_default_context
-from sqlalchemy.exc import OperationalError
 
 import attr
+from sqlalchemy.exc import OperationalError
+
+from . import model_services, models
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +49,7 @@ class PopulateDB:
         request_id = get_request_id_or_none(f)
         if request_id and not self._request_exists(request_id):
             unix_timestamp = float(f.replace(".json", ""))
-            timestamp = datetime.fromtimestamp(
-                unix_timestamp, tz=timezone.utc
-            )
+            timestamp = datetime.fromtimestamp(unix_timestamp, tz=timezone.utc)
             filename = os.path.join(self.path, f)
             with open(filename, "r") as response:
                 data = json.load(response)
@@ -77,9 +76,7 @@ class PopulateDB:
                     f"Processed {self.processed} JSON files ({self.skipped} skipped)"
                 )
             self._process_file(f)
-        logger.info(
-            f"Processed {self.processed} JSON files ({self.skipped} skipped)"
-        )
+        logger.info(f"Processed {self.processed} JSON files ({self.skipped} skipped)")
 
 
 @attr.s
@@ -103,9 +100,7 @@ class ProcessJSONResponse:
         else:
             service = model_services.CreateItem
         return service(
-            timestamp=self.timestamp,
-            item_id=item_data["pk"],
-            name=item_data["name"]
+            timestamp=self.timestamp, item_id=item_data["pk"], name=item_data["name"]
         ).run()
 
     def _save_availability(self, item_id):
@@ -126,7 +121,7 @@ class ProcessJSONResponse:
             start_at=av_data["start_at"],
             end_at=av_data["end_at"],
             headline=av_data.get("headline"),
-            item_id=item_id
+            item_id=item_id,
         ).run()
 
     def _save_booking(self, av_id, company_id, affiliate_company_id):
@@ -220,7 +215,7 @@ class ProcessJSONResponse:
 
         return (
             self._save_company(company_data),
-            self._save_company(affiliate_company_data)
+            self._save_company(affiliate_company_data),
         )
 
     def _save_company(self, c_data):
@@ -233,9 +228,7 @@ class ProcessJSONResponse:
         # FH friends were a bit sloopy here
         short_name = c_data.get("shortname") or c_data.get("short_name")
 
-        company = models.Company.get_object_or_none(
-            short_name
-        )
+        company = models.Company.get_object_or_none(short_name)
         if company:
             service = model_services.UpdateCompany
         else:
@@ -253,8 +246,7 @@ class ProcessJSONResponse:
         Save cancellation policy information contained in the data.
         """
         c_data = self.data["booking"]["effective_cancellation_policy"]
-        cp = models.EffectiveCancellationPolicy.get_object_or_none(
-            booking_id)
+        cp = models.EffectiveCancellationPolicy.get_object_or_none(booking_id)
         if cp:
             service = model_services.UpdateCancellationPolicy
         else:
@@ -313,8 +305,7 @@ class ProcessJSONResponse:
         ).run()
 
     def _save_customer_type_rate(
-        self, ctr_data, availability_id, customer_prototype_id,
-        customer_type_id
+        self, ctr_data, availability_id, customer_prototype_id, customer_type_id
     ):
         """
         Save the customer type rate information contained in the data.
@@ -393,8 +384,7 @@ class ProcessJSONResponse:
             customer_type_id = self._save_customer_type(ct_data).id
             customer_prototype_id = self._save_customer_prototype(cpt_data).id
             self._save_customer_type_rate(
-                ctr_data, availability_id, customer_prototype_id,
-                customer_type_id
+                ctr_data, availability_id, customer_prototype_id, customer_type_id
             )
 
         for c_data in customers:
@@ -409,8 +399,7 @@ class ProcessJSONResponse:
             if cs_data:
                 checkin_status_id = self._save_checkin_status(cs_data).id
             ctr = self._save_customer_type_rate(
-                ctr_data, availability_id, customer_prototype_id,
-                customer_type_id
+                ctr_data, availability_id, customer_prototype_id, customer_type_id
             )
             self._save_customer(c_data, ctr.id, booking_id, checkin_status_id)
 
@@ -432,15 +421,21 @@ class ProcessJSONResponse:
                 cf_family_data = cfi_data["custom_field"]
                 cf = self._save_custom_field_family(cf_family_data)
                 self._save_custom_field_instance(
-                    cfi_data, cf.id, customer_type_rate_id=ctr_data["pk"],
-                    availability_id=None)
+                    cfi_data,
+                    cf.id,
+                    customer_type_rate_id=ctr_data["pk"],
+                    availability_id=None,
+                )
 
         for cfi_data in bookings["availability"]["custom_field_instances"]:
             cf_family_data = cfi_data["custom_field"]
             cf = self._save_custom_field_family(cf_family_data)
             self._save_custom_field_instance(
-                cfi_data, cf.id, customer_type_rate_id=None,
-                availability_id=availability_id)
+                cfi_data,
+                cf.id,
+                customer_type_rate_id=None,
+                availability_id=availability_id,
+            )
 
         for cfv_data in bookings["custom_field_values"]:
             cf_family_data = cfv_data["custom_field"]
@@ -451,8 +446,7 @@ class ProcessJSONResponse:
             for cfv_data in c_data["custom_field_values"]:
                 cf_family_data = cfv_data["custom_field"]
                 cf = self._save_custom_field_family(cf_family_data)
-                self._save_custom_field_value(
-                    cfv_data, cf.id, customer_id=c_data["pk"])
+                self._save_custom_field_value(cfv_data, cf.id, customer_id=c_data["pk"])
 
     def _save_custom_field_family(self, cf_family_data):
         """
@@ -475,9 +469,7 @@ class ProcessJSONResponse:
         field. Note also that extended options has a subset of fields to that
         of its parent.
         """
-        custom_field = models.CustomField.get_object_or_none(
-            custom_field_data["pk"]
-        )
+        custom_field = models.CustomField.get_object_or_none(custom_field_data["pk"])
         if custom_field:
             service = model_services.UpdateCustomField
         else:
@@ -493,8 +485,7 @@ class ProcessJSONResponse:
             title = custom_field_data["title"]
             field_type = custom_field_data["type"]
             booking_notes = custom_field_data["booking_notes"]
-            booking_notes_safe_html = custom_field_data[
-                "booking_notes_safe_html"]
+            booking_notes_safe_html = custom_field_data["booking_notes_safe_html"]
             is_required = custom_field_data["is_required"]
 
         return service(
@@ -518,11 +509,15 @@ class ProcessJSONResponse:
         ).run()
 
     def _save_custom_field_instance(
-        self, cfi_data, custom_field_id, customer_type_rate_id=None,
-        availability_id=None
+        self,
+        cfi_data,
+        custom_field_id,
+        customer_type_rate_id=None,
+        availability_id=None,
     ):
         custom_field_instance = models.CustomFieldInstance.get_object_or_none(
-            cfi_data["pk"])
+            cfi_data["pk"]
+        )
         if custom_field_instance:
             service = model_services.UpdateCustomFieldInstance
         else:
@@ -533,14 +528,13 @@ class ProcessJSONResponse:
             timestamp=self.timestamp,
             custom_field_id=custom_field_id,
             availability_id=availability_id,
-            customer_type_rate_id=customer_type_rate_id
+            customer_type_rate_id=customer_type_rate_id,
         ).run()
 
     def _save_custom_field_value(
         self, cfv_data, custom_field_id, customer_id=None, booking_id=None
     ):
-        custom_field_value = models.CustomFieldValue.get_object_or_none(
-            cfv_data["pk"])
+        custom_field_value = models.CustomFieldValue.get_object_or_none(cfv_data["pk"])
         if custom_field_value:
             service = model_services.UpdateCustomFieldValue
         else:
@@ -554,7 +548,7 @@ class ProcessJSONResponse:
             display_value=cfv_data["display_value"],
             custom_field_id=custom_field_id,
             booking_id=booking_id,
-            customer_id=customer_id
+            customer_id=customer_id,
         ).run()
 
     def run(self):
@@ -562,7 +556,8 @@ class ProcessJSONResponse:
         av = self._save_availability(item.id)
         company, affiliate_company = self._save_company_group()
         affiliate_company_id = (
-            affiliate_company.id if hasattr(affiliate_company, "id") else None)
+            affiliate_company.id if hasattr(affiliate_company, "id") else None
+        )
         b = self._save_booking(av.id, company.id, affiliate_company_id)
         self._save_contact(b.id)
         self._save_cancellation_policy(b.id)
@@ -575,6 +570,7 @@ class SaveRequestToDB:
     """
     Handle all the services needed for the save of responses.
     """
+
     json_response = attr.ib(type=dict)
     timestamp = attr.ib(type=datetime)
     filename = attr.ib(type=str)
@@ -588,9 +584,7 @@ class SaveRequestToDB:
                 timestamp=self.timestamp,
             ).run()
             ProcessJSONResponse(self.json_response, self.timestamp).run()
-            stored_request = model_services.CloseStoredRequest(
-                stored_request
-            ).run()
+            stored_request = model_services.CloseStoredRequest(stored_request).run()
         except OperationalError as e:
             logger.error(e)
             return None
@@ -606,6 +600,7 @@ class SaveResponseAsFile:
     to create the tables accordingly. So we need a way to store the data
     to inspect it.
     """
+
     json_response = attr.ib(type=dict)
     path = attr.ib(type=str)
     timestamp = attr.ib(type=datetime)
@@ -646,7 +641,9 @@ class SSLSMTPHandler(SMTPHandler):
             msg.set_content(self.format(record))
             context = create_default_context()
             with SMTP_SSL(
-                self.mailhost, self.mailport, timeout=self.timeout,
+                self.mailhost,
+                self.mailport,
+                timeout=self.timeout,
                 context=context,
             ) as server:
                 server.login(user=self.username, password=self.password)

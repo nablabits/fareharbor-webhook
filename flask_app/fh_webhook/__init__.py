@@ -65,9 +65,7 @@ def create_app(test_config=False):
             try:
                 BookingSchema().load(json_response["booking"])
             except ValidationError as e:
-                app.logger.error(
-                    f"filename={timestamp.timestamp()}.json, error={e}"
-                )
+                app.logger.error(f"filename={timestamp.timestamp()}.json, error={e}")
                 return Response(str(e), status=400)
 
             # if validation succeeds we save the response right away to keep
@@ -78,9 +76,7 @@ def create_app(test_config=False):
             app.logger.error("The request was empty")
             return Response("The request was empty", status=400)
 
-        stored_request = SaveRequestToDB(
-            json_response, timestamp, filename
-        ).run()
+        stored_request = SaveRequestToDB(json_response, timestamp, filename).run()
 
         if stored_request:
             message = f"Request {stored_request.id} successfully processed."

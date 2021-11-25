@@ -1,6 +1,6 @@
 import functools
-from marshmallow import Schema, fields
 
+from marshmallow import Schema, fields
 
 requiredString = functools.partial(fields.String, required=True)
 requiredInteger = functools.partial(fields.Integer, required=True)
@@ -58,7 +58,6 @@ class CustomFieldInstanceSchema(IdentifierSchemaMixin):
     custom_field = requiredNested(CustomFieldSchema)
 
 
-
 class CustomerPrototypeSchema(IdentifierSchemaMixin):
     note = requiredString()
     total = requiredInteger()
@@ -75,7 +74,9 @@ class CustomerTypeSchema(IdentifierSchemaMixin):
 class CustomerTypeRateSchema(IdentifierSchemaMixin):
     customer_prototype = requiredNested(CustomerPrototypeSchema)
     customer_type = requiredNested(CustomerTypeSchema)
-    custom_field_instances = fields.Nested(CustomFieldInstanceSchema, many=True, allow_none=True)
+    custom_field_instances = fields.Nested(
+        CustomFieldInstanceSchema, many=True, allow_none=True
+    )
     capacity = requiredInteger()
     minimum_party_size = requiredInteger(allow_none=True)
     maximum_party_size = requiredInteger(allow_none=True)
@@ -105,7 +106,6 @@ class CheckinStatusSchema(IdentifierSchemaMixin):
     cls_ = fields.String(data_key="cls")
 
 
-
 class CustomerSchema(IdentifierSchemaMixin):
     checkin_url = requiredString()
     checkin_status = requiredNested(CheckinStatusSchema, allow_none=True)
@@ -125,9 +125,7 @@ class AvailabilitySchema(IdentifierSchemaMixin):
     maximum_party_size = requiredInteger(allow_none=True)
     start_at = requiredDateTime()
     end_at = requiredDateTime()
-    custom_field_instances = requiredNested(
-        CustomFieldInstanceSchema, many=True
-    )
+    custom_field_instances = requiredNested(CustomFieldInstanceSchema, many=True)
     customer_type_rates = requiredNested(CustomerTypeRateSchema, many=True)
     item = requiredNested(ItemSchema)
     headline = fields.String()
@@ -142,9 +140,11 @@ class ContactSchema(Schema):
     email = requiredString()
     language = fields.String()
 
+
 class EffectiveCancellationPolicySchema(Schema):
     cutoff = requiredString(allow_none=True)
     cancellation_type = requiredString(data_key="type")
+
 
 class OrderSchema(Schema):
     display_id = requiredString()
@@ -182,7 +182,7 @@ class BookingSchema(IdentifierSchemaMixin):
     receipt_total_display = requiredString()
     amount_paid_display = requiredString()
     invoice_price_display = requiredString()
-    
+
     # Boolean fields
     is_eligible_for_cancellation = requiredBool()
     is_subscribed_for_sms_updates = requiredBool()
@@ -196,6 +196,3 @@ class BookingSchema(IdentifierSchemaMixin):
     custom_field_values = requiredNested(CustomFieldValueSchema, many=True)
     effective_cancellation_policy = requiredNested(EffectiveCancellationPolicySchema)
     contact = requiredNested(ContactSchema)
-
-
-

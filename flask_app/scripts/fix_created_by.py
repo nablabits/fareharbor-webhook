@@ -11,12 +11,12 @@ $> flask shell < fix_created_by.py
 Pray.
 """
 
-from fh_webhook.models import db, Booking, Company
+from fh_webhook.models import Booking, Company, db
 
-query = db.session.query(
-    Booking, Company
-).filter(Booking.affiliate_company_id == Company.id).filter(
-    Booking.affiliate_company_id is not None
+query = (
+    db.session.query(Booking, Company)
+    .filter(Booking.affiliate_company_id == Company.id)
+    .filter(Booking.affiliate_company_id is not None)
 )
 
 for pair in query:

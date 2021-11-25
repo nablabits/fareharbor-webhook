@@ -8,11 +8,10 @@ $> export FLASK_APP=run.py
 $> flask shell < fix_customer_model.py
 Pray.
 """
-import os
 import json
+import os
 
 from fh_webhook import models
-
 
 # Create a dict with customer_id: customer_type_rate_id, this way, in case
 # there's already a customer pk, the ctr it points to will be updated.
@@ -30,9 +29,7 @@ for n, f in enumerate(files):
     try:
         customers = data["booking"]["customers"]
     except KeyError:
-        app.logger.info(
-            f"Skipping {filename} as it does not contain valid data"
-        )
+        app.logger.info(f"Skipping {filename} as it does not contain valid data")
     for c in customers:
         update[c["pk"]] = c["customer_type_rate"]["pk"]
 

@@ -87,8 +87,7 @@ def test_dummy_webhook_saves_content_to_a_file(keys_svc, client, database):
 
 @patch("fh_webhook.services.ProcessJSONResponse.run")
 @patch(
-    "fh_webhook.services.SaveResponseAsFile.run",
-    return_value="1626842330.051856.json"
+    "fh_webhook.services.SaveResponseAsFile.run", return_value="1626842330.051856.json"
 )
 def test_dummy_webhook_does_not_find_new_keys(
     save_file_svc, process_svc, client, database, caplog
@@ -110,8 +109,7 @@ def test_dummy_webhook_does_not_find_new_keys(
 
 
 @patch(
-    "fh_webhook.services.SaveResponseAsFile.run",
-    return_value="1626842330.051856.json"
+    "fh_webhook.services.SaveResponseAsFile.run", return_value="1626842330.051856.json"
 )
 def test_dummy_webhook_trows_requests_with_missing_data_to_a_log(
     file_svc, client, database, caplog
