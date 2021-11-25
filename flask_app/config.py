@@ -1,7 +1,6 @@
 from logging.config import dictConfig
 
-from decouple import config, Csv
-
+from decouple import Csv, config
 
 dictConfig({
     "version": 1,
@@ -60,6 +59,13 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     FH_PASSWORD = config("FH_PASSWORD")
     RESPONSES_PATH = "fh_webhook/responses/"
+
+    BIKE_TRACKER_SECRET = config("BIKE_TRACKER_SECRET")
+    BIKE_TRACKER_ITEMS = [
+        159053, 159055, 159056, 234853, 234990,  # Regular tours
+        159057, 159058, 159060, 159065,  # Private tours
+        159068, 159074, 159100, 159103, 235262, 265105  # Rentals
+    ]
 
 
 class ProductionConfig(Config):

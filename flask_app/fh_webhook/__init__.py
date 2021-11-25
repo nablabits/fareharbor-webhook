@@ -1,16 +1,20 @@
 import os
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from uuid import uuid4
 
-from flask import Flask, request, Response
-from flask_migrate import Migrate
-from flask_httpauth import HTTPBasicAuth
-from werkzeug.security import generate_password_hash, check_password_hash
-from .models import db
-from .services import SaveResponseAsFile, SaveRequestToDB
-from fh_webhook.schema import BookingSchema
-from marshmallow.validate import ValidationError
-
+import jwt
 from decouple import config
+from flask import Flask, Response, jsonify, request
+from flask_httpauth import HTTPBasicAuth
+from flask_migrate import Migrate
+from marshmallow.validate import ValidationError
+from sqlalchemy import func
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from fh_webhook.schema import BookingSchema
+
+from .models import Availability, Booking, Item, db
+from .services import SaveRequestToDB, SaveResponseAsFile
 
 
 def create_app(test_config=False):
@@ -92,5 +96,49 @@ def create_app(test_config=False):
         if app_name:
             return "Hello from flask on a Docker environment"
         return "Hello from Flask"
+
+    @app.route("/bike-tracker-test/", methods=["GET"])
+    def bike_tracker_test():
+        """Endpoint to exchange information with the bike_tracker app."""
+        bike_tracker_items = app.config["BIKE_TRACKER_ITEMS"]
+        activities = (
+            db.session.query(
+                Availability.id,
+                Availability.headline,
+                Availability.start_at,
+                Item.name,
+                func.sum(Booking.customer_count),
+            )
+            .filter(Booking.availability_id == Availability.id)
+            .filter(Item.id == Availability.item_id)
+            .filter(func.DATE(Availability.start_at) == date(2021, 8, 10))
+            .filter(Item.id.in_(bike_tracker_items))
+            .filter(Booking.status != "cancelled")
+            .filter(Booking.rebooked_to is not None)
+            .group_by(
+                Availability.id, Availability.headline, Availability.start_at, Item.name
+            )
+            .all()
+        )
+        data = {
+            "availabilities": list(),
+        }
+        for activity in activities:
+            data["availabilities"].append(
+                {
+                    "availability_id": activity[0],
+                    "headline": activity[1] or activity[3],
+                    "timestamp": activity[2].strftime("%X"),
+                    "no_of_bikes": activity[3],
+                }
+            )
+        # Add the uuids to Odoo and hardcode them in the settings temporally.
+        # Eventually we can query Odoo db but now it makes no sense to do so.
+        bike_uuids = [{"uuid": str(uuid4()), "name": f"bike{n}"} for n in range(70)]
+        data.update({"bike_uuids": bike_uuids})
+        key = app.config.get("BIKE_TRACKER_SECRET")
+        token = jwt.encode(payload=data, key=key)
+
+        return jsonify(token)
 
     return app
