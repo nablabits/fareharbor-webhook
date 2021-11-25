@@ -1,8 +1,11 @@
+import base64
 import json
 import os
-import base64
-from fh_webhook.models import StoredRequest
 from unittest.mock import patch
+
+import jwt
+
+from fh_webhook.models import StoredRequest
 
 
 def get_headers():
@@ -139,3 +142,18 @@ def test_dummy_webhook_trows_empty_requests_to_a_log(client, caplog):
 
     assert response.status_code == 400  # Since the request was empty
     assert caplog.records[0].msg == "The request was empty"
+
+
+def test_bike_tracker_test_success(client, database):
+    response = client.get("/bike-tracker-test/", headers=get_headers())
+    token = json.loads(response.data.decode())
+    d = jwt.decode(
+        token,
+        key=client.application.config.get("BIKE_TRACKER_SECRET"),
+        algorithms=[
+            "HS256",
+        ],
+    )
+
+    assert d["availabilities"] == []
+    assert len(d["bike_uuids"]) == 70
