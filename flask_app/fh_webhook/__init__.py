@@ -125,7 +125,7 @@ def create_app(test_config=False):
                     "availability_id": activity[0],
                     "headline": activity[1] or activity[3],
                     "timestamp": activity[2].strftime("%X"),
-                    "no_of_bikes": activity[3],
+                    "no_of_bikes": activity[4],
                 }
             )
         # Add the uuids to Odoo and hardcode them in the settings temporally.
