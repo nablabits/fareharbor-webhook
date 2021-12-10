@@ -62,7 +62,7 @@ def test_dummy_webhook_saves_content_to_a_file(keys_svc, client, database):
     path = client.application.config.get("RESPONSES_PATH")
     [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
 
-    with open("tests/sample_data/1626842330.051856.json") as f:
+    with open("tests/sample_data/sample_booking/1626842330.051856.json") as f:
         data = json.load(f)
 
     response = client.post(
@@ -92,7 +92,7 @@ def test_dummy_webhook_saves_content_to_a_file(keys_svc, client, database):
 def test_dummy_webhook_does_not_find_new_keys(
     save_file_svc, process_svc, client, database, caplog
 ):
-    with open("tests/sample_data/1626842330.051856.json") as f:
+    with open("tests/sample_data/sample_booking/1626842330.051856.json") as f:
         data = json.load(f)
 
     response = client.post(
@@ -115,7 +115,7 @@ def test_dummy_webhook_trows_requests_with_missing_data_to_a_log(
     file_svc, client, database, caplog
 ):
 
-    with open("tests/sample_data/1626842330.051856.json") as f:
+    with open("tests/sample_data/sample_booking/1626842330.051856.json") as f:
         data = json.load(f)
 
     del data["booking"]["display_id"]
