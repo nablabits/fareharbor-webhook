@@ -1,6 +1,7 @@
 # vim swap files
 *.swp
 *.vim
+*.ycm_extra_conf.py
 tags
 
 # pycharm stuff
@@ -27,6 +28,9 @@ flask_app/scripts/data
 
 # Exclude the schemas generated with eralchemy
 flask_app/schema.*
+
+# Exclude static content
+bike_info.json
 
 dist/
 build/

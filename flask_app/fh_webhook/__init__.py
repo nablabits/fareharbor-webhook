@@ -1,6 +1,5 @@
 import os
 from datetime import date, datetime, timezone
-from uuid import uuid4
 
 import jwt
 from decouple import config
@@ -14,7 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from fh_webhook.schema import BookingSchema
 
 from .models import Availability, Booking, Item, db
-from .services import SaveRequestToDB, SaveResponseAsFile
+from .services import GetBikeUUIDs, SaveRequestToDB, SaveResponseAsFile
 
 
 def create_app(test_config=False):
@@ -128,10 +127,7 @@ def create_app(test_config=False):
                     "no_of_bikes": activity[4],
                 }
             )
-        # Add the uuids to Odoo and hardcode them in the settings temporally.
-        # Eventually we can query Odoo db but now it makes no sense to do so.
-        bike_uuids = [{"uuid": str(uuid4()), "name": f"bike{n}"} for n in range(70)]
-        data.update({"bike_uuids": bike_uuids})
+        data.update({"bike_uuids": GetBikeUUIDs(app).run()})
         key = app.config.get("BIKE_TRACKER_SECRET")
         token = jwt.encode(payload=data, key=key)
 

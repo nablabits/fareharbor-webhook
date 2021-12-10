@@ -61,6 +61,8 @@ class Config:
     FH_PASSWORD = config("FH_PASSWORD")
     RESPONSES_PATH = "fh_webhook/responses/"
 
+    # The location of the bikes information.
+    BIKE_TRACKER_BIKE_SOURCE = "fh_webhook/static/bike_info.json"
     BIKE_TRACKER_SECRET = config("BIKE_TRACKER_SECRET")
     BIKE_TRACKER_ITEMS = [
         159053,
@@ -101,3 +103,4 @@ class TestingConfig(Config):
     TEST_PASSWORD = "test"
     SQLALCHEMY_DATABASE_URI = "postgresql:///webhook-test"
     RESPONSES_PATH = "tests/responses/"
+    BIKE_TRACKER_BIKE_SOURCE = "tests/sample_data/sample_bike/bike_info.json"
