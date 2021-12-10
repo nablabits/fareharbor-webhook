@@ -4,7 +4,7 @@ FROM python:3.8.6-slim-buster
 ## install dependencies
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y gcc && \
+    apt-get install -y gcc graphviz-dev && \
     apt-get clean
 
 # Set the working directory to /app
