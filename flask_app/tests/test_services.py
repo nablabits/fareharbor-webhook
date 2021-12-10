@@ -27,13 +27,13 @@ def test_save_response_as_file(app):
 
 
 def test_get_request_id(app):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     assert services.get_request_id_or_none("188.12.json") == 18812
 
 
 @patch("fh_webhook.services.ProcessJSONResponse.run")
 def test_process_file_skips_non_json_files(mock_service, app):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     service = services.PopulateDB(app)
     service._process_file("188.12")
     assert mock_service.call_count == 0
@@ -43,7 +43,7 @@ def test_process_file_skips_non_json_files(mock_service, app):
 def test_process_file_skips_existing_files(
     mock_service, database, app, stored_request_factory
 ):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     stored_request = stored_request_factory.run()
     service = services.PopulateDB(app)
     service._process_file(stored_request.filename)
@@ -51,7 +51,7 @@ def test_process_file_skips_existing_files(
 
 
 def test_populate_db_creates_stored_request(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
     request_id = 1626842330051856
     stored_request = models.StoredRequest.get(request_id)
@@ -62,7 +62,7 @@ def test_populate_db_creates_stored_request(database, app, file_timestamp):
 
 
 def test_populate_db_creates_item(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
     item = models.Item.get(159068)
     assert item.name == "Alquiler Urbana"
@@ -71,7 +71,7 @@ def test_populate_db_creates_item(database, app, file_timestamp):
 
 
 def test_populate_db_creates_companies(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
     company, affiliate_company = models.Company.query.all()
     assert company.name == "Tourne"
@@ -92,7 +92,7 @@ def test_populate_db_creates_availability(database, app, item_factory, file_time
     the scope of the database has to be set to function and therefore an empty
     database is used per test that increases the running time.
     """
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
     av = models.Availability.get(619118440)
     assert av.capacity == 49
@@ -105,7 +105,7 @@ def test_populate_db_creates_availability(database, app, item_factory, file_time
 
 
 def test_populate_db_creates_booking(database, app, item_factory, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
     b = models.Booking.get(75125154)
     company = models.Company.get("tournebilbao")
@@ -154,7 +154,7 @@ def test_populate_db_creates_booking(database, app, item_factory, file_timestamp
 
 
 def test_populate_db_creates_contact(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     contact = models.Contact.get(75125154)
@@ -169,7 +169,7 @@ def test_populate_db_creates_contact(database, app, file_timestamp):
 
 
 def test_populate_db_creates_cancellation_policy(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     cp = models.EffectiveCancellationPolicy.get(75125154)
@@ -184,7 +184,7 @@ def test_populate_db_creates_customer_types(database, app, file_timestamp):
     Note that, 314999 is duplicated as it's the chosen one among availability
     possible customer types.
     """
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     ct_ids = (314999, 314997, 314998, 314999, 315000, 315001, 315002, 315003)
@@ -203,7 +203,7 @@ def test_populate_db_creates_customer_prototypes(database, app, file_timestamp):
     As with customer types, note that 655990 is duplicated as it's the chosen
     one among availability possible customer prototypes.
     """
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     ctp_ids = (655990, 655988, 655989, 655990, 655991, 655992, 655993, 655994)
@@ -223,7 +223,7 @@ def test_populate_db_creates_customer_type_rates(database, app, file_timestamp):
     As with customer types, note that 2576873546 is duplicated as it's the
     chosen one among availability possible customer type rates.
     """
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     ctr_ids = (
@@ -249,7 +249,7 @@ def test_populate_db_creates_customer_type_rates(database, app, file_timestamp):
 
 
 def test_populate_db_creates_checkin_status(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     checkin_status = models.CheckinStatus.get(83803)
@@ -260,7 +260,7 @@ def test_populate_db_creates_checkin_status(database, app, file_timestamp):
 
 
 def test_populate_db_creates_customer(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     customer = models.Customer.get(224262373)
@@ -274,7 +274,7 @@ def test_populate_db_creates_customer(database, app, file_timestamp):
 
 def test_populate_db_creates_custom_field(database, app, file_timestamp):
     """There were 22 custom fields attempted to save."""
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     custom_field_ids = (
@@ -312,7 +312,7 @@ def test_populate_db_creates_custom_field(database, app, file_timestamp):
 
 
 def test_populate_db_creates_custom_field_instance(database, app, file_timestamp):
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     custom_field_instance_ids = (
@@ -334,7 +334,7 @@ def test_populate_db_creates_custom_field_instance(database, app, file_timestamp
 
 def test_populate_db_creates_custom_field_values(database, app, file_timestamp):
     """In the sample all the custom field values are under bookings."""
-    app.config["RESPONSES_PATH"] = "tests/sample_data/"
+    app.config["RESPONSES_PATH"] = "tests/sample_data/sample_booking/"
     services.PopulateDB(app).run()
 
     custom_field_values_ids = (
