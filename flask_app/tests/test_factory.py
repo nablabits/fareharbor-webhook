@@ -143,7 +143,11 @@ def test_dummy_webhook_trows_empty_requests_to_a_log(client, caplog):
 
 
 def test_bike_tracker_test_success(client, database):
-    response = client.get("/bike-tracker-test/", headers=get_headers())
+    rv = [
+        {"uuid": "b90af693-975b-4b95-9a32-699afd6beae1", "display_name": "bike-01"},
+    ]
+    with patch("fh_webhook.services.GetBikeUUIDs.run", return_value=rv):
+        response = client.get("/bike-tracker-test/", headers=get_headers())
     token = json.loads(response.data.decode())
     d = jwt.decode(
         token,
@@ -154,4 +158,4 @@ def test_bike_tracker_test_success(client, database):
     )
 
     assert d["availabilities"] == []
-    assert len(d["bike_uuids"]) == 70
+    assert d["bike_uuids"] == rv

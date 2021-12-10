@@ -10,6 +10,7 @@ from smtplib import SMTP_SSL
 from ssl import create_default_context
 
 import attr
+from flask import Flask
 from sqlalchemy.exc import OperationalError
 
 from . import model_services, models
@@ -654,3 +655,21 @@ class SSLSMTPHandler(SMTPHandler):
             raise
         except Exception:
             self.handleError(record)
+
+
+@attr.s
+class GetBikeUUIDs:
+    app = attr.ib(validator=attr.validators.instance_of(Flask))
+    use_cached_version = attr.ib(
+        validator=attr.validators.instance_of(bool), default=True
+    )
+
+    def _refresh_from_source(self):
+        """Get an updated version of the file."""
+        pass
+
+    def run(self):
+        path = self.app.config.get("BIKE_TRACKER_BIKE_SOURCE")
+        with open(path) as f:
+            data = json.load(f)
+        return data["query_result"]["data"]["rows"]
