@@ -447,10 +447,9 @@ def test_save_request_to_db_raises_error_for_close_stored_request(
 
 def test_get_bike_uuids_retrieves_the_data_from_cache(app):
     from fh_webhook.services import GetBikeUUIDs
+
     r = GetBikeUUIDs(app).run()
     assert r == [
-        {'uuid': 'cb12ebfe-f7db-40bc-b7ad-74117c3aa5d5', 'display_name': 'bike-01'},
-        {'uuid': 'c44b0375-daa6-4ac3-bf5c-8568156e2a54', 'display_name': 'bike-02'}
+        {"uuid": "cb12ebfe-f7db-40bc-b7ad-74117c3aa5d5", "display_name": "bike-01"},
+        {"uuid": "c44b0375-daa6-4ac3-bf5c-8568156e2a54", "display_name": "bike-02"},
     ]
-
-
