@@ -59,6 +59,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     FH_PASSWORD = config("FH_PASSWORD")
+    BIKE_TRACKER_PASS = config("BIKE_TRACKER_PASS")
     RESPONSES_PATH = "fh_webhook/responses/"
 
     # The location of the bikes information.

@@ -43,19 +43,6 @@ def test_dummy_webhook_auth_error(client):
     assert response.status_code == 401
     assert response.data == b"Unauthorized Access"
 
-    headers = {"Authorization": "Basic " + wrong_user}
-    response = client.post(
-        "/",
-        json={
-            "name": "foo",
-            "age": 45,
-        },
-        headers=headers,
-    )
-
-    assert response.status_code == 401
-    assert response.data == b"Unauthorized Access"
-
 
 @patch("fh_webhook.services.ProcessJSONResponse.run")
 def test_dummy_webhook_saves_content_to_a_file(keys_svc, client, database):
@@ -159,3 +146,77 @@ def test_bike_tracker_test_success(client, database):
 
     assert d["availabilities"] == []
     assert d["bike_uuids"] == rv
+
+
+def test_add_bikes_only_accepts_POST(client):
+    path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    response = client.get("/bike-tracker/add-bikes/", headers=get_headers())
+    assert response.status == "405 METHOD NOT ALLOWED"
+
+
+def test_add_bikes_auth_error(client):
+    wrong_user = base64.b64encode(b"void:test").decode("utf-8")
+    headers = {"Authorization": "Basic " + wrong_user}
+    data = {
+        "availability_id": 123,
+        "bikes": [f"bike{n}" for n in range(3)],
+    }
+    key = client.application.config.get("BIKE_TRACKER_SECRET")
+    token = jwt.encode(payload=data, key=key)
+    response = client.post("/bike-tracker/add-bikes/", headers=headers, json=token)
+
+    assert response.status_code == 401
+    assert response.data == b"Unauthorized Access"
+
+
+def test_add_bikes_token_error(client, caplog):
+    data = {
+        "availability_id": 123,
+        "bikes": [f"bike{n}" for n in range(3)],
+    }
+    key = "void_key"
+    token = jwt.encode(payload=data, key=key)
+    response = client.post(
+        "/bike-tracker/add-bikes/", headers=get_headers(), json=token
+    )
+
+    assert response.status_code == 403
+    assert response.data == b"Signature verification failed"
+    assert caplog.messages == [
+        "Unable to decode the token, error: Signature verification failed"
+    ]
+
+
+def test_add_bikes_schema_error(client, caplog):
+    data = {
+        "availability_id": "12r",
+        "bikes": [f"bike{n}" for n in range(3)],
+    }
+    key = client.application.config.get("BIKE_TRACKER_SECRET")
+    token = jwt.encode(payload=data, key=key)
+    response = client.post(
+        "/bike-tracker/add-bikes/", headers=get_headers(), json=token
+    )
+
+    assert response.status_code == 400
+    assert response.data == b"{'availability_id': ['Not a valid integer.']}"
+    assert caplog.messages == [
+        "Validation failed for add-bike request, error: "
+        "{'availability_id': ['Not a valid integer.']}"
+    ]
+
+
+def test_add_bikes_success(client):
+    data = {
+        "availability_id": 123,
+        "bikes": [f"bike{n}" for n in range(3)],
+    }
+    key = client.application.config.get("BIKE_TRACKER_SECRET")
+    token = jwt.encode(payload=data, key=key)
+    response = client.post(
+        "/bike-tracker/add-bikes/", headers=get_headers(), json=token
+    )
+
+    assert response.status_code == 200

@@ -196,3 +196,10 @@ class BookingSchema(IdentifierSchemaMixin):
     custom_field_values = requiredNested(CustomFieldValueSchema, many=True)
     effective_cancellation_policy = requiredNested(EffectiveCancellationPolicySchema)
     contact = requiredNested(ContactSchema)
+
+
+class AddBikesSchema(Schema):
+    """Validate the schema for the add-bikes requests."""
+
+    availability_id = requiredInteger()
+    bikes = fields.List(fields.String(), required=True)

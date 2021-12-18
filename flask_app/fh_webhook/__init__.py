@@ -10,8 +10,9 @@ from marshmallow.validate import ValidationError
 from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from fh_webhook.schema import BookingSchema
+from fh_webhook.schema import AddBikesSchema, BookingSchema, ReplaceBikesSchema
 
+from .decorators import validate_token
 from .models import Availability, Booking, Item, db
 from .services import GetBikeUUIDs, SaveRequestToDB, SaveResponseAsFile
 
@@ -37,8 +38,10 @@ def create_app(test_config=False):
     # load auth
     auth = HTTPBasicAuth()
     fh_pass = app.config["FH_PASSWORD"]
+    bike_tracker_pass = app.config["BIKE_TRACKER_PASS"]
     users = {
         "fareharbor": generate_password_hash(fh_pass),
+        "bike_tracker": generate_password_hash(bike_tracker_pass),
     }
     test_pass = app.config.get("TEST_PASSWORD")
     if test_pass:
@@ -92,6 +95,7 @@ def create_app(test_config=False):
             return "Hello from flask on a Docker environment"
         return "Hello from Flask"
 
+    # TODO: change endpoint to /bike-tracker/get-services/ and add auth.
     @app.route("/bike-tracker-test/", methods=["GET"])
     def bike_tracker_test():
         """Endpoint to exchange information with the bike_tracker app."""
@@ -133,4 +137,15 @@ def create_app(test_config=False):
 
         return jsonify(token)
 
+    @app.route("/bike-tracker/add-bikes/", methods=["POST"])
+    @auth.login_required
+    @validate_token
+    def bike_tracker_test_add_bikes(data):
+        try:
+            AddBikesSchema().load(data)
+        except ValidationError as e:
+            app.logger.error(f"Validation failed for add-bike request, error: {e}")
+            return Response(str(e), status=400)
+        # Add here the service that handles the data and stores it in the db.
+        return Response(status=200)
     return app
