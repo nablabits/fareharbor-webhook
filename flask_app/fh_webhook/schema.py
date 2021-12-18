@@ -203,3 +203,10 @@ class AddBikesSchema(Schema):
 
     availability_id = requiredInteger()
     bikes = fields.List(fields.String(), required=True)
+
+
+class ReplaceBikesSchema(Schema):
+    """Validate the schema for the replace-bikes requests."""
+
+    bike_picked = requiredString()
+    bike_returned = requiredString()

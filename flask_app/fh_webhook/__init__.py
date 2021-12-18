@@ -148,4 +148,17 @@ def create_app(test_config=False):
             return Response(str(e), status=400)
         # Add here the service that handles the data and stores it in the db.
         return Response(status=200)
+
+    @app.route("/bike-tracker/replace-bike/", methods=["PUT"])
+    @auth.login_required
+    @validate_token
+    def bike_tracker_test_replace_bike(data):
+        try:
+            ReplaceBikesSchema().load(data)
+        except ValidationError as e:
+            app.logger.error(f"Validation failed for add-bike request, error: {e}")
+            return Response(str(e), status=400)
+        # Add here the service that handles the data and stores it in the db.
+        return Response(status=200)
+
     return app

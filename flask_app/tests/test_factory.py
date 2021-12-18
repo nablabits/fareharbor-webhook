@@ -220,3 +220,71 @@ def test_add_bikes_success(client):
     )
 
     assert response.status_code == 200
+
+
+def test_replace_bikes_only_accepts_PUT(client):
+    path = client.application.config.get("RESPONSES_PATH")
+    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
+
+    response = client.post("/bike-tracker/replace-bike/", headers=get_headers())
+    assert response.status == "405 METHOD NOT ALLOWED"
+
+
+def test_replace_bikes_auth_error(client):
+    wrong_user = base64.b64encode(b"void:test").decode("utf-8")
+    headers = {"Authorization": "Basic " + wrong_user}
+    data = {
+        "availability_id": 123,
+        "bikes": [f"bike{n}" for n in range(3)],
+    }
+    key = client.application.config.get("BIKE_TRACKER_SECRET")
+    token = jwt.encode(payload=data, key=key)
+    response = client.put("/bike-tracker/replace-bike/", headers=headers, json=token)
+
+    assert response.status_code == 401
+    assert response.data == b"Unauthorized Access"
+
+
+def test_replace_bikes_token_error(client, caplog):
+    data = {
+        "availability_id": 123,
+        "bikes": [f"bike{n}" for n in range(3)],
+    }
+    key = "void_key"
+    token = jwt.encode(payload=data, key=key)
+    response = client.put(
+        "/bike-tracker/replace-bike/", headers=get_headers(), json=token
+    )
+
+    assert response.status_code == 403
+    assert response.data == b"Signature verification failed"
+    assert caplog.messages == [
+        "Unable to decode the token, error: Signature verification failed"
+    ]
+
+
+def test_replace_bikes_schema_error(client, caplog):
+    data = {"bike_picked": 123, "bike_returned": "some-string"}
+    key = client.application.config.get("BIKE_TRACKER_SECRET")
+    token = jwt.encode(payload=data, key=key)
+    response = client.put(
+        "/bike-tracker/replace-bike/", headers=get_headers(), json=token
+    )
+
+    assert response.status_code == 400
+    assert response.data == b"{'bike_picked': ['Not a valid string.']}"
+    assert caplog.messages == [
+        "Validation failed for add-bike request, error: "
+        "{'bike_picked': ['Not a valid string.']}"
+    ]
+
+
+def test_replace_bikes_success(client):
+    data = {"bike_picked": "some-string", "bike_returned": "some-other-string"}
+    key = client.application.config.get("BIKE_TRACKER_SECRET")
+    token = jwt.encode(payload=data, key=key)
+    response = client.put(
+        "/bike-tracker/replace-bike/", headers=get_headers(), json=token
+    )
+
+    assert response.status_code == 200
