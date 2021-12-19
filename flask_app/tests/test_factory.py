@@ -129,12 +129,26 @@ def test_dummy_webhook_trows_empty_requests_to_a_log(client, caplog):
     assert caplog.records[0].msg == "The request was empty"
 
 
+def test_bike_tracker_only_accepts_GET(client):
+    response = client.post("/bike-tracker/get-services/", headers=get_headers())
+    assert response.status == "405 METHOD NOT ALLOWED"
+
+
+def test_bike_tracker_auth_error(client):
+    wrong_user = base64.b64encode(b"void:test").decode("utf-8")
+    headers = {"Authorization": "Basic " + wrong_user}
+    response = client.get("/bike-tracker/get-services/", headers=headers)
+
+    assert response.status_code == 401
+    assert response.data == b"Unauthorized Access"
+
+
 def test_bike_tracker_test_success(client, database):
     rv = [
         {"uuid": "b90af693-975b-4b95-9a32-699afd6beae1", "display_name": "bike-01"},
     ]
     with patch("fh_webhook.services.GetBikeUUIDs.run", return_value=rv):
-        response = client.get("/bike-tracker-test/", headers=get_headers())
+        response = client.get("/bike-tracker/get-services/", headers=get_headers())
     token = json.loads(response.data.decode())
     d = jwt.decode(
         token,
@@ -149,9 +163,6 @@ def test_bike_tracker_test_success(client, database):
 
 
 def test_add_bikes_only_accepts_POST(client):
-    path = client.application.config.get("RESPONSES_PATH")
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
-
     response = client.get("/bike-tracker/add-bikes/", headers=get_headers())
     assert response.status == "405 METHOD NOT ALLOWED"
 
@@ -223,9 +234,6 @@ def test_add_bikes_success(client):
 
 
 def test_replace_bikes_only_accepts_PUT(client):
-    path = client.application.config.get("RESPONSES_PATH")
-    [os.remove(os.path.join(path, f)) for f in os.listdir(path)]
-
     response = client.post("/bike-tracker/replace-bike/", headers=get_headers())
     assert response.status == "405 METHOD NOT ALLOWED"
 

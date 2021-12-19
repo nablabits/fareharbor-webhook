@@ -95,8 +95,8 @@ def create_app(test_config=False):
             return "Hello from flask on a Docker environment"
         return "Hello from Flask"
 
-    # TODO: change endpoint to /bike-tracker/get-services/ and add auth.
-    @app.route("/bike-tracker-test/", methods=["GET"])
+    @app.route("/bike-tracker/get-services/", methods=["GET"])
+    @auth.login_required
     def bike_tracker_test():
         """Endpoint to exchange information with the bike_tracker app."""
         bike_tracker_items = app.config["BIKE_TRACKER_ITEMS"]
