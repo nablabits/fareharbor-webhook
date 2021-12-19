@@ -1041,3 +1041,69 @@ class DeleteCustomFieldValue:
         cfv = models.CustomFieldValue.get(self.custom_field_value_id)
         db.session.delete(cfv)
         db.session.commit()
+
+
+@attr.s
+class CreateBike:
+    uuid = attr.ib(validator=attr.validators.instance_of(str))
+    timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
+
+    def run(self):
+        new_bike = models.Bike(
+            uuid=self.uuid,
+            created_at=self.timestamp,
+            updated_at=self.timestamp,
+        )
+        db.session.add(new_bike)
+        db.session.commit()
+        return new_bike
+
+
+@attr.s
+class CreateBikeUsage:
+    """Create bike usage items for a given availability.
+
+    Most of the times we will have several bikes to attached to an availability and in that case we
+    will want to atomize that transaction to the db.
+    """
+
+    availability_id = attr.ib(validator=attr.validators.instance_of(int))
+    bike_uuids = attr.ib(validator=attr.validators.instance_of(list))
+    timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
+
+    def run(self):
+        new_bike_usages = list()
+        for bike_uuid in self.bike_uuids:
+            new_bike_usage = models.BikeUsage(
+                availability_id=self.availability_id,
+                bike_uuid=bike_uuid,
+                created_at=self.timestamp,
+                updated_at=self.timestamp,
+            )
+            db.session.add(new_bike_usage)
+            new_bike_usages.append(new_bike_usage)
+        db.session.commit()
+        return new_bike_usages
+
+
+@attr.s
+class UpdateBikeUsage:
+    """
+    Update a bike used in a given availability.
+
+    While BikeUsage model is a M2M, most of the times --if not always-- we will want to replace a
+    bike for a given availability well because the customer returned it well because we rearranged
+    the bikes that were previously submitted.
+    """
+
+    availability_id = attr.ib(validator=attr.validators.instance_of(int))
+    bike_picked_uuid = attr.ib(validator=attr.validators.instance_of(str))
+    bike_returned_uuid = attr.ib(validator=attr.validators.instance_of(str))
+    timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
+
+    def run(self):
+        bike_usage = models.BikeUsage.get(self.availability_id, self.bike_returned_uuid)
+        bike_usage.bike_uuid = self.bike_picked_uuid
+        bike_usage.updated_at = self.timestamp
+        db.session.commit()
+        return bike_usage

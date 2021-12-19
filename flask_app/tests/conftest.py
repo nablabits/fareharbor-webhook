@@ -314,3 +314,13 @@ def customer_type_factory():
         plural="baz",
         timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     ).run
+
+
+@pytest.fixture
+def bike_factory():
+    return bikeinstance
+
+
+def bikeinstance(uuid=uuid4().hex, timestamp=datetime.now(timezone.utc)):
+    """A convenience wrapper that lets us create several different bikes in a test."""
+    return model_services.CreateBike(uuid=uuid, timestamp=timestamp).run()
