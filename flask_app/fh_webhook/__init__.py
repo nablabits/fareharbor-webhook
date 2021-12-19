@@ -37,11 +37,13 @@ def create_app(test_config=False):
 
     # load auth
     auth = HTTPBasicAuth()
+    fh_user = app.config["FH_USER"]
     fh_pass = app.config["FH_PASSWORD"]
     bike_tracker_pass = app.config["BIKE_TRACKER_PASS"]
+    bike_tracker_user = app.config["BIKE_TRACKER_USER"]
     users = {
-        "fareharbor": generate_password_hash(fh_pass),
-        "bike_tracker": generate_password_hash(bike_tracker_pass),
+        fh_user: generate_password_hash(fh_pass),
+        bike_tracker_user: generate_password_hash(bike_tracker_pass),
     }
     test_pass = app.config.get("TEST_PASSWORD")
     if test_pass:
@@ -97,7 +99,7 @@ def create_app(test_config=False):
 
     @app.route("/bike-tracker/get-services/", methods=["GET"])
     @auth.login_required
-    def bike_tracker_test():
+    def get_services():
         """Endpoint to exchange information with the bike_tracker app."""
         bike_tracker_items = app.config["BIKE_TRACKER_ITEMS"]
         activities = (
@@ -135,6 +137,7 @@ def create_app(test_config=False):
         key = app.config.get("BIKE_TRACKER_SECRET")
         token = jwt.encode(payload=data, key=key)
 
+        app.logger.info(f"Successful request: {request}")
         return jsonify(token)
 
     @app.route("/bike-tracker/add-bikes/", methods=["POST"])
@@ -147,6 +150,7 @@ def create_app(test_config=False):
             app.logger.error(f"Validation failed for add-bike request, error: {e}")
             return Response(str(e), status=400)
         # Add here the service that handles the data and stores it in the db.
+        app.logger.info(f"Successful request: {request}")
         return Response(status=200)
 
     @app.route("/bike-tracker/replace-bike/", methods=["PUT"])
@@ -159,6 +163,7 @@ def create_app(test_config=False):
             app.logger.error(f"Validation failed for add-bike request, error: {e}")
             return Response(str(e), status=400)
         # Add here the service that handles the data and stores it in the db.
+        app.logger.info(f"Successful request: {request}")
         return Response(status=200)
 
     return app
