@@ -4,7 +4,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy_json import mutable_json_type
 
-from .exceptions import DoesNotExist
+from .exceptions import DoesNotExist, TooManyInstances
 
 metadata = MetaData()
 db = SQLAlchemy(metadata=metadata)
@@ -390,3 +390,49 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     cutoff = db.Column(db.DateTime(timezone=True))
     cancellation_type = db.Column(db.String(64), nullable=False)
+
+
+class BikeUsage(db.Model, BaseMixin):
+    """
+    Store which bikes are used per availabilitiy.
+
+    This acts as a M2M with the Bike model.
+    """
+
+    __table_name__ = "bike_usage"
+    id = db.Column(db.BigInteger, primary_key=True)
+    availability_id = db.Column(
+        db.BigInteger, db.ForeignKey("availability.id"), nullable=False
+    )
+    bike_uuid = db.Column(db.String(32), db.ForeignKey("bike.uuid"), nullable=False)
+
+    @classmethod
+    def get(cls, availabity_id, bike_uuid):
+        """
+        Try to get an instace or raise an error.
+
+        Useful when we try to update an object that does not exist or has several entries in the
+        db.
+        """
+        instance = cls.query.filter(cls.availability_id == availabity_id).filter(
+            cls.bike_uuid == bike_uuid
+        )
+        if instance.count() == 0:
+            raise DoesNotExist(cls.__table_name__)
+        elif instance.count() == 1:
+            return instance.first()
+        else:
+            raise TooManyInstances(cls.__table_name__)
+
+
+class Bike(db.Model, BaseMixin):
+    """
+    Store the uuids of the bikes as they appear on Odoo.
+
+    While strings are not as effective as integers to make lookups, most of the times we will
+    use the uuid for a given bike to fetch it or to join it in a query. Therefore it makes sense
+    to have the uuid as primary key.
+    """
+
+    __table_name__ = "bike"
+    uuid = db.Column(db.String(32), primary_key=True)
