@@ -21,9 +21,12 @@ auth = get_auth()
 @bp.route("/get-services/", methods=["GET"])
 @auth.login_required
 def get_services():
-    """Endpoint to exchange information with the bike_tracker app."""
+    """Send the services of the day to the bike_tracker app."""
     logger = current_app.logger
     bike_tracker_items = current_app.config["BIKE_TRACKER_ITEMS"]
+    default_date = date.today()
+    if request.args.get("test"):
+        default_date = date(2021, 8, 10)
     activities = (
         db.session.query(
             Availability.id,
@@ -34,7 +37,7 @@ def get_services():
         )
         .filter(Booking.availability_id == Availability.id)
         .filter(Item.id == Availability.item_id)
-        .filter(func.DATE(Availability.start_at) == date(2021, 8, 10))
+        .filter(func.DATE(Availability.start_at) == default_date)
         .filter(Item.id.in_(bike_tracker_items))
         .filter(Booking.status != "cancelled")
         .filter(Booking.rebooked_to is not None)
