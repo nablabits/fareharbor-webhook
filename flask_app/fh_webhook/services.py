@@ -10,7 +10,7 @@ from smtplib import SMTP_SSL
 from ssl import create_default_context
 
 import attr
-from flask import Flask
+from flask import current_app
 from sqlalchemy.exc import OperationalError
 
 from . import model_services, models
@@ -659,7 +659,6 @@ class SSLSMTPHandler(SMTPHandler):
 
 @attr.s
 class GetBikeUUIDs:
-    app = attr.ib(validator=attr.validators.instance_of(Flask))
     use_cached_version = attr.ib(
         validator=attr.validators.instance_of(bool), default=True
     )
@@ -669,7 +668,7 @@ class GetBikeUUIDs:
         pass
 
     def run(self):
-        path = self.app.config.get("BIKE_TRACKER_BIKE_SOURCE")
+        path = current_app.config.get("BIKE_TRACKER_BIKE_SOURCE")
         with open(path) as f:
             data = json.load(f)
         return data["query_result"]["data"]["rows"]

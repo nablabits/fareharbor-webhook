@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from fh_webhook import create_app, model_services, models
+from fh_webhook import create_app, model_services
 from fh_webhook.models import db
 
 

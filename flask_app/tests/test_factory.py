@@ -4,13 +4,17 @@ import os
 from unittest.mock import patch
 
 import jwt
+from decouple import config
 
 from fh_webhook.models import StoredRequest
 
 
 def get_headers():
     """Provide a one time set of valid credentials."""
-    valid_credentials = base64.b64encode(b"test:test").decode("utf-8")
+    test_user = config("TEST_USER")
+    test_pass = config("TEST_PASS")
+    auth = bytes(f"{test_user}:{test_pass}", "utf-8")
+    valid_credentials = base64.b64encode(auth).decode("utf-8")
     return {"Authorization": "Basic " + valid_credentials}
 
 
