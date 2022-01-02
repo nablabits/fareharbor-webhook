@@ -276,7 +276,11 @@ def test_replace_bikes_token_error(client, caplog):
 
 
 def test_replace_bikes_schema_error(client, caplog):
-    data = {"bike_picked": 123, "bike_returned": "some-string"}
+    data = {
+        "availability_id": 1,
+        "bike_picked": 123,
+        "bike_returned": "some-string"
+    }
     key = client.application.config.get("BIKE_TRACKER_SECRET")
     token = jwt.encode(payload=data, key=key)
     response = client.put(
@@ -292,7 +296,11 @@ def test_replace_bikes_schema_error(client, caplog):
 
 
 def test_replace_bikes_success(client):
-    data = {"bike_picked": "some-string", "bike_returned": "some-other-string"}
+    data = {
+        "availability_id": 1,
+        "bike_picked": "some-string",
+        "bike_returned": "some-other-string"
+    }
     key = client.application.config.get("BIKE_TRACKER_SECRET")
     token = jwt.encode(payload=data, key=key)
     response = client.put(

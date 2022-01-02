@@ -208,5 +208,6 @@ class AddBikesSchema(Schema):
 class ReplaceBikesSchema(Schema):
     """Validate the schema for the replace-bikes requests."""
 
+    availability_id = requiredInteger()
     bike_picked = requiredString()
     bike_returned = requiredString()
