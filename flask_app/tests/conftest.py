@@ -38,6 +38,7 @@ def database(request):
     app = create_app(test_config=True)
     ctx = app.app_context()
     ctx.push()
+    db.drop_all()
     db.create_all()
 
     yield db
