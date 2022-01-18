@@ -47,6 +47,20 @@ def database(request):
     ctx.pop()
 
 
+def randomizer(entity, booking=True):
+    """
+    Given a db entity randomize the id (and the uuid if it's a booking) so tests won't crash.
+
+    Also return the randomized_id so we can use it afterwards to retrieve the original entity from
+    the database without hitting the lazy load error.
+    """
+    random_id = randint(1, 1e4)
+    entity.id = random_id
+    if booking:
+        entity.uuid = uuid4().hex
+    return entity, random_id
+
+
 # Model Factories
 
 
