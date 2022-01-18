@@ -934,48 +934,48 @@ def test_delete_customer_type(database, customer_type_factory):
 def test_create_bike(database):
     timestamp = datetime.now(timezone.utc)
     uuid = uuid4().hex
-    bike = model_services.CreateBike(uuid=uuid, timestamp=timestamp).run()
+    readable_name = "blue bike 01"
+    bike = model_services.CreateBike(
+        uuid=uuid, readable_name=readable_name, timestamp=timestamp
+    ).run()
 
-    bike = models.Bike.get(bike.uuid)
-    assert bike.created_at == bike.updated_at
+    bike = models.Bike.get(bike.id)
+    assert bike.updated_at == bike.updated_at
     assert bike.created_at == timestamp
     assert bike.uuid == uuid
+    assert bike.readable_name == "blue bike 01"
 
 
 def test_create_bike_usage(database, availability_factory, bike_factory):
     timestamp = datetime.now(timezone.utc)
     av = availability_factory.run()
-    bikes = [bike_factory(uuid=uuid4().hex) for _ in range(3)]
+    bikes = [bike_factory(uuid=uuid4().hex, readable_name=f"bike{n}") for n in range(3)]
     bike_uuids = [b.uuid for b in bikes]
-    bike_usages = model_services.CreateBikeUsage(
+    model_services.CreateBikeUsages(
         timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids
     ).run()
 
-    for bu, bike in zip(bike_usages, bikes):
-        assert bu.created_at == bu.updated_at
-        assert bu.created_at == timestamp
-        assert bu.availability_id == av.id
-        assert bu.bike_uuid == bike.uuid
+    av = models.Availability.get(av.id)
+    assert av.bike_usages == bikes
 
 
 def test_update_bike_usage(database, availability_factory, bike_factory):
     timestamp = datetime.now(timezone.utc)
     av = availability_factory.run()
-    bikes = [bike_factory(uuid=uuid4().hex) for _ in range(2)]
+    bikes = [
+        bike_factory(uuid=uuid4().hex, readable_name=f"red bike{n}") for n in range(3)
+    ]
     bike_uuids = [b.uuid for b in bikes]
-    model_services.CreateBikeUsage(
-        timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids
+    model_services.CreateBikeUsages(
+        timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids[:2]
     ).run()
 
     timestamp = datetime.now(timezone.utc)
-    bike_usage = model_services.UpdateBikeUsage(
+    av = model_services.UpdateBikeUsage(
         availability_id=av.id,
         bike_returned_uuid=bike_uuids[0],
-        bike_picked_uuid=bike_uuids[1],
+        bike_picked_uuid=bike_uuids[2],
         timestamp=timestamp,
     ).run()
 
-    assert bike_usage.created_at != bike_usage.updated_at
-    assert bike_usage.updated_at == timestamp
-    assert bike_usage.availability_id == av.id
-    assert bike_usage.bike_uuid == bike_uuids[1]
+    assert av.bike_usages == bikes[1:]
