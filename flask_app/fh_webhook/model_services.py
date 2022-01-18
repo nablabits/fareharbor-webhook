@@ -1046,11 +1046,13 @@ class DeleteCustomFieldValue:
 @attr.s
 class CreateBike:
     uuid = attr.ib(validator=attr.validators.instance_of(str))
+    readable_name = attr.ib(validator=attr.validators.instance_of(str))
     timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
 
     def run(self):
         new_bike = models.Bike(
             uuid=self.uuid,
+            readable_name=self.readable_name,
             created_at=self.timestamp,
             updated_at=self.timestamp,
         )
@@ -1060,30 +1062,20 @@ class CreateBike:
 
 
 @attr.s
-class CreateBikeUsage:
-    """Create bike usage items for a given availability.
-
-    Most of the times we will have several bikes to attached to an availability and in that case we
-    will want to atomize that transaction to the db.
-    """
+class CreateBikeUsages:
+    """Create bike usage items for a given availability."""
 
     availability_id = attr.ib(validator=attr.validators.instance_of(int))
     bike_uuids = attr.ib(validator=attr.validators.instance_of(list))
     timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
 
     def run(self):
-        new_bike_usages = list()
-        for bike_uuid in self.bike_uuids:
-            new_bike_usage = models.BikeUsage(
-                availability_id=self.availability_id,
-                bike_uuid=bike_uuid,
-                created_at=self.timestamp,
-                updated_at=self.timestamp,
-            )
-            db.session.add(new_bike_usage)
-            new_bike_usages.append(new_bike_usage)
+        availability = models.Availability.get(self.availability_id)
+        # We want to place some logic here to prevent some bike to be added to two simultaneous
+        # availabilities
+        bikes = models.Bike.query.filter(models.Bike.uuid.in_(self.bike_uuids)).all()
+        availability.bike_usages = bikes
         db.session.commit()
-        return new_bike_usages
 
 
 @attr.s
@@ -1102,8 +1094,12 @@ class UpdateBikeUsage:
     timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
 
     def run(self):
-        bike_usage = models.BikeUsage.get(self.availability_id, self.bike_returned_uuid)
-        bike_usage.bike_uuid = self.bike_picked_uuid
-        bike_usage.updated_at = self.timestamp
+        av = models.Availability.get(id=self.availability_id)
+        bike_returned = models.Bike.get_uuid(self.bike_returned_uuid)
+        bike_picked = models.Bike.get_uuid(self.bike_picked_uuid)
+        # As above, we want to place some logic here to prevent some bike to be added to two
+        # simultaneous availabilities
+        av.bike_usages.pop(av.bike_usages.index(bike_returned))
+        av.bike_usages.append(bike_picked)
         db.session.commit()
-        return bike_usage
+        return av
