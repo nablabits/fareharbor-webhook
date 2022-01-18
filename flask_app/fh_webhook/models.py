@@ -4,7 +4,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy_json import mutable_json_type
 
-from .exceptions import DoesNotExist, TooManyInstances
+from .exceptions import DoesNotExist
 
 metadata = MetaData()
 db = SQLAlchemy(metadata=metadata)
@@ -79,13 +79,6 @@ class Booking(db.Model, BaseMixin):
     status = db.Column(db.String(64))
     created_by = db.Column(db.String(64), nullable=False, default="staff")
 
-    # Foreign key fields
-    availability_id = db.Column(
-        db.BigInteger, db.ForeignKey("availability.id"), nullable=False
-    )
-    company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"), nullable=False)
-    affiliate_company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"))
-
     # price fields
     receipt_subtotal = db.Column(db.Integer)
     receipt_taxes = db.Column(db.Integer)
@@ -112,6 +105,47 @@ class Booking(db.Model, BaseMixin):
     MutableJson = mutable_json_type(dbtype=JSONB, nested=False)
     order = db.Column(MutableJson)
 
+    # Foreign key fields
+    availability_id = db.Column(
+        db.BigInteger, db.ForeignKey("availability.id"), nullable=False
+    )
+    company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"), nullable=False)
+    affiliate_company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"))
+
+    # Relationships
+    availability = db.relationship("Availability", back_populates="bookings")
+
+
+bike_usages = db.Table(
+    "bike_usages",
+    db.Column("bike_id", db.BigInteger, db.ForeignKey("bike.id"), primary_key=True),
+    db.Column(
+        "availability_id",
+        db.BigInteger,
+        db.ForeignKey("availability.id"),
+        primary_key=True,
+    ),
+)
+
+
+class Bike(db.Model, BaseMixin):
+    """Store the uuids of the bikes as they appear on Odoo."""
+
+    __table_name__ = "bike"
+    id = db.Column(db.BigInteger, primary_key=True)
+    uuid = db.Column(db.String(32), unique=True, index=True, nullable=False)
+    readable_name = db.Column(db.String(255), unique=True, nullable=False)
+
+    @classmethod
+    def get_uuid(cls, uuid):
+        """
+        Get a bike entity by uuid.
+
+        While strings are not as effective as integers to make lookups, most of the times we will
+        use the uuid for a given bike to fetch it.
+        """
+        return cls.query.filter(cls.uuid == uuid).first()
+
 
 class Availability(db.Model, BaseMixin):
     """Store availabilities.
@@ -131,6 +165,16 @@ class Availability(db.Model, BaseMixin):
     # foreign key fields
     item_id = db.Column(db.BigInteger, db.ForeignKey("item.id"), nullable=False)
 
+    # reverse relationships
+    bookings = db.relationship("Booking", back_populates="availability")
+    item = db.relationship("Item", back_populates="availabilities")
+    bike_usages = db.relationship(
+        "Bike",
+        secondary=bike_usages,
+        lazy="subquery",
+        backref=db.backref("availabilities", lazy=True),
+    )
+
 
 class Item(db.Model, BaseMixin):
     """Items are the products we sell in the business."""
@@ -138,6 +182,9 @@ class Item(db.Model, BaseMixin):
     __table_name__ = "item"
     id = db.Column(db.BigInteger, primary_key=True)
     name = db.Column(db.String(200))
+
+    # reverse relationships
+    availabilities = db.relationship("Availability", back_populates="item")
 
 
 class CheckinStatus(db.Model, BaseMixin):
@@ -390,49 +437,3 @@ class EffectiveCancellationPolicy(db.Model, BaseMixin):
     id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), primary_key=True)
     cutoff = db.Column(db.DateTime(timezone=True))
     cancellation_type = db.Column(db.String(64), nullable=False)
-
-
-class BikeUsage(db.Model, BaseMixin):
-    """
-    Store which bikes are used per availabilitiy.
-
-    This acts as a M2M with the Bike model.
-    """
-
-    __table_name__ = "bike_usage"
-    id = db.Column(db.BigInteger, primary_key=True)
-    availability_id = db.Column(
-        db.BigInteger, db.ForeignKey("availability.id"), nullable=False
-    )
-    bike_uuid = db.Column(db.String(32), db.ForeignKey("bike.uuid"), nullable=False)
-
-    @classmethod
-    def get(cls, availabity_id, bike_uuid):
-        """
-        Try to get an instace or raise an error.
-
-        Useful when we try to update an object that does not exist or has several entries in the
-        db.
-        """
-        instance = cls.query.filter(cls.availability_id == availabity_id).filter(
-            cls.bike_uuid == bike_uuid
-        )
-        if instance.count() == 0:
-            raise DoesNotExist(cls.__table_name__)
-        elif instance.count() == 1:
-            return instance.first()
-        else:
-            raise TooManyInstances(cls.__table_name__)
-
-
-class Bike(db.Model, BaseMixin):
-    """
-    Store the uuids of the bikes as they appear on Odoo.
-
-    While strings are not as effective as integers to make lookups, most of the times we will
-    use the uuid for a given bike to fetch it or to join it in a query. Therefore it makes sense
-    to have the uuid as primary key.
-    """
-
-    __table_name__ = "bike"
-    uuid = db.Column(db.String(32), primary_key=True)
