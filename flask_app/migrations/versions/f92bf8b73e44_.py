@@ -2,7 +2,7 @@
 1. Initial migration with all the fields.
 
 Revision ID: f92bf8b73e44
-Revises: 
+Revises:
 Create Date: 2021-07-28 17:34:22.169134
 
 """
