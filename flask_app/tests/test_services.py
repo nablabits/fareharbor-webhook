@@ -3,7 +3,10 @@ import os
 from datetime import datetime, timezone
 from unittest.mock import patch
 
+from sqlalchemy.exc import OperationalError
+
 from fh_webhook import models, services
+from fh_webhook.services import GetBikeUUIDs
 
 
 def test_save_response_as_file(app):
@@ -382,8 +385,6 @@ def test_save_request_to_db_raises_error_for_process_json(create_mock, close_moc
     filename = unix_timestamp + ".json"
     json_response = {"foo": "bar", "baz": "gaz"}
 
-    from sqlalchemy.exc import OperationalError
-
     with patch(
         "fh_webhook.services.ProcessJSONResponse.run",
         side_effect=OperationalError("SELECT 1", None, None),
@@ -405,8 +406,6 @@ def test_save_request_to_db_raises_error_for_create_stored_request(
     unix_timestamp = str(timestamp.timestamp())
     filename = unix_timestamp + ".json"
     json_response = {"foo": "bar", "baz": "gaz"}
-
-    from sqlalchemy.exc import OperationalError
 
     with patch(
         "fh_webhook.model_services.CreateStoredRequest.run",
@@ -430,8 +429,6 @@ def test_save_request_to_db_raises_error_for_close_stored_request(
     filename = unix_timestamp + ".json"
     json_response = {"foo": "bar", "baz": "gaz"}
 
-    from sqlalchemy.exc import OperationalError
-
     with patch(
         "fh_webhook.model_services.CloseStoredRequest.run",
         side_effect=OperationalError("SELECT 1", None, None),
@@ -446,7 +443,6 @@ def test_save_request_to_db_raises_error_for_close_stored_request(
 
 
 def test_get_bike_uuids_retrieves_the_data_from_cache(app):
-    from fh_webhook.services import GetBikeUUIDs
 
     r = GetBikeUUIDs().run()
     assert r == [
