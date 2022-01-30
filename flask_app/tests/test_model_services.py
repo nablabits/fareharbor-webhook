@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from random import randint
 from uuid import uuid4
 
@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from fh_webhook import model_services, models
 from fh_webhook.exceptions import DoesNotExist
+from fh_webhook.model_services import bikes_in_use
 
 
 def test_create_stored_request(database):
@@ -946,7 +947,106 @@ def test_create_bike(database):
     assert bike.readable_name == "blue bike 01"
 
 
-def test_create_bike_usage(database, availability_factory, bike_factory):
+def test_get_bikes_in_use_for_tours(
+    client,
+    database,
+    availability_factory,
+    bike_factory,
+    item_factory,
+    booking_factory,
+):
+    # Create item
+    s = item_factory
+    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"][0]
+    item = s.run()
+
+    # Create availability
+    now = datetime.now(timezone.utc)
+    delta = timedelta(hours=1)
+    s = availability_factory
+    s.availability_id = randint(1, 10_000)
+    s.start_at = now - delta
+    s.end_at = now + delta
+    s.item_id = item.id
+    av1 = s.run()
+
+    # Create booking
+    s = booking_factory
+    s.booking_id = randint(1, 10_000)
+    s.uuid = uuid4().hex
+    s.availability_id = av1.id
+    s.rebooked_to = None
+    s.run()
+
+    # Finally add the bikes to the availability
+    bikes = [bike_factory(readable_name=f"bike{n}") for n in range(3)]
+    av1.bike_usages = bikes[:2]
+    database.session.commit()
+
+    bike_uuids = [bike.uuid for bike in bikes]
+    r = bikes_in_use(bike_uuids, now)
+    assert r == {bike.uuid for bike in bikes[:2]}
+
+
+def test_get_bikes_in_use_for_rentals(
+    client,
+    database,
+    availability_factory,
+    bike_factory,
+    item_factory,
+    booking_factory,
+    customer_type_factory,
+    customer_type_rate_factory,
+    customer_factory,
+):
+    now = datetime.now(timezone.utc)
+    delta = timedelta(hours=1)
+    # Create item
+    s = item_factory
+    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"][-5]
+    item = s.run()
+
+    # Create availability
+    s = availability_factory
+    s.availability_id = randint(1, 10_000)
+    s.start_at = now - delta
+    s.end_at = now + delta
+    s.item_id = item.id
+    av1 = s.run()
+
+    # Create booking
+    s = booking_factory
+    s.booking_id = randint(1, 10_000)
+    s.uuid = uuid4().hex
+    s.availability_id = av1.id
+    s.rebooked_to = None
+    b = s.run()
+
+    # Create customer type
+    ct = customer_type_factory(customer_type_id=314998)
+
+    # Create customer type rate
+    s = customer_type_rate_factory
+    s.ctr_id = randint(1, 10_000)
+    s.customer_type_id = ct.id
+    ctr = s.run()
+
+    # create a customer
+    s = customer_factory
+    s.booking_id = b.id
+    s.customer_type_rate_id = ctr.id
+    s.run()
+
+    # Finally add the bikes to the availability
+    bikes = [bike_factory(readable_name=f"bike{n}") for n in range(3)]
+    av1.bike_usages = bikes[:2]
+    database.session.commit()
+
+    bike_uuids = [bike.uuid for bike in bikes]
+    r = bikes_in_use(bike_uuids, now)
+    assert r == {bike.uuid for bike in bikes[:2]}
+
+
     timestamp = datetime.now(timezone.utc)
     av = availability_factory.run()
     bikes = [bike_factory(uuid=uuid4().hex, readable_name=f"bike{n}") for n in range(3)]
