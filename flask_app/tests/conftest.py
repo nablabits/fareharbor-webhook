@@ -154,7 +154,7 @@ def booking_factory(availability_factory, company_factory):
         is_eligible_for_cancellation=True,
         is_subscribed_for_sms_updates=True,
         arrival="sar",
-        rebooked_to="saz",
+        rebooked_to="",
         rebooked_from="woo",
         external_id="war",
         order={"waz": "raz"},
@@ -279,7 +279,7 @@ def customer_factory(
         customer_id=randint(1, 10_000_000),
         checkin_url="https://foo.bar",
         checkin_status_id=checkin_status_factory.run().id,
-        customer_type_rate_id=customer_type_rate_factory().id,
+        customer_type_rate_id=customer_type_rate_factory.run().id,
         booking_id=b.id,
         timestamp=datetime.now(timezone.utc) - timedelta(days=1),
     )
@@ -305,30 +305,45 @@ def customer_type_rate_factory(
         customer_prototype_id=customer_prototype_factory().id,
         customer_type_id=customer_type_factory().id,
         timestamp=datetime.now(timezone.utc) - timedelta(days=1),
-    ).run
+    )
 
 
 @pytest.fixture
 def customer_prototype_factory():
+    return customer_prototype_instance
+
+
+def customer_prototype_instance(
+    total=10, total_including_tax=10, display_name="foo", note="bar"
+):
+    random_id = randint(1, 10_000_000)
     return model_services.CreateCustomerPrototype(
-        customer_prototype_id=randint(1, 10_000_000),
-        total=10,
-        total_including_tax=10,
-        display_name="foo",
-        note="bar",
+        customer_prototype_id=random_id,
+        total=total,
+        total_including_tax=total_including_tax,
+        display_name=display_name,
+        note=note,
         timestamp=datetime.now(timezone.utc) - timedelta(days=1),
-    ).run
+    ).run()
 
 
 @pytest.fixture
 def customer_type_factory():
+    return customer_type_instance
+
+
+def customer_type_instance(
+    note="foo", singular="bar", plural="baz", customer_type_id=None
+):
+    if not customer_type_id:
+        customer_type_id = randint(1, 10_000_000)
     return model_services.CreateCustomerType(
-        customer_type_id=randint(1, 10_000_000),
-        note="foo",
-        singular="bar",
-        plural="baz",
+        customer_type_id=customer_type_id,
+        note=note,
+        singular=singular,
+        plural=plural,
         timestamp=datetime.now(timezone.utc) - timedelta(days=1),
-    ).run
+    ).run()
 
 
 @pytest.fixture
@@ -336,6 +351,12 @@ def bike_factory():
     return bikeinstance
 
 
-def bikeinstance(uuid=uuid4().hex, timestamp=datetime.now(timezone.utc)):
+def bikeinstance(
+    readable_name="default_bike", uuid=None, timestamp=datetime.now(timezone.utc)
+):
     """A convenience wrapper that lets us create several different bikes in a test."""
-    return model_services.CreateBike(uuid=uuid, timestamp=timestamp).run()
+    if not uuid:
+        uuid = uuid4().hex
+    return model_services.CreateBike(
+        uuid=uuid, readable_name=readable_name, timestamp=timestamp
+    ).run()

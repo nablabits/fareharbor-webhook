@@ -533,7 +533,7 @@ def test_create_custom_field_instances_raises_error_with_av_and_ctr(
     s = availability_factory
     s.availability_id = (randint(1, 10_000_000),)
     av = s.run()
-    ctr = customer_type_rate_factory()
+    ctr = customer_type_rate_factory.run()
     with pytest.raises(ValueError) as e:
         model_services.CreateCustomFieldInstance(
             timestamp=datetime.now(timezone.utc),
@@ -752,7 +752,7 @@ def test_create_customer(
         checkin_url="https://foo.bar",
         timestamp=timestamp,
         checkin_status_id=checkin_status_factory.run().id,
-        customer_type_rate_id=customer_type_rate_factory().id,
+        customer_type_rate_id=customer_type_rate_factory.run().id,
         booking_id=b.id,
     ).run()
     customer = models.Customer.get(ct.id)
@@ -815,7 +815,7 @@ def test_create_customer_type_rate(
 
 
 def test_update_customer_type_rate(database, customer_type_rate_factory):
-    old_ctr = customer_type_rate_factory()
+    old_ctr = customer_type_rate_factory.run()
     timestamp = datetime.now(timezone.utc)
     model_services.UpdateCustomerTypeRate(
         timestamp=timestamp,
@@ -840,7 +840,7 @@ def test_update_customer_type_rate(database, customer_type_rate_factory):
 
 
 def test_delete_customer_type_rate(database, customer_type_rate_factory):
-    ctr = customer_type_rate_factory()
+    ctr = customer_type_rate_factory.run()
     model_services.DeleteCustomerTypeRate(ctr.id).run()
     with pytest.raises(DoesNotExist):
         models.CustomerTypeRate.get(ctr.id)
