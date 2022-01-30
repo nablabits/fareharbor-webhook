@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 
 import attr
+from flask import current_app
+from sqlalchemy import text
 
-from . import models
+from fh_webhook.queries import BIKES_IN_USE_QUERY
 from .exceptions import DoesNotExist
 from .models import db
 
@@ -1059,6 +1061,23 @@ class CreateBike:
         db.session.add(new_bike)
         db.session.commit()
         return new_bike
+
+
+def bikes_in_use(target_bikes, target_timestamp):
+    """Determine which of the given bikes are in use at the moment if any."""
+
+    raw_sql = text(
+        BIKES_IN_USE_QUERY.format(
+            target_timestamp=target_timestamp,
+            rentals_ids=tuple(current_app.config["BIKE_TRACKER_ITEMS"][-6:]),
+        )
+    )
+    q = db.session.execute(raw_sql)
+    results = q.fetchall()
+
+    # Results will return something like this: [(None, ), ("some_uuid"), ("some_other_uuid")]
+    booked_bikes = {bike_uuid for entry in results for bike_uuid in entry if bike_uuid}
+    return booked_bikes.intersection(target_bikes)
 
 
 @attr.s
