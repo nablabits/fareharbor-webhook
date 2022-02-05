@@ -1047,19 +1047,38 @@ def test_get_bikes_in_use_for_rentals(
     assert r == {bike.uuid for bike in bikes[:2]}
 
 
+def test_create_bike_usage_success(database, availability_factory, bike_factory):
     timestamp = datetime.now(timezone.utc)
     av = availability_factory.run()
     bikes = [bike_factory(uuid=uuid4().hex, readable_name=f"bike{n}") for n in range(3)]
     bike_uuids = [b.uuid for b in bikes]
-    model_services.CreateBikeUsages(
+    s = model_services.CreateBikeUsages(
         timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids
     ).run()
 
     av = models.Availability.get(av.id)
     assert av.bike_usages == bikes
+    assert s.success is True
 
 
-def test_update_bike_usage(database, availability_factory, bike_factory):
+def test_create_bike_usage_failure(database, bike_factory):
+    timestamp = datetime.now(timezone.utc)
+    bikes = [bike_factory(uuid=uuid4().hex, readable_name=f"bike{n}") for n in range(3)]
+    bike_uuids = [b.uuid for b in bikes] + [
+        "unknown_bike",
+    ]
+    s = model_services.CreateBikeUsages(
+        timestamp=timestamp, availability_id=123, bike_uuids=bike_uuids
+    ).run()
+
+    assert s.failure is True
+    assert s.errors == {
+        "availability_error": "The availability was not found.",
+        "bike_uuid_error": "There were bikes that didn't match an entry in the db.",
+    }
+
+
+def test_update_bike_usage_success(database, availability_factory, bike_factory):
     timestamp = datetime.now(timezone.utc)
     av = availability_factory.run()
     bikes = [
@@ -1071,11 +1090,41 @@ def test_update_bike_usage(database, availability_factory, bike_factory):
     ).run()
 
     timestamp = datetime.now(timezone.utc)
-    av = model_services.UpdateBikeUsage(
+    result = model_services.UpdateBikeUsage(
         availability_id=av.id,
         bike_returned_uuid=bike_uuids[0],
         bike_picked_uuid=bike_uuids[2],
         timestamp=timestamp,
     ).run()
 
-    assert av.bike_usages == bikes[1:]
+    assert result.value.bike_usages == bikes[1:]
+    assert result.success is True
+
+
+def test_update_bike_usage_failure(database, availability_factory, bike_factory):
+    timestamp = datetime.now(timezone.utc)
+    av = availability_factory.run()
+    bikes = [
+        bike_factory(uuid=uuid4().hex, readable_name=f"red bike{n}") for n in range(3)
+    ]
+    bike_uuids = [b.uuid for b in bikes]
+    model_services.CreateBikeUsages(
+        timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids[:2]
+    ).run()
+
+    timestamp = datetime.now(timezone.utc)
+    result = model_services.UpdateBikeUsage(
+        availability_id=10_000,
+        bike_returned_uuid="fake_uuid_1",
+        bike_picked_uuid="fake_uuid_1",
+        timestamp=timestamp,
+    ).run()
+
+    assert result.failure is True
+    assert result.errors == {
+        "availability_error": "This instance of availability model does not exist.",
+        "bike_returned_error": "This instance of bike model does not exist.",
+        "bike_picked_error": "This instance of bike model does not exist.",
+    }
+
+    # assert av.bike_usages == bikes[1:]
