@@ -5,8 +5,11 @@ from flask import current_app
 from sqlalchemy import text
 
 from fh_webhook.queries import BIKES_IN_USE_QUERY
-from .exceptions import DoesNotExist
-from .models import db
+from fh_webhook.result import Result
+
+from fh_webhook import models
+from fh_webhook.exceptions import DoesNotExist
+from fh_webhook.models import db
 
 
 @attr.s
@@ -1045,6 +1048,9 @@ class DeleteCustomFieldValue:
         db.session.commit()
 
 
+# Bike tracker
+
+
 @attr.s
 class CreateBike:
     uuid = attr.ib(validator=attr.validators.instance_of(str))
@@ -1089,12 +1095,35 @@ class CreateBikeUsages:
     timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
 
     def run(self):
-        availability = models.Availability.get(self.availability_id)
-        # We want to place some logic here to prevent some bike to be added to two simultaneous
-        # availabilities
-        bikes = models.Bike.query.filter(models.Bike.uuid.in_(self.bike_uuids)).all()
-        availability.bike_usages = bikes
+        errors = {}
+        try:
+            availability = models.Availability.get(self.availability_id)
+        except DoesNotExist:
+            errors["availability_error"] = "The availability was not found."
+
+        bikes = models.Bike.query.filter(models.Bike.uuid.in_(self.bike_uuids))
+        if bikes.count() != len(self.bike_uuids):
+            errors[
+                "bike_uuid_error"
+            ] = "There were bikes that didn't match an entry in the db."
+
+        # We want to place some logic here to prevent some bike to be added to two
+        # simultaneous availabilities. But don't raise an exception, just silently notify so we can
+        # check how many issues this cause. For instance, it could happen that some customer
+        # returns the bike before the hour he has allocated and that bike might be used in another
+        # service.
+        if bikes_in_use(set(self.bike_uuids), datetime.utcnow()):
+            current_app.logger.warning(
+                f"Bike {self.bike_picked_uuid} was already in use, continuing."
+            )
+
+        if errors:
+            return Result.from_failure(errors)
+
+        # If everything went right, create the usages.
+        availability.bike_usages = bikes.all()
         db.session.commit()
+        return Result.from_success(availability)
 
 
 @attr.s
@@ -1113,12 +1142,38 @@ class UpdateBikeUsage:
     timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
 
     def run(self):
-        av = models.Availability.get(id=self.availability_id)
-        bike_returned = models.Bike.get_uuid(self.bike_returned_uuid)
-        bike_picked = models.Bike.get_uuid(self.bike_picked_uuid)
+        errors = {}
+        try:
+            av = models.Availability.get(id=self.availability_id)
+        except DoesNotExist as e:
+            errors["availability_error"] = str(e)
+        try:
+            bike_returned = models.Bike.get_uuid(self.bike_returned_uuid)
+        except DoesNotExist as e:
+            errors["bike_returned_error"] = str(e)
+        try:
+            bike_picked = models.Bike.get_uuid(self.bike_picked_uuid)
+        except DoesNotExist as e:
+            errors["bike_picked_error"] = str(e)
+        if errors:
+            return Result.from_failure(errors)
+
         # As above, we want to place some logic here to prevent some bike to be added to two
-        # simultaneous availabilities
-        av.bike_usages.pop(av.bike_usages.index(bike_returned))
+        # simultaneous availabilities.
+        if bikes_in_use(set(self.bike_picked_uuid), datetime.utcnow()):
+            current_app.logger.warning(
+                f"Bike {self.bike_picked_uuid} was already in use, continuing."
+            )
+
+        # If the bike was not in the availability notify the user.
+        try:
+            av.bike_usages.pop(av.bike_usages.index(bike_returned))
+        except ValueError:
+            msg = f"The bike {self.bike_returned_uuid} was not in the availability {av.id}"
+            errors["bike_not_in_availability"] = msg
+
+        if errors:
+            return Result.from_failure(errors)
         av.bike_usages.append(bike_picked)
         db.session.commit()
-        return av
+        return Result.from_success(av)

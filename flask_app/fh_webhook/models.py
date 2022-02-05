@@ -112,8 +112,9 @@ class Booking(db.Model, BaseMixin):
     company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"), nullable=False)
     affiliate_company_id = db.Column(db.BigInteger, db.ForeignKey("company.id"))
 
-    # Relationships
+    # Reverse relationships
     availability = db.relationship("Availability", back_populates="bookings")
+    customers = db.relationship("Customer", back_populates="booking")
 
 
 bike_usages = db.Table(
@@ -132,7 +133,7 @@ class Bike(db.Model, BaseMixin):
     """Store the uuids of the bikes as they appear on Odoo."""
 
     __table_name__ = "bike"
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uuid = db.Column(db.String(32), unique=True, index=True, nullable=False)
     readable_name = db.Column(db.String(255), unique=True, nullable=False)
 
@@ -144,7 +145,12 @@ class Bike(db.Model, BaseMixin):
         While strings are not as effective as integers to make lookups, most of the times we will
         use the uuid for a given bike to fetch it.
         """
-        return cls.query.filter(cls.uuid == uuid).first()
+        instance = cls.query.filter(cls.uuid == uuid).first()
+        if instance:
+            return instance
+        else:
+            raise DoesNotExist(cls.__table_name__)
+        return instance
 
 
 class Availability(db.Model, BaseMixin):
@@ -214,6 +220,7 @@ class Customer(db.Model, BaseMixin):
     checkin_status_id = db.Column(db.BigInteger, db.ForeignKey("checkin_status.id"))
     # M2M to booking
     booking_id = db.Column(db.BigInteger, db.ForeignKey("booking.id"), nullable=False)
+    booking = db.relationship("Booking", back_populates="customers")
 
 
 class CustomerTypeRate(db.Model, BaseMixin):
