@@ -340,7 +340,7 @@ def test_add_bikes_failure(client):
             "/bike-tracker/add-bikes/", headers=get_headers(), json=token
         )
 
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert mock_svc.call_count == 1
     assert response.json == {"error": "some error"}
 
@@ -437,6 +437,6 @@ def test_replace_bikes_failure(client):
             "/bike-tracker/replace-bike/", headers=get_headers(), json=token
         )
 
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert mock_svc.call_count == 1
     assert response.json == {"error": "some error"}

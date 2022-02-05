@@ -4,12 +4,11 @@ import attr
 from flask import current_app
 from sqlalchemy import text
 
-from fh_webhook.queries import BIKES_IN_USE_QUERY
-from fh_webhook.result import Result
-
 from fh_webhook import models
 from fh_webhook.exceptions import DoesNotExist
 from fh_webhook.models import db
+from fh_webhook.queries import BIKES_IN_USE_QUERY
+from fh_webhook.result import Result
 
 
 @attr.s

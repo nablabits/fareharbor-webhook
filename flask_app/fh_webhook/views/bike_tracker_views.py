@@ -87,7 +87,7 @@ def bike_tracker_test_add_bikes(data):
     ).run()
     if result.failure:
         logger.error(f"Request failed: {result.errors}")
-        return (result.errors, 400)
+        return (result.errors, 404)
     logger.info(f"Successful request: {request}")
     return Response(status=200)
 
@@ -111,6 +111,6 @@ def bike_tracker_test_replace_bike(data):
 
     if result.failure:
         logger.error(f"Request failed: {result.errors}")
-        return (result.errors, 400)
+        return (result.errors, 404)
     logger.info(f"Successful request: {request}")
     return Response(status=200)
