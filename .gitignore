@@ -23,15 +23,14 @@ htmlcov/
 # Exclude response objects
 flask_app/fh_webhook/responses
 
-# Exclude data to fix created_by
+# Exclude data used on scripts
 flask_app/scripts/data
 
 # Exclude the schemas generated with eralchemy
 flask_app/schema.*
 
-# Exclude static content
-bike_info.json
-
 dist/
 build/
 *.egg-info/
+
+*.dump

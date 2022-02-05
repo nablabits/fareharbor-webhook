@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime, timezone
 
 import jwt
 from flask import Blueprint, Response, current_app, jsonify, request
@@ -8,9 +8,9 @@ from sqlalchemy import func
 
 from fh_webhook.auth import get_auth
 from fh_webhook.decorators import validate_token
-from fh_webhook.models import Availability, Booking, Item, db
+from fh_webhook.model_services import CreateBikeUsages, UpdateBikeUsage
+from fh_webhook.models import Availability, Bike, Booking, Item, db
 from fh_webhook.schema import AddBikesSchema, ReplaceBikesSchema
-from fh_webhook.services import GetBikeUUIDs
 
 bp = Blueprint("bike_tracker", __name__, url_prefix="/bike-tracker")
 
@@ -40,10 +40,11 @@ def get_services():
         .filter(func.DATE(Availability.start_at) == default_date)
         .filter(Item.id.in_(bike_tracker_items))
         .filter(Booking.status != "cancelled")
-        .filter(Booking.rebooked_to is not None)
+        .filter(Booking.rebooked_to == "")
         .group_by(
             Availability.id, Availability.headline, Availability.start_at, Item.name
         )
+        .order_by(Availability.start_at.asc())
         .all()
     )
     data = {
@@ -58,7 +59,10 @@ def get_services():
                 "no_of_bikes": activity[4],
             }
         )
-    data.update({"bike_uuids": GetBikeUUIDs().run()})
+    bike_uuids = {
+        row[0]: row[1] for row in db.session.query(Bike.uuid, Bike.readable_name).all()
+    }
+    data.update({"bike_uuids": bike_uuids})
     key = current_app.config.get("BIKE_TRACKER_SECRET")
     token = jwt.encode(payload=data, key=key)
 
@@ -76,7 +80,14 @@ def bike_tracker_test_add_bikes(data):
     except ValidationError as e:
         logger.error(f"Validation failed for add-bike request, error: {e}")
         return Response(str(e), status=400)
-    # Add here the service that handles the data and stores it in the db.
+    result = CreateBikeUsages(
+        availability_id=data["availability_id"],
+        bike_uuids=data["bikes"],
+        timestamp=datetime.now(timezone.utc),
+    ).run()
+    if result.failure:
+        logger.error(f"Request failed: {result.errors}")
+        return (result.errors, 400)
     logger.info(f"Successful request: {request}")
     return Response(status=200)
 
@@ -91,6 +102,15 @@ def bike_tracker_test_replace_bike(data):
     except ValidationError as e:
         logger.error(f"Validation failed for add-bike request, error: {e}")
         return Response(str(e), status=400)
-    # Add here the service that handles the data and stores it in the db.
+    result = UpdateBikeUsage(
+        availability_id=data["availability_id"],
+        bike_picked_uuid=data["bike_picked"],
+        bike_returned_uuid=data["bike_returned"],
+        timestamp=datetime.now(timezone.utc),
+    ).run()
+
+    if result.failure:
+        logger.error(f"Request failed: {result.errors}")
+        return (result.errors, 400)
     logger.info(f"Successful request: {request}")
     return Response(status=200)
