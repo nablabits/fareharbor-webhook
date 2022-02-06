@@ -40,7 +40,7 @@ def get_services():
         .filter(func.DATE(Availability.start_at) == default_date)
         .filter(Item.id.in_(bike_tracker_items))
         .filter(Booking.status != "cancelled")
-        .filter(Booking.rebooked_to == "")
+        .filter(Booking.rebooked_to.is_(None))
         .group_by(
             Availability.id, Availability.headline, Availability.start_at, Item.name
         )

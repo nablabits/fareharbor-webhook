@@ -174,6 +174,7 @@ def test_bike_tracker_get_services_success_for_current_date(
     b0.availability.end_at = ts0
     b0.availability.headline = "service 1"
     b0.availability.item = item
+    b0.rebooked_to = None
     database.session.commit()
 
     # Create another booking to test the group by
@@ -188,6 +189,7 @@ def test_bike_tracker_get_services_success_for_current_date(
     b1, b1_id = randomizer(booking_factory.run())
     b1.customer_count = 20
     b1.availability = av
+    b1.rebooked_to = None
     database.session.commit()
 
     # Create alternative bookings that shouldn't appear
