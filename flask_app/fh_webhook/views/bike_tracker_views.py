@@ -59,9 +59,8 @@ def get_services():
                 "no_of_bikes": activity[4],
             }
         )
-    bike_uuids = {
-        row[0]: row[1] for row in db.session.query(Bike.uuid, Bike.readable_name).all()
-    }
+    query_bikes = db.session.query(Bike.uuid, Bike.readable_name).all()
+    bike_uuids = [{"uuid": row[0], "display_name": row[1]} for row in query_bikes]
     data.update({"bike_uuids": bike_uuids})
     key = current_app.config.get("BIKE_TRACKER_SECRET")
     token = jwt.encode(payload=data, key=key)
