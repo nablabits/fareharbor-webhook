@@ -158,7 +158,7 @@ def test_bike_tracker_get_services_success_for_current_date(
     bikes = [
         bike_factory(uuid=uuid4().hex, readable_name=f"r bike{n}") for n in range(3)
     ]
-    bike_uuids = {b.uuid: b.readable_name for b in bikes}
+    bike_uuids = [{"uuid": b.uuid, "display_name": b.readable_name} for b in bikes]
     ts0 = datetime.now()
     ts1 = ts0 + timedelta(hours=1)
 

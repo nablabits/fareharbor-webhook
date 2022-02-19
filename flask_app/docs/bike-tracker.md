@@ -21,9 +21,12 @@ The mobile app needs to get beforehand the services of the day to be able to ass
 			"no_of_bikes": 5
 		}
 	],
-	"bike_uuids" {
-		"some_uuid": "human_readable_name"
-	}
+    "bike_uuids" [
+        {
+            "uuid": "some_uuid",
+            "display_name": "human_readable_name"
+        }
+    ]
 }
 ```
 
