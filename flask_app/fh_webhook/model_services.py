@@ -1111,9 +1111,10 @@ class CreateBikeUsages:
         # check how many issues this cause. For instance, it could happen that some customer
         # returns the bike before the hour he has allocated and that bike might be used in another
         # service.
-        if bikes_in_use(set(self.bike_uuids), datetime.utcnow()):
+        conflicting_bikes = bikes_in_use(set(self.bike_uuids), datetime.utcnow())
+        if conflicting_bikes:
             current_app.logger.warning(
-                f"Bike {self.bike_picked_uuid} was already in use, continuing."
+                f"Bike(s) {conflicting_bikes} was/were already in use, continuing."
             )
 
         if errors:
