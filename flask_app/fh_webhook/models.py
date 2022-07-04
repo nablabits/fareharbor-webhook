@@ -394,8 +394,8 @@ class Contact(db.Model, BaseMixin):
     email = db.Column(db.String(256))
     language = db.Column(db.String(256))
     phone_country = db.Column(db.String(10))
-    phone = db.Column(db.String(30))
-    normalized_phone = db.Column(db.String(30))
+    phone = db.Column(db.String(256), nullable=False)
+    normalized_phone = db.Column(db.String(256), nullable=False)
     is_subscribed_for_email_updates = db.Column(db.Boolean, nullable=False)
 
 
