@@ -385,7 +385,7 @@ class CustomField(db.Model, BaseMixin):
 class Contact(db.Model, BaseMixin):
     """Store the contact details for the booking.
 
-    Is a 1:1 on bookings.
+    It's a 1:1 on bookings.
     """
 
     __table_name__ = "contact"
