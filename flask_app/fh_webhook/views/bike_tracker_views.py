@@ -1,5 +1,6 @@
-import os
 from datetime import date, datetime, timezone
+
+import pytz
 
 import jwt
 from flask import Blueprint, Response, current_app, jsonify, request
@@ -51,11 +52,12 @@ def get_services():
         "availabilities": list(),
     }
     for activity in activities:
+        mad = pytz.timezone("Europe/Madrid")
         data["availabilities"].append(
             {
                 "availability_id": activity[0],
                 "headline": activity[1] or activity[3],
-                "timestamp": activity[2].strftime("%X"),
+                "timestamp": activity[2].astimezone(mad).strftime("%X"),
                 "no_of_bikes": activity[4],
             }
         )
@@ -86,7 +88,7 @@ def bike_tracker_test_add_bikes(data):
     ).run()
     if result.failure:
         logger.error(f"Request failed: {result.errors}")
-        return (result.errors, 404)
+        return result.errors, 404
     logger.info(f"Successful request: {request}")
     return Response(status=200)
 
@@ -110,6 +112,6 @@ def bike_tracker_test_replace_bike(data):
 
     if result.failure:
         logger.error(f"Request failed: {result.errors}")
-        return (result.errors, 404)
+        return result.errors, 404
     logger.info(f"Successful request: {request}")
     return Response(status=200)
