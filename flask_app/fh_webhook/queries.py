@@ -12,8 +12,7 @@ BIKES_IN_USE_QUERY = """
     WHERE
         -- The usual filters for bookings: either won't happen or happening at some other
         -- point in th the future.
-        b.rebooked_to IS NULL
-        AND (b.status != 'cancelled' OR (b.status = 'cancelled' AND b.amount_paid > 0))
+        b.rebooked_to IS NULL AND b.status != 'cancelled' 
 
         -- Filter now depending the type of service. For tours we can rely on availability end
         -- date. But for rentals is sigthly more tricky as availabilities last .5h and

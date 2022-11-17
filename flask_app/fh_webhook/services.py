@@ -265,7 +265,7 @@ class ProcessJSONResponse:
         Save the customer type information contained in the data.
 
         In the json we can find customer types under bookings__customers and
-        under booking__availability__customer_type_rates arrays so we should
+        under booking__availability__customer_type_rates arrays, so we should
         iterate through to get all of them.
         """
         cp = models.CustomerType.get_object_or_none(ct_data["pk"])
@@ -374,7 +374,7 @@ class ProcessJSONResponse:
         """
         Save all the models included in the customer group.
 
-        A convenience method to group actions that depend in the same for loop.
+        A convenience method to group actions that depend on the same for loop.
         """
         bookings = self.data["booking"]
         customers = bookings["customers"]
