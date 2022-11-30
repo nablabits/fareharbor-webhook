@@ -1086,48 +1086,67 @@ def bikes_in_use(target_bikes, target_timestamp):
 
 
 @attr.s
-class CreateBikeUsages:
-    """Create bike usage items for a given availability."""
-
-    availability_id = attr.ib(validator=attr.validators.instance_of(int))
-    bike_uuids = attr.ib(validator=attr.validators.instance_of(list))
+class BikeOperations:
+    availability = None
+    errors = None
+    instance_id = attr.ib(validator=attr.validators.instance_of(int))
     timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
 
-    def run(self):
-        errors = {}
-        try:
-            availability = models.Availability.get(self.availability_id)
-        except DoesNotExist:
-            errors["availability_error"] = "The availability was not found."
+    def _get_availability_from_id(self):
+        booking = models.Booking.get_object_or_none(self.instance_id)
+        if not booking:
+            return models.Availability.get_object_or_none(self.instance_id)
+        return booking.availability
 
-        bikes = models.Bike.query.filter(models.Bike.uuid.in_(self.bike_uuids))
-        if bikes.count() != len(self.bike_uuids):
-            errors[
-                "bike_uuid_error"
-            ] = "There were bikes that didn't match an entry in the db."
-
+    @staticmethod
+    def _check_conflicting_bikes(bikes_set):
         # We want to place some logic here to prevent some bike to be added to two
-        # simultaneous availabilities. But don't raise an exception, just silently notify so we can
-        # check how many issues this cause. For instance, it could happen that some customer
+        # simultaneous availabilities. But don't raise an exception, just silently notify, so we
+        # can check how many issues this cause. For instance, it could happen that some customer
         # returns the bike before the hour he has allocated and that bike might be used in another
         # service.
-        conflicting_bikes = bikes_in_use(set(self.bike_uuids), datetime.utcnow())
+        conflicting_bikes = bikes_in_use(bikes_set, datetime.utcnow())
         if conflicting_bikes:
             current_app.logger.warning(
                 f"Bike(s) {conflicting_bikes} was/were already in use, continuing."
             )
 
-        if errors:
-            return Result.from_failure(errors)
-
-        # If everything went right, create the usages.
-        availability.bike_usages = bikes.all()
-        db.session.commit()
-        return Result.from_success(availability)
+    def run(self):
+        self.errors = dict()
+        self.availability = self._get_availability_from_id()
+        if not self.availability:
+            self.errors["availability_error"] = "The availability was not found."
 
 
 @attr.s
-class UpdateBikeUsage:
+class CreateBikeUsages(BikeOperations):
+    """Create bike usage items for a given id."""
+
+    bike_uuids = attr.ib(validator=attr.validators.instance_of(list))
+
+    def run(self):
+        super().run()
+        bikes = models.Bike.query.filter(models.Bike.uuid.in_(self.bike_uuids))
+        if bikes.count() != len(self.bike_uuids):
+            self.errors[
+                "bike_uuid_error"
+            ] = "There were bikes that didn't match an entry in the db."
+
+        self._check_conflicting_bikes(set(self.bike_uuids))
+
+        if self.errors:
+            return Result.from_failure(self.errors)
+
+        # If everything went right, create the usages. Note that this does not care whether the
+        # availability's customer counts match the count of bikes, it just blindly assign bike ids
+        # to availabilities.
+        self.availability.bike_usages = bikes.all()
+        db.session.commit()
+        return Result.from_success(self.availability)
+
+
+@attr.s
+class UpdateBikeUsage(BikeOperations):
     """
     Update a bike used in a given availability.
 
@@ -1136,44 +1155,33 @@ class UpdateBikeUsage:
     the bikes that were previously submitted.
     """
 
-    availability_id = attr.ib(validator=attr.validators.instance_of(int))
     bike_picked_uuid = attr.ib(validator=attr.validators.instance_of(str))
     bike_returned_uuid = attr.ib(validator=attr.validators.instance_of(str))
-    timestamp = attr.ib(validator=attr.validators.instance_of(datetime))
 
     def run(self):
-        errors = {}
-        try:
-            av = models.Availability.get(id=self.availability_id)
-        except DoesNotExist as e:
-            errors["availability_error"] = str(e)
+        super().run()
         try:
             bike_returned = models.Bike.get_uuid(self.bike_returned_uuid)
         except DoesNotExist as e:
-            errors["bike_returned_error"] = str(e)
+            self.errors["bike_returned_error"] = str(e)
         try:
             bike_picked = models.Bike.get_uuid(self.bike_picked_uuid)
         except DoesNotExist as e:
-            errors["bike_picked_error"] = str(e)
-        if errors:
-            return Result.from_failure(errors)
+            self.errors["bike_picked_error"] = str(e)
+        if self.errors:
+            return Result.from_failure(self.errors)
 
-        # As above, we want to place some logic here to prevent some bike to be added to two
-        # simultaneous availabilities.
-        if bikes_in_use(set(self.bike_picked_uuid), datetime.utcnow()):
-            current_app.logger.warning(
-                f"Bike {self.bike_picked_uuid} was already in use, continuing."
-            )
+        self._check_conflicting_bikes(set(self.bike_picked_uuid))
 
         # If the bike was not in the availability notify the user.
+        av = self.availability
         try:
             av.bike_usages.pop(av.bike_usages.index(bike_returned))
         except ValueError:
             msg = f"The bike {self.bike_returned_uuid} was not in the availability {av.id}"
-            errors["bike_not_in_availability"] = msg
+            self.errors["bike_not_in_availability"] = msg
+            return Result.from_failure(self.errors)
 
-        if errors:
-            return Result.from_failure(errors)
         av.bike_usages.append(bike_picked)
         db.session.commit()
         return Result.from_success(av)
