@@ -1074,7 +1074,7 @@ def bikes_in_use(target_bikes, target_timestamp):
     raw_sql = text(
         BIKES_IN_USE_QUERY.format(
             target_timestamp=target_timestamp,
-            rentals_ids=tuple(current_app.config["BIKE_TRACKER_ITEMS"][-6:]),
+            rentals_ids=tuple(current_app.config["BIKE_TRACKER_ITEMS"]["rentals"]),
         )
     )
     q = db.session.execute(raw_sql)

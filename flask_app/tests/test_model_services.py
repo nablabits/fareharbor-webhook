@@ -957,7 +957,7 @@ def test_get_bikes_in_use_for_tours(
 ):
     # Create item
     s = item_factory
-    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"][0]
+    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"]["regular_tours"][0]
     item = s.run()
 
     # Create availability
@@ -1003,7 +1003,7 @@ def test_get_bikes_in_use_for_rentals(
     delta = timedelta(hours=1)
     # Create item
     s = item_factory
-    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"][-5]
+    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"]["rentals"][0]
     item = s.run()
 
     # Create availability
