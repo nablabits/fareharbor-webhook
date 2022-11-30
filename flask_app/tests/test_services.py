@@ -6,7 +6,6 @@ from unittest.mock import patch
 from sqlalchemy.exc import OperationalError
 
 from fh_webhook import models, services
-from fh_webhook.services import GetBikeUUIDs
 
 
 def test_save_response_as_file(app):
@@ -440,12 +439,3 @@ def test_save_request_to_db_raises_error_for_close_stored_request(
     assert close_mock.call_count == 1
 
     assert s is None
-
-
-def test_get_bike_uuids_retrieves_the_data_from_cache(app):
-
-    r = GetBikeUUIDs().run()
-    assert r == [
-        {"uuid": "cb12ebfe-f7db-40bc-b7ad-74117c3aa5d5", "display_name": "bike-01"},
-        {"uuid": "c44b0375-daa6-4ac3-bf5c-8568156e2a54", "display_name": "bike-02"},
-    ]
