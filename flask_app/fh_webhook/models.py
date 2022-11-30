@@ -20,7 +20,7 @@ class BaseMixin:
     @classmethod
     def get(cls, id):
         """
-        Try to get an instace or raise an error.
+        Try to get an instance or raise an error.
 
         Useful when we try to update an object that does not exist.
         """

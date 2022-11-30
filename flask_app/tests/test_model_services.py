@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from fh_webhook import model_services, models
 from fh_webhook.exceptions import DoesNotExist
-from fh_webhook.model_services import bikes_in_use
+from fh_webhook.model_services import BikeOperations, bikes_in_use
 
 
 def test_create_stored_request(database):
@@ -957,7 +957,7 @@ def test_get_bikes_in_use_for_tours(
 ):
     # Create item
     s = item_factory
-    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"][0]
+    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"]["regular_tours"][0]
     item = s.run()
 
     # Create availability
@@ -1003,7 +1003,7 @@ def test_get_bikes_in_use_for_rentals(
     delta = timedelta(hours=1)
     # Create item
     s = item_factory
-    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"][-5]
+    s.item_id = client.application.config["BIKE_TRACKER_ITEMS"]["rentals"][0]
     item = s.run()
 
     # Create availability
@@ -1047,13 +1047,23 @@ def test_get_bikes_in_use_for_rentals(
     assert r == {bike.uuid for bike in bikes[:2]}
 
 
+def test_bike_operations_works_for_bookings(database, booking_factory):
+    timestamp = datetime.now(timezone.utc)
+    b = booking_factory.run()
+
+    s = BikeOperations(instance_id=b.id, timestamp=timestamp)
+    assert s.availability is None
+    s.run()
+    assert s.availability.id == b.availability_id
+
+
 def test_create_bike_usage_success(database, availability_factory, bike_factory):
     timestamp = datetime.now(timezone.utc)
     av = availability_factory.run()
     bikes = [bike_factory(uuid=uuid4().hex, readable_name=f"bike{n}") for n in range(3)]
     bike_uuids = [b.uuid for b in bikes]
     s = model_services.CreateBikeUsages(
-        timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids
+        timestamp=timestamp, instance_id=av.id, bike_uuids=bike_uuids
     ).run()
 
     av = models.Availability.get(av.id)
@@ -1068,7 +1078,7 @@ def test_create_bike_usage_failure(database, bike_factory):
         "unknown_bike",
     ]
     s = model_services.CreateBikeUsages(
-        timestamp=timestamp, availability_id=123, bike_uuids=bike_uuids
+        timestamp=timestamp, instance_id=123, bike_uuids=bike_uuids
     ).run()
 
     assert s.failure is True
@@ -1086,12 +1096,12 @@ def test_update_bike_usage_success(database, availability_factory, bike_factory)
     ]
     bike_uuids = [b.uuid for b in bikes]
     model_services.CreateBikeUsages(
-        timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids[:2]
+        timestamp=timestamp, instance_id=av.id, bike_uuids=bike_uuids[:2]
     ).run()
 
     timestamp = datetime.now(timezone.utc)
     result = model_services.UpdateBikeUsage(
-        availability_id=av.id,
+        instance_id=av.id,
         bike_returned_uuid=bike_uuids[0],
         bike_picked_uuid=bike_uuids[2],
         timestamp=timestamp,
@@ -1109,12 +1119,12 @@ def test_update_bike_usage_failure(database, availability_factory, bike_factory)
     ]
     bike_uuids = [b.uuid for b in bikes]
     model_services.CreateBikeUsages(
-        timestamp=timestamp, availability_id=av.id, bike_uuids=bike_uuids[:2]
+        timestamp=timestamp, instance_id=av.id, bike_uuids=bike_uuids[:2]
     ).run()
 
     timestamp = datetime.now(timezone.utc)
     result = model_services.UpdateBikeUsage(
-        availability_id=10_000,
+        instance_id=10_000,
         bike_returned_uuid="fake_uuid_1",
         bike_picked_uuid="fake_uuid_1",
         timestamp=timestamp,
@@ -1122,9 +1132,7 @@ def test_update_bike_usage_failure(database, availability_factory, bike_factory)
 
     assert result.failure is True
     assert result.errors == {
-        "availability_error": "This instance of availability model does not exist.",
+        "availability_error": "The availability was not found.",
         "bike_returned_error": "This instance of bike model does not exist.",
         "bike_picked_error": "This instance of bike model does not exist.",
     }
-
-    # assert av.bike_usages == bikes[1:]

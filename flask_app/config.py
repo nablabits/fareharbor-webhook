@@ -67,23 +67,29 @@ class Config:
     # The location of the bikes information.
     BIKE_TRACKER_BIKE_SOURCE = "fh_webhook/static/bike_info.json"
     BIKE_TRACKER_SECRET = config("BIKE_TRACKER_SECRET")
-    BIKE_TRACKER_ITEMS = [
-        159053,
-        159055,
-        159056,
-        234853,
-        234990,  # Regular tours
-        159057,
-        159058,
-        159060,
-        159065,  # Private tours
-        159068,
-        159074,
-        159100,
-        159103,
-        235262,
-        265105,  # Rentals
-    ]
+    BIKE_TRACKER_ITEMS = {
+        "regular_tours": [
+            159053,
+            159055,
+            159056,
+            234853,
+            234990,
+        ],
+        "private_tours": [
+            159057,
+            159058,
+            159060,
+            159065,
+        ],
+        "rentals": [
+            159068,
+            159074,
+            159100,
+            159103,
+            235262,
+            265105,
+        ],
+    }
 
 
 class ProductionConfig(Config):

@@ -163,7 +163,7 @@ def test_bike_tracker_get_services_success_for_current_date(
     ts1 = ts0 + timedelta(hours=1)
 
     # Create the booking that will appear in the results
-    item_id = client.application.config.get("BIKE_TRACKER_ITEMS")[0]
+    item_id = client.application.config["BIKE_TRACKER_ITEMS"]["regular_tours"][0]
     s = item_factory
     s.item_id = item_id
     s.name = "item 1"

@@ -655,20 +655,3 @@ class SSLSMTPHandler(SMTPHandler):
             raise
         except Exception:
             self.handleError(record)
-
-
-@attr.s
-class GetBikeUUIDs:
-    use_cached_version = attr.ib(
-        validator=attr.validators.instance_of(bool), default=True
-    )
-
-    def _refresh_from_source(self):
-        """Get an updated version of the file."""
-        pass
-
-    def run(self):
-        path = current_app.config.get("BIKE_TRACKER_BIKE_SOURCE")
-        with open(path) as f:
-            data = json.load(f)
-        return data["query_result"]["data"]["rows"]
