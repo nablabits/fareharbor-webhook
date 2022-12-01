@@ -247,7 +247,7 @@ def test_bike_tracker_get_services_success_for_current_date(
             "availability_id": b.availability_id,
             "headline": b.availability.headline,
             "timestamp": str(tss[n].time()).split(".")[0],
-            "no_of_bikes": b.customer_count,
+            "no_of_bikes": b.customer_count + 1,
         }
 
         assert d["availabilities"][n] == expected0

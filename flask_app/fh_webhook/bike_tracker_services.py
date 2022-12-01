@@ -33,7 +33,7 @@ class DailyActivities:
                 Availability.headline,
                 Availability.start_at,
                 Item.name,
-                func.sum(Booking.customer_count),
+                func.sum(Booking.customer_count) + 1,
             )
             .filter(Booking.availability_id == Availability.id)
             .filter(Item.id == Availability.item_id)
