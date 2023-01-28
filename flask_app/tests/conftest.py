@@ -180,6 +180,34 @@ def contact_factory(booking_factory):
 
 
 @pytest.fixture
+def editable_contact():
+    return contact_instance
+
+
+def contact_instance(
+    booking_id,
+    name="foo",
+    email="foo@bar.baz",
+    phone_country="49",
+    phone="00000",
+    normalized_phone="00000",
+    is_subscribed_for_email_updates=True,
+    language="ES",
+):
+    return model_services.CreateContact(
+        id=booking_id,
+        name=name,
+        email=email,
+        phone_country=phone_country,
+        phone=phone,
+        normalized_phone=normalized_phone,
+        is_subscribed_for_email_updates=is_subscribed_for_email_updates,
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1),
+        language=language,
+    ).run()
+
+
+@pytest.fixture
 def company_factory():
     return model_services.CreateCompany(
         name="foo",
