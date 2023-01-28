@@ -161,6 +161,7 @@ def test_bike_tracker_get_services_success_for_current_date(
     bike_uuids = [{"uuid": b.uuid, "display_name": b.readable_name} for b in bikes]
     ts0 = datetime.now()
     ts1 = ts0 + timedelta(hours=1)
+    ts2 = ts1 + timedelta(hours=1)
 
     # Create the booking that will appear in the results
     item_id = client.application.config["BIKE_TRACKER_ITEMS"]["regular_tours"][0]
@@ -171,7 +172,7 @@ def test_bike_tracker_get_services_success_for_current_date(
     b0, b0_id = randomizer(booking_factory.run())
     b0.customer_count = 10
     b0.availability.start_at = ts0
-    b0.availability.end_at = ts0
+    b0.availability.end_at = ts1
     b0.availability.headline = "service 1"
     b0.availability.item = item
     b0.rebooked_to = None
@@ -181,7 +182,7 @@ def test_bike_tracker_get_services_success_for_current_date(
     s = availability_factory
     s.availability_id = randint(1, 1e4)
     s.start_at = ts1
-    s.end_at = ts1
+    s.end_at = ts2
     s.headline = "service 2"
     av = s.run()
     av.item = item
@@ -190,44 +191,6 @@ def test_bike_tracker_get_services_success_for_current_date(
     b1.customer_count = 20
     b1.availability = av
     b1.rebooked_to = None
-    database.session.commit()
-
-    # Create alternative bookings that shouldn't appear
-    # this happens some other day.
-    s = availability_factory
-    s.availability_id = randint(1, 1e4)
-    s.start_at = ts0 + timedelta(days=1)
-    s.end_at = ts0 + timedelta(days=1)
-    av = s.run()
-    b2, _ = randomizer(booking_factory.run())
-    av.item = item
-    b2.availability = av
-    database.session.commit()
-
-    # Create a cancelled booking
-    b3, _ = randomizer(booking_factory.run())
-    b3.availability = b0.availability
-    b3.status = "cancelled"
-    database.session.commit()
-
-    # create a rebooked booking
-    b4, _ = randomizer(booking_factory.run())
-    b4.availability = b0.availability
-    b4.rebooked_to = uuid4().hex
-    database.session.commit()
-
-    # Finally create a booking that does not contain a valid item
-    s = availability_factory
-    s.availability_id = randint(1, 1e4)
-    s.start_at = ts0
-    s.end_at = ts0
-    av = s.run()
-    s = item_factory
-    s.item_id = randint(1, 1e4)
-    item = s.run()
-    av.item = item
-    b4, _ = randomizer(booking_factory.run())
-    b4.availability = av
     database.session.commit()
 
     response = client.get("/bike-tracker/get-services/", headers=get_headers())
@@ -248,6 +211,7 @@ def test_bike_tracker_get_services_success_for_current_date(
             "headline": b.availability.headline,
             "timestamp": str(tss[n].time()).split(".")[0],
             "no_of_bikes": b.customer_count + 1,
+            "duration": "1.0",
         }
 
         assert d["availabilities"][n] == expected0

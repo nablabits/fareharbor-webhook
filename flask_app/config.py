@@ -64,9 +64,12 @@ class Config:
     BIKE_TRACKER_PASS = config("BIKE_TRACKER_PASS")
     RESPONSES_PATH = "fh_webhook/responses/"
 
-    # The location of the bikes information.
+    # The location of the bikes' information.
     BIKE_TRACKER_BIKE_SOURCE = "fh_webhook/static/bike_info.json"
     BIKE_TRACKER_SECRET = config("BIKE_TRACKER_SECRET")
+
+    # Because how the contexts work in flask we had to hardcode these values in the tests, so if
+    # you add some other id or duration, please add it to test_bike_tracker_services.
     BIKE_TRACKER_ITEMS = {
         "regular_tours": [
             159053,
@@ -89,6 +92,19 @@ class Config:
             235262,
             265105,
         ],
+    }
+
+    # The durations per customer type id that are used for rentals
+    DURATION_MAP = {
+        314997: "2.0",
+        314998: "4.0",
+        314999: "8.0",  # eight hours
+        763051: "8.0",  # full day
+        763050: "4.0",  # half day
+        315000: "24.0",  # 24h hours
+        315001: "24.0",  # 2 days
+        315002: "24.0",  # 7 days
+        690082: "24.0",  # Long rent
     }
 
 
