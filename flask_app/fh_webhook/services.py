@@ -10,7 +10,6 @@ from smtplib import SMTP_SSL
 from ssl import create_default_context
 
 import attr
-from flask import current_app
 from sqlalchemy.exc import OperationalError
 
 from . import model_services, models

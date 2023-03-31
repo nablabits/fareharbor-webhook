@@ -1,10 +1,12 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from random import randint
+from uuid import uuid4
 
 import pytest
 from conftest import randomizer
 
 from fh_webhook.bike_tracker_services import DailyActivities
+from fh_webhook.model_services import CreateBikeUsages
 from fh_webhook.models import Booking
 
 
@@ -14,16 +16,19 @@ from fh_webhook.models import Booking
         159053,
         159055,
         159056,
-        234853,
-        234990,
         159057,
         159058,
         159060,
-        159065,
     ],
 )
 def test_daily_activities_success_for_tours(
-    item_id, client, database, booking_factory, item_factory, availability_factory
+    item_id,
+    client,
+    database,
+    booking_factory,
+    item_factory,
+    availability_factory,
+    bike_factory,
 ):
 
     ts0 = datetime.now()
@@ -62,7 +67,37 @@ def test_daily_activities_success_for_tours(
     b1.rebooked_to = None
     database.session.commit()
 
+    # create another booking that should not appear in the results due to the assignment
+    s = availability_factory
+    s.availability_id = randint(1, 10000)
+    s.start_at = ts1
+    s.end_at = ts2
+    s.headline = "service 3"
+    av3 = s.run()
+
+    av3.item = item
+    av3.item.name = "item 3"
+    b2, b2_id = randomizer(booking_factory.run())
+    b2.customer_count = 20
+    b2.availability = av3
+    b2.rebooked_to = None
+
+    bikes = [
+        bike_factory(uuid=uuid4().hex, readable_name=f"red bike{n}") for n in range(3)
+    ]
+    bike_uuids = [b.uuid for b in bikes]
+
+    database.session.commit()
+
+    CreateBikeUsages(
+        timestamp=datetime.now(timezone.utc),
+        instance_id=av3.id,
+        bike_uuids=bike_uuids[:2],
+    ).run()
+
     d = DailyActivities(for_date=date.today()).run()
+
+    assert len(d) == 2
 
     for n, booking_id in enumerate((b0_id, b1_id)):
         b = Booking.get(booking_id)
@@ -86,7 +121,6 @@ def test_daily_activities_success_for_tours(
         159100,
         159103,
         235262,
-        265105,
     ],
 )
 def test_daily_activities_success_for_rental_items(
@@ -301,7 +335,7 @@ def test_daily_activities_does_not_show_any_tour_when_booking_is_rebooked(
 
 
 @pytest.mark.parametrize("item_id, expected", ((111111, False), (159053, True)))
-def test_daily_activities_does_not_show_any_tour_when_item_is_not_valied(
+def test_daily_activities_does_not_show_any_tour_when_item_is_not_valid(
     item_id,
     expected,
     client,

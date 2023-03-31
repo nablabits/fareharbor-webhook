@@ -17,6 +17,7 @@ from fh_webhook.models import (
     CustomerTypeRate,
     Item,
     db,
+    bike_usages,
 )
 
 
@@ -34,11 +35,12 @@ class DailyActivities:
     def __attrs_post_init__(self):
         self.bike_tracker_items = current_app.config["BIKE_TRACKER_ITEMS"]
 
-    def _get_tour_activities(self):
+    def _get_tour_activities(self, tracked_availability_ids):
         tour_ids = (
             self.bike_tracker_items["regular_tours"]
             + self.bike_tracker_items["private_tours"]
         )
+
         return (
             db.session.query(
                 Availability.id,
@@ -54,6 +56,7 @@ class DailyActivities:
             .filter(Item.id.in_(tour_ids))
             .filter(Booking.status != "cancelled")
             .filter(Booking.rebooked_to.is_(None))
+            .filter(Availability.id.notin_(tracked_availability_ids))
             .group_by(
                 Availability.id,
                 Availability.headline,
@@ -65,8 +68,9 @@ class DailyActivities:
             .all()
         )
 
-    def _get_rental_activities(self):
+    def _get_rental_activities(self, tracked_availability_ids):
         rental_ids = self.bike_tracker_items["rentals"]
+
         return (
             db.session.query(
                 Booking.id,
@@ -89,6 +93,7 @@ class DailyActivities:
             .filter(Item.id.in_(rental_ids))
             .filter(Booking.status != "cancelled")
             .filter(Booking.rebooked_to.is_(None))
+            .filter(Availability.id.notin_(tracked_availability_ids))
             .group_by(
                 Booking.id,
                 Contact.name,
@@ -100,6 +105,15 @@ class DailyActivities:
             .order_by(Availability.start_at.asc())
             .all()
         )
+
+    def _get_availabilities_with_bike_assigned(self):
+        results = (
+            db.session.query(Availability.id)
+            .join(bike_usages, Availability.id == bike_usages.c.availability_id)
+            .filter(func.DATE(Availability.start_at) == self.for_date)
+            .filter(bike_usages.c.bike_id.isnot(None))
+        )
+        return [row[0] for row in results]
 
     @staticmethod
     def _compute_duration(activity):
@@ -125,9 +139,10 @@ class DailyActivities:
         return Decimal(duration)
 
     def run(self):
-        activities_queryset = (
-            self._get_tour_activities() + self._get_rental_activities()
-        )
+        tracked_availability_ids = self._get_availabilities_with_bike_assigned()
+        activities_queryset = self._get_tour_activities(
+            tracked_availability_ids
+        ) + self._get_rental_activities(tracked_availability_ids)
         mad = pytz.timezone("Europe/Madrid")
         activities = list()
         for activity in activities_queryset:
