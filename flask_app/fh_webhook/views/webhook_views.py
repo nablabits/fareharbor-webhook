@@ -33,15 +33,14 @@ def save_content():
     json_response = request.json
     timestamp = datetime.now(timezone.utc)
     if json_response:
+        # Let's save the data first of all, so we can populate the database if some error occurs.
+        filename = SaveResponseAsFile(json_response, path, timestamp).run()
+
         try:
             BookingSchema().load(json_response["booking"])
         except ValidationError as e:
             logger.error(f"filename={timestamp.timestamp()}.json, error={e}")
             return Response(str(e), status=400)
-
-        # if validation succeeds we save the response right away to keep
-        # the data
-        filename = SaveResponseAsFile(json_response, path, timestamp).run()
 
     else:
         logger.error("The request was empty")
